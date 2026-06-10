@@ -109,6 +109,8 @@ knowledge atlas app/
 
 ## 9. What's NEXT (Phase 2 — "the data half", per PLAN.md)
 
+> **⚠ SUPERSEDED 2026-06-10 — read [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md) instead.** A grill session replanned Phase 2: Unity WebGL is the renderer/display (the old web-viewer route is dropped), Cloudflare Worker + R2 + D1 is the room library and response store, and the next deliverable is an AI-readable workstream handoff package, not code. The sketch below is kept only as history. PHASE2_PLAN.md is a living doc — iterated and pushed in rounds before execution.
+
 A minimal **experiment runner**: show the two rooms of a pair → run one task type → log responses → export CSV/JSON. This is the half that makes it a tool to run experiments, not a room generator. Suggested first slice:
 
 1. Decide presentation v1: static images per room (cheapest honest option; the old repo's `viewer/` realism work is the eventual upgrade path) — remember **modality is recorded as a variable**.
