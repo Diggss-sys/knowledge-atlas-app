@@ -1,0 +1,44 @@
+{
+  "room_type": "dining_room",
+  "description": "Residential dining room. Supplies the defaults, the allowed parameter ranges, the furniture catalog, and the named layout slots that a RoomSpec references. The AI (or a student) only chooses WITHIN this envelope.",
+
+  "defaults": {
+    "shell":    { "width_m": 4.5, "length_m": 6.0, "ceiling_height_m": 2.8, "contour": "angular" },
+    "surfaces": { "wall": { "material": "plaster" }, "floor": { "material": "wood" }, "ceiling": { "material": "plaster", "visible": true } },
+    "lighting": { "preset": "warm_evening" }
+  },
+
+  "ranges": {
+    "shell.width_m":          [3.5, 6.5],
+    "shell.length_m":         [4.0, 8.0],
+    "shell.ceiling_height_m": [2.4, 3.4]
+  },
+
+  "manipulable_variables": [
+    "shell.ceiling_height_m",
+    "shell.contour",
+    "surfaces.wall.material",
+    "lighting.warmth"
+  ],
+
+  "furniture_catalog": [
+    { "id": "dining_table_6", "label": "Dining table (seats 6)", "footprint_m": [2.0, 1.0] },
+    { "id": "dining_chair",   "label": "Dining chair",           "footprint_m": [0.5, 0.5] },
+    { "id": "sideboard",      "label": "Sideboard / buffet",     "footprint_m": [1.6, 0.5] },
+    { "id": "pendant_light",  "label": "Hanging pendant light",  "ceiling_mounted": true }
+  ],
+
+  "layout_slots": {
+    "table_center":   { "x_m": 0.0, "z_m": 0.0, "rotation_deg": 0 },
+    "above_table":    { "x_m": 0.0, "z_m": 0.0, "ceiling": true },
+    "chair_1":        { "relative_to": "table_center", "side": "back",  "index": 0 },
+    "chair_2":        { "relative_to": "table_center", "side": "back",  "index": 1 },
+    "chair_3":        { "relative_to": "table_center", "side": "front", "index": 0 },
+    "chair_4":        { "relative_to": "table_center", "side": "front", "index": 1 },
+    "chair_5":        { "relative_to": "table_center", "side": "left" },
+    "chair_6":        { "relative_to": "table_center", "side": "right" },
+    "long_wall_back": { "wall": "back", "offset_m": 0.3 }
+  },
+
+  "notes": "footprint_m and the slot geometry are what the GENERATOR uses to place items without overlap. The AI just names a catalog_id + a slot; the spatial logic lives here, not in the AI."
+}
