@@ -71,6 +71,39 @@ A grilling session on the original Phase 2 draft produced a **major architecture
 
 **Unity milestones (each with a DoD acceptance check):** M-U0 scaffold (Unity 6 LTS + URP + WebGL module, Newtonsoft, `unity/` .gitignore) → M-U1 shell from spec (EditMode tests on segmenter trivial case) → M-U2 openings (segmenter tested against the committed pair fixtures) → M-U3 materials + lighting presets → M-U4 furniture via SlotResolver (chairs ring the table from footprints alone) → M-U5 Bridge + WebGL build + harness page (**tracer-bullet dependency** — committed pair's ApplySpec visibly changes ceiling height, screenshot capture works) → M-U6 curved contour. Curves deliberately AFTER the tracer bullet. EditMode tests read fixtures straight from the repo's `spec/` (one source of truth).
 
+## Manipulation coverage — dimensions, items, lighting (audit 2026-06-11)
+
+The platform manipulates more than walls/contour. Audit of what the contract supports today vs. what the next schema iteration must add — grounded in this repo, the old repo's research, and the Kirsh transcript.
+
+### Room dimensions (height, length, width) — ✅ covered
+`shell.width_m / length_m / ceiling_height_m` are in the frozen schema with hard ranges, preset ranges narrow them per room type, and the validator already notes their coupled variables (volume, aspect ratio, window-to-wall ratio). The editor just needs three sliders bound to them. No contract change needed.
+
+### Items — which furniture is in the room, and where — ⚠ partial, one real contract gap
+- **Covered:** `furniture[]` entries pick items from the preset catalog (`catalog_id`) and place them by named slot or explicit `x_m/z_m/rotation_deg`. Choosing items and placing them is fully authorable today. Editor v1: catalog checklist (add/remove) + slot dropdown or coordinate input; drag-to-place on a top-down plan view is the v2 upgrade.
+- **THE GAP (found in this audit):** `validate_pair.py` addresses items by array index (`furniture[0].catalog_id`…). *Moving* one item (same count, same order) diffs cleanly. But *adding/removing* an item shifts every later index → cascade of spurious `undeclared_change` violations; the only escape is declaring the whole `furniture` array as manipulated, which licenses ANY furniture difference — too coarse to be science.
+- **Fix (validator v2 + RoomSpec v1.1 candidate):** stable per-item identity — an optional `instance_id` on each furniture entry, plus declared-variable forms like `furniture[id=chair_5]` or `furniture/presence:dining_chair`; alternatively order-insensitive multiset matching on `(catalog_id, placement)`. Decide the mechanism next iteration round.
+- **Prior art:** the old kitchen manifest exposed `cabinet_density` and `appliance_visibility` — "how much stuff" as a single scalar knob. For clutter-style studies that is scientifically cleaner than raw add/remove; consider a preset-level density knob alongside per-item control.
+
+### Lighting — indoor, outdoor, bounce — ⚠ partial; the full model is already designed in the old repo
+Today's schema is single-channel: one `preset` (5 moods), one `warmth`, one global `intensity`, one `hdri`. No indoor/outdoor separation, no bounce parameter. But the old repo already researched and partly implemented the richer model — salvage, don't invent:
+
+| Concept (user's terms) | Old-repo prior art (grounded) | RoomSpec v1.1 candidate |
+|---|---|---|
+| **Outdoor / natural light** | `daylight_intensity` — "scalar on the sun/sky contribution through windows" — a distinct manifest knob in all 3 room types; viewer had a rotating sun + time-of-day model and a sunlight-strength slider (`wizard/lighting_control_surface.md` §1; `viewer/index.html`) | `lighting.natural.intensity` (+ `sun_angle` or `time_of_day` — pick ONE exposed knob) |
+| **Indoor / artificial light** | `lighting_intensity` — "controls CeilingLightFactory output" — separate from daylight; ties to the `pendant_light` catalog item | `lighting.artificial.intensity` + `lighting.artificial.warmth` |
+| **Color temperature** | Exact law already derived: **Kelvin = 6500 − 3800 × warmth** (2700 K warm ↔ 6500 K cool), Tanner-Helland kelvin→RGB (§2) | adopt as the normative warmth law in Unity |
+| **Light bounce** ("buoyancy") | Viewer implemented a **one-bounce GI irradiance probe** with adjustable intensity (`giIntensity`, default 0.8, live `KA_GI()` tuning) + GTAO ambient occlusion + warm-sun/cool-skylight split + warm ground-bounce color | `lighting.bounce` (0..1) → Unity: ambient/GI probe intensity |
+| **Sky / environment** | Single fixed HDRI today; a multi-HDRI catalog interface was proposed but never built (§3: `hdri_id` → file + thumbnail gallery) | keep `hdri` id; build the catalog in the room library |
+| **Windows as light source** | Window topology research exists (clerestory default ×4; window kinds catalog); viewer made glass non-shadow-casting so sun passes through | windows stay geometry (openings); daylight couples to them — add to COUPLED_VARS |
+
+**Why lighting is doubly load-bearing (transcript-verified):** "We alter the windows or the natural lighting in some way" is Kirsh's manipulation #2 verbatim — and lighting quality is *why* Infinigen died ("you're never going to get lighting out of Infinigen… why can't Unity take a 3D model and apply lighting?"). The old repo's honesty rule (lighting previews must be labeled if not baked) dissolves in the new architecture: Unity WebGL renders live, so the preview IS the stimulus — a genuine win to note in ARCHITECTURE.md.
+
+**New coupled-variables to add to the validator:** `lighting.natural.intensity` ↔ shadow contrast/depth; `lighting.bounce` ↔ perceived overall brightness; window count/size (geometry) ↔ daylight level; `lighting.artificial.warmth` ↔ perceived brightness (existing warmth note generalizes).
+
+**Schema policy:** these are **RoomSpec v1.1 candidates, batched** — one coordinated bump (curviness slider + furniture `instance_id` + lighting split + bounce), with validator, editor, preset files, and Unity updated in lockstep under COORDINATION.md's contract-change rule. v1 stays frozen until the batch is locked.
+
+**Bonus salvage find:** the old repo's presets are literature-grounded experiment conditions — `meyers_levy_high/low_ceiling`, `vartanian_cathedral/high`, `ulrich_recovery`, `kaplan_restorative` — exactly the named studies this platform serves. Port them as seed content for the Cloudflare room library.
+
 ## Deliverable: files to create (all in this repo, committed + pushed)
 
 ### 1. Architecture + plan docs
@@ -122,3 +155,7 @@ Plus mechanical doc checks: every contract file referenced by ≥1 handoff; ever
 - Preset semantics details for `spec/PRESETS.md` (chair spacing math, clearance rules).
 - Asset sourcing pass: which CC0 texture/furniture sets, pinned versions.
 - Workstream → person assignment.
+- **Lock the RoomSpec v1.1 batch** (from the manipulation audit): exact lighting block shape (natural/artificial/bounce), furniture identity mechanism (`instance_id` vs multiset matching), curviness slider, new COUPLED_VARS entries — one coordinated schema+validator+preset+Unity bump.
+- Editor UI specifics for item manipulation: catalog checklist + slot/coordinate placement v1; plan-view drag v2; optional density-style scalar knob.
+- HDRI catalog contents for the room library (ids, thumbnails, descriptions).
+- Port the literature presets (meyers_levy, vartanian, ulrich, kaplan) from the old repo as seed rooms.
