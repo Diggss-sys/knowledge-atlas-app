@@ -155,9 +155,9 @@ Plus mechanical doc checks: every contract file referenced by ≥1 handoff; ever
 - Confirm decision #7 (tracer-bullet integration milestone) — recommendation stands, user hasn't formally picked.
 - Task design specifics: rating scale wording, trial counts, A-vs-B side counterbalancing policy.
 - Preset semantics details for `spec/PRESETS.md` (chair spacing math, clearance rules).
-- Asset sourcing pass: which CC0 texture/furniture sets, pinned versions.
+- ~~Asset sourcing pass~~ → done: [docs/ASSET_SOURCING.md](ASSET_SOURCING.md) pins candidate CC0 assets (ambientCG textures per material, Poly Haven HDRIs per preset, furniture w/ greybox→paid fallback). Two open sub-decisions: HDRI indoor-vs-outdoor-through-windows; furniture realism ladder (greybox v1 → CC0 → paid pack).
 - Workstream → person assignment.
-- **Lock the RoomSpec v1.1 batch** (from the manipulation audit + rendering research): exact lighting block shape (natural/artificial/bounce), furniture identity mechanism (`instance_id` vs multiset matching), curviness slider, **per-wall `wall_bow` (−1..+1)**, new COUPLED_VARS entries (incl. the quantified ceiling-height light couplings and curved-wall interreflection from RENDERING_RESEARCH.md §2) — one coordinated schema+validator+preset+Unity bump.
+- **Lock the RoomSpec v1.1 batch** → concrete proposal drafted: [docs/ROOMSPEC_V1_1.md](ROOMSPEC_V1_1.md) (lighting natural/artificial/bounce split w/ Kelvin law; furniture `instance_id` + `furniture[id=X].presence` declared forms + new violation codes; `curviness` + per-wall `wall_bow`; extended COUPLED_VARS; migration checklist). Remaining: confirm 4 open decisions in that doc (time_of_day coupling, deprecate flat warmth/intensity, bow_max value, density knob scope), then execute the migration.
 - Openings-on-bowed-walls policy: forbid vs locally flatten (RENDERING_RESEARCH.md §4).
 - Editor UI specifics for item manipulation: catalog checklist + slot/coordinate placement v1; plan-view drag v2; optional density-style scalar knob.
 - HDRI catalog contents for the room library (ids, thumbnails, descriptions).
