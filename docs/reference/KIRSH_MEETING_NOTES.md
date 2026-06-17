@@ -44,7 +44,9 @@
 
 ## Implications for this repo
 
-1. The **front end is the product** — a student must manipulate one variable without touching an engine. That's the RoomSpec + wizard/web-form path.
+1. The **front end is the product** — a student must manipulate one variable without touching an engine. That's the RoomSpec + **Unity slider UI** path (current plan; the old web-form idea is dropped).
 2. The **validator is the science** — enforce the single-variable rule mechanically, since it's the thing he keeps correcting people on.
-3. **Web-first delivery, realism non-negotiable** — the fidelity floor rules out toy renderers; budget effort accordingly.
+3. **Realism non-negotiable, delivered in 3D** — the fidelity floor rules out toy renderers; rooms are Unity-generated 3D (interactive web-3D + native VR), no flat 2D. Budget effort accordingly.
+
+*(Note: items 1–4 are the notes-writer's implications, updated 2026-06-11 to the current Unity/VR/3D plan. Kirsh's actual statements above are unchanged. Current architecture: [docs/PHASE2_PLAN.md](../PHASE2_PLAN.md).)*
 4. **Task + data collection are in scope** — students need to run a task *in* the room and capture responses; the platform owns that half too.

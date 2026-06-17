@@ -7,11 +7,11 @@ The previous repo lives at `../cogs160track3v2` (branch work on `Diggss-sys-bran
 | Old asset | Where it fits in the new plan |
 |---|---|
 | `validation_gate.py`, `validator.py`, `test_validation_gate.py` | **Phase 1 — diff-validator.** Closest existing code to the single-variable isolation gate. Rework to diff two RoomSpecs against `experiment.manipulated_variables`. |
-| `wizard/` | **Phase 4 — web authoring form.** The "create a room" form already produces almost the RoomSpec shape (see ROOM_SPEC.md). |
-| `viewer/` (incl. the lighting/realism work: rotating sun, time-of-day mood, shadow contrast) | **Phase "Present" — web-3D display.** The realism tuning is real prior art for the fidelity bar Kirsh set. |
+| `wizard/` | **Reference only** for RoomSpec field shape. The live editor is a **Unity slider UI** (UI Toolkit), NOT a web form — do not port the wizard as the editor. |
+| `viewer/` (lighting/realism work: rotating sun, time-of-day, GI/irradiance probe, shadow contrast) | **Prior art for Unity lighting**, not a renderer. The captured-irradiance-probe GI trick is reimplemented in Unity ([docs/RENDERING_RESEARCH.md](RENDERING_RESEARCH.md) §3); the A-Frame viewer itself is dropped. |
 | `spec/` (untracked in old repo) | Already migrated here — it's byte-identical to this repo's `spec/`. The old copy can be deleted eventually. |
 | `presets/` (dining_room, kitchen, living_room) | Source material for additional room-type presets (Phase 4). |
-| `server.py`, `cloudflare/` | Hosting/serving patterns for the participant-facing link. |
+| `server.py`, `cloudflare/` | Cloudflare Worker + R2 + D1 patterns for the **room library + response sink** (storage only — never the live render loop; see [docs/STORAGE.md](STORAGE.md)). |
 | `spec_v2/` (gap analysis, contracts, verification tests, e2e plan) | Process documents — mine for test ideas and contract language. |
 
 ## Background / context (read, don't port)

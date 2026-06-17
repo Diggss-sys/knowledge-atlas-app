@@ -2,16 +2,18 @@
 
 *Written 2026-06-10 at the end of the restart session. Everything below is verified state, not aspiration. If you are an assistant reading this: start by running `git status` and the test suite (commands in §6), then pick up at §9.*
 
+> **⚠ ARCHITECTURE UPDATED (2026-06-11) — read the current plan first.** The platform is now **Unity-generated parametric 3D rooms with live VR editing** (subject in VR, operator editing live via a Unity slider UI). **3D-only — no 2D/images; the old A-Frame web viewer is dropped; Unity is the renderer, not optional; VR is the end goal, not Phase 5.** Current truth: **[docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md)** + **[docs/VR_LIVE_EDITING.md](docs/VR_LIVE_EDITING.md)** + [docs/RENDERING_RESEARCH.md](docs/RENDERING_RESEARCH.md) + [docs/PROPOSAL.md](docs/PROPOSAL.md). Sections below describing "web-first / images / web viewer" reflect the older draft — trust the current-plan docs over them.
+
 ---
 
 ## 1. What this project is
 
 A **tool/platform for controlled room experiments** in environmental neuroscience (UCSD COGS 160, Track 3, Prof. David Kirsh). A researcher — or an undergrad with two weeks — designs a control/treatment room pair that differs in **exactly one variable** (ceiling height, angular↔curved contour, lighting, wall texture), shows the rooms to participants, runs a behavioral task, and exports the response data.
 
-Everything flows through one contract: the **RoomSpec** — an engine-agnostic JSON description of one room. Producers (web wizard, AI agent) and consumers (web viewer, Unity, future VR) only agree on the schema; nothing talks to anything else directly.
+Everything flows through one contract: the **RoomSpec** — an engine-agnostic JSON description of one room. Producer: a **Unity slider UI** (optional AI path later). Consumer: the **Unity generator** (`RoomBuilder.BuildFromSpec`), rendered as interactive web-3D or native VR. They only agree on the schema. **3D-only.**
 
 ```
-AUTHOR (form/AI) → RoomSpec JSON → VALIDATE (single-var gate) → PRESENT (web-first) → COLLECT (task + responses → CSV)
+AUTHOR (Unity slider UI, live) → RoomSpec JSON → VALIDATE (single-var gate) → GENERATE+RENDER (Unity: web-3D / native VR) → COLLECT (responses → Cloudflare + CSV/JSON)
 ```
 
 ## 2. Where everything lives
@@ -118,13 +120,13 @@ A minimal **experiment runner**: show the two rooms of a pair → run one task t
 3. Export: flat CSV one-row-per-response with pair_id, condition, manipulated variable, task type, response, RT, timestamp, participant id.
 4. Tests around the data layer (schema of the log rows).
 
-After that (Phase 3+): nuisance-variance control (matched luminance, fixed camera), determinism hooks, more presets (`bedroom`, `classroom` — mirror the dining preset), the curved-walls geometry, web authoring form (salvage old `wizard/` — note: in the old repo, rendering auto-synced viewer→wizard but new UI controls had to be hand-ported), and the optional AI authoring path (NL brief + preset → structured output → schema-validate → retry; API key server-side only).
+After that (Phase 3+): nuisance-variance control (matched luminance, fixed camera), determinism hooks, more presets (`bedroom`, `classroom` — mirror the dining preset), the curved/bowed-walls geometry (v1.1), the Cloudflare room library + standalone-VR network transport, and the optional AI authoring path (NL brief + preset → structured output → schema-validate → retry; API key server-side only). **Note: the front end is a Unity slider UI, not an HTML form — the old `wizard/` is not the path.**
 
-**Open question pending with Kirsh** (from PLAN.md): what experiment/response types must the tool support, and is 2D/web a valid primary outcome or is VR core? Scopes how generic the data layer must be.
+**Open question pending with Kirsh** (see [docs/PROPOSAL.md](docs/PROPOSAL.md)): what experiment/response types must the tool support, and is **web-3D** a valid primary outcome or is VR core? (Project is **3D-only** — no 2D.) Scopes how generic the data layer must be.
 
 ## 10. Old-repo salvage map (short version — full version in docs/LEGACY_PROJECT.md)
 
 - `validation_gate.py` / `validator.py` / tests → already mined for conventions in Phase 1.
-- `wizard/` → Phase 4 authoring form. `viewer/` (rotating sun, time-of-day mood, shadow contrast work) → the realism upgrade for "Present".
+- `wizard/` → **reference only** for the RoomSpec field shape; the live editor is a **Unity slider UI**, not a web form. `viewer/` → mined for the GI/lighting trick (captured irradiance probe), now reimplemented **in Unity** — not used as a renderer (A-Frame viewer is dropped).
 - `server.py`, `cloudflare/` → hosting patterns. `presets/` (kitchen, living_room) → source material for new presets.
 - Left behind on purpose: the whole Infinigen/Blender bake pipeline.

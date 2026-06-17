@@ -1,20 +1,19 @@
 # RoomSpec — the one contract
 
-**The keystone of the AI-agent room generator.** A *RoomSpec* is an engine-agnostic JSON description of a single room. Everything else hangs off it.
+**The keystone of the platform.** A *RoomSpec* is an engine-agnostic JSON description of a single room. Everything else hangs off it.
 
-> One spec → one room. Many producers (human wizard, AI agent), many consumers (Unity generator, web viewer). They never talk to each other directly — they agree on **this schema**.
+> *Note: this explains the frozen v1.0 contract. The v1.1 batch (lighting natural/artificial/bounce split, curviness + per-wall bow, furniture identity) is proposed in [docs/ROOMSPEC_V1_1.md](../docs/ROOMSPEC_V1_1.md). Current architecture: [docs/PHASE2_PLAN.md](../docs/PHASE2_PLAN.md).*
+
+> One spec → one room. Producers: a **Unity slider UI** (and an optional AI path later). Consumer: the **Unity generator** (`RoomBuilder.BuildFromSpec`), rendered as interactive web-3D or native VR. They agree on **this schema**.
 
 ```
-  "a cozy dining room, low ceiling, warm light, seats 6"
+   Unity slider UI (operator picks values within the preset envelope)   [optional later: AI structured output]
           │
-          ▼
-   AI agent (Claude/GPT, structured output)
-          │  picks a room_type preset, fills a RoomSpec WITHIN its envelope
           ▼
    RoomSpec (JSON)  ──validate against room_spec.schema.json──►  ✅ / ✗ retry
           │
-          ├──────────────►  Unity  RoomBuilder.BuildFromSpec(spec)   → built room (lab VR / renders)
-          └──────────────►  Web    viewer.loadSpec(spec)             → built room (browser, behavioral)
+          ▼
+   Unity  RoomBuilder.BuildFromSpec(spec)   → built 3D room  → web-3D (WebGL) or native VR (OpenXR)
 ```
 
 ## Two artifacts (don't confuse them)
@@ -29,9 +28,9 @@ The preset is the **envelope**; the spec is a **point inside it**. The AI's whol
 
 ## How each consumer uses it
 
-- **AI agent** — receives a natural-language brief + the relevant preset. Emits a RoomSpec via tool use / structured output, so the model is *forced* to produce schema-valid JSON. We validate; on mismatch the model retries. The AI never invents geometry — it only sets knobs and names catalog items.
-- **Unity** — deserializes the JSON (`JsonUtility` or Newtonsoft) into a `RoomSpec` C# class, then `RoomBuilder.BuildFromSpec(spec)` builds it. This is a small refactor of today's `RoomBuilder` (move the `[Range]` fields into a serializable spec object).
-- **Web viewer** — same JSON, parsed in JS, drives the existing wizard/viewer. The wizard's "create a room" form already produces almost this shape.
+- **Unity (the generator + renderer)** — deserializes the JSON (Newtonsoft; `JsonUtility` can't handle the placement `oneOf`) into a `RoomSpec` C# class, then `RoomBuilder.BuildFromSpec(spec)` builds it. Same build feeds the operator's Unity UI preview, the web-3D (WebGL) arm, and the native VR (OpenXR) arm.
+- **Unity slider UI (operator)** — binds sliders/toggles to RoomSpec fields within the preset envelope; edits apply live via `BuildFromSpec` (see [docs/VR_LIVE_EDITING.md](../docs/VR_LIVE_EDITING.md)).
+- **AI authoring (optional, later)** — a natural-language brief + preset → structured output → schema-valid RoomSpec → validate → retry on mismatch. A convenience front-door, never the only producer.
 
 ## Field tour (the short version)
 
@@ -70,7 +69,7 @@ The refactor: replace the loose fields with one `public RoomSpec spec;` and have
 **In v1 (this draft):** shell, surfaces, openings, lighting, slot-based furniture, experiment + provenance metadata.
 
 **Deferred (note them, don't build yet):**
-- Curved *walls/openings* (v1 curvature = rounded corners only — same limit as our prototype; Tawil hand-built separate kits).
+- Curved *walls/openings* (v1.0 contour = angular/curved enum only). **v1.1 adds a continuous `curviness` slider + per-wall `wall_bow` (concave/convex)** — mesh recipe + light physics in [docs/RENDERING_RESEARCH.md](../docs/RENDERING_RESEARCH.md), schema in [docs/ROOMSPEC_V1_1.md](../docs/ROOMSPEC_V1_1.md).
 - Free-form furniture placement beyond named slots.
 - Per-surface photoreal PBR sets (v1 = material enum; textures resolved by the consumer).
 - Multi-room / floorplans (v1 = one room per spec).

@@ -4,7 +4,7 @@
 
 ## 1. One-paragraph summary
 
-We are building a **platform that lets a researcher (or an undergrad in two weeks) author a control/treatment room pair differing in exactly one variable, render it realistically in the browser via Unity WebGL, run a behavioral task, and export the data.** The scientific contribution is not any single finding — it is **enforced single-variable isolation** (a validator that mechanically refuses a confounded pair) plus a **reproducible, parametric stimulus pipeline**. This proposal grounds each manipulation in the literature, defines how we measure "realistic enough" as a number, specifies tasks and required sample sizes, and argues from evidence about whether 2D/web is a valid primary outcome or VR is required.
+We are building a **platform that lets a researcher (or an undergrad in two weeks) author a control/treatment room pair differing in exactly one variable, render it realistically in the browser via Unity WebGL, run a behavioral task, and export the data.** The scientific contribution is not any single finding — it is **enforced single-variable isolation** (a validator that mechanically refuses a confounded pair) plus a **reproducible, parametric stimulus pipeline**. This proposal grounds each manipulation in the literature, defines how we measure "realistic enough" as a number, specifies tasks and required sample sizes, and argues from evidence about whether non-immersive web-3D is a valid primary outcome or VR is required. (The project is 3D-only — interactive web-3D and native VR, never flat 2D images.)
 
 ## 2. Scientific grounding — the manipulations are literature-backed, not invented
 
@@ -42,13 +42,13 @@ Kirsh's bar is "realistic enough that it gives a reliable experience of being in
 
 **Timing caveat (measured):** online platforms lag response-time recording by ~80–100 ms on average — [Bridges et al. timing mega-study, *PeerJ* 2020](https://peerj.com/articles/9414.pdf). Implication: rating and choice tasks are fine; *millisecond-precision* RT tasks need external chronometry or should be framed as accuracy-first. We state this limit up front rather than overclaiming.
 
-## 5. Modality — is 2D/web a valid primary outcome, or is VR core? (his open question, answered with evidence)
+## 5. Modality — is non-immersive web-3D a valid primary outcome, or is VR core? (his open question, answered with evidence)
 
 The literature gives a **nuanced, evidence-based answer** rather than a guess:
-- A direct comparison of **real environment vs VR vs 2D pictures** for room **memory** found real-world best, but **no difference between VR and 2D** except on one non-suggestive verbal task — [Springer *Virtual Reality* 2024](https://link.springer.com/article/10.1007/s10055-024-00999-w). → For memory/cognition tasks, **2D/web is a defensible primary outcome.**
+- A direct comparison of **real environment vs VR vs 2D pictures** for room **memory** found real-world best, but **no difference between VR and 2D** except on one non-suggestive verbal task — [Springer *Virtual Reality* 2024](https://link.springer.com/article/10.1007/s10055-024-00999-w). → For memory/cognition tasks, **non-immersive screen viewing is a defensible primary outcome.** *(We deliver this as interactive real-time web-3D — the project is 3D-only; no flat 2D images/panoramas.)*
 - For **restoration/affective** metrics, neither VR mode perfectly replicated in-situ results (cylindrical VR slightly better than HMD) — [restorative interior VR-vs-screen study, PMC 2025](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11765425/). → Presence-/restoration-sensitive outcomes are where VR earns its keep.
 
-**Recommendation to Kirsh:** ship **web/2D (and interactive web-3D) as the primary outcome for cognitive/behavioral tasks**, where evidence says it holds; treat **VR as a Phase-5 arm for restoration/presence studies**, where it measurably adds. The platform's "modality is a recorded variable, never pooled" rule is exactly the methodological discipline this evidence demands.
+**Recommendation to Kirsh:** ship **interactive web-3D as the primary outcome for cognitive/behavioral tasks** (real-time 3D rooms, no flat 2D), where evidence says non-immersive viewing holds; **native VR is the immersive end-goal arm** (live operator editing + restoration/presence studies), where immersion measurably adds. The platform's "modality is a recorded variable, never pooled" rule is exactly the methodological discipline this evidence demands. **The project is 3D-only — web-3D and VR, never 2D images.**
 
 ## 6. Landscape — what exists, and the gap we fill
 
@@ -63,7 +63,7 @@ Verdict: **buildable on the web, with a pre-defined native fallback.** Key const
 ## 8. Risks & open questions for Prof. Kirsh
 
 1. **Effect-size targets per manipulation** — we have qualitative effects; do you have target effect sizes (or pilot data) so we can finalize N per study?
-2. **Primary modality** — do you accept web/2D + web-3D as the primary outcome for the cognitive tasks (evidence in §5), reserving VR for restoration arms?
+2. **Primary modality** — do you accept interactive web-3D as the primary outcome for the cognitive tasks (evidence in §5), with native VR as the immersive arm? (Project is 3D-only — no flat 2D.)
 3. **Realism threshold** — what IPQ/presence cutoff would you consider "reliable experience of being in the room"? (We propose piloting to set it.)
 4. **First study** — which single manipulation do you want as the flagship replication: ceiling height (easiest, strongest prior), curvature (your headline interest), or windows/light (strongest restoration literature)?
 5. **MPI rooms** — can we get details on how the Max Planck stimuli were made / whether they are modifiable? It informs whether we interoperate or stay fully self-generated.
