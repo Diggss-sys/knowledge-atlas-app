@@ -22,6 +22,7 @@ namespace RoomGen.Studio
         RenderTexture treatmentPreview;
         ValidationReport report;
         VrExplorationMode vrMode;
+        DesktopWalkMode desktopWalk;
         string status = "Ready";
         GUIStyle titleStyle;
         GUIStyle headingStyle;
@@ -36,6 +37,7 @@ namespace RoomGen.Studio
         {
             RenderQualityProfiles.ApplyDesktop();
             vrMode = gameObject.AddComponent<VrExplorationMode>();
+            desktopWalk = gameObject.AddComponent<DesktopWalkMode>();
             LoadBundledPair();
             BuildPreviewWorld();
             Rebuild();
@@ -108,6 +110,13 @@ namespace RoomGen.Studio
         void OnGUI()
         {
             EnsureStyles();
+            if (desktopWalk != null && desktopWalk.IsRunning)
+            {
+                GUI.Label(new Rect(24f, 20f, Screen.width - 48f, 26f),
+                    "Walking control room (desktop)   ·   WASD move   ·   mouse look   ·   Esc to exit",
+                    labelStyle);
+                return;
+            }
             GUI.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
             GUI.Box(new Rect(0f, 0f, Screen.width, Screen.height), GUIContent.none, panelStyle);
 
@@ -234,6 +243,9 @@ namespace RoomGen.Studio
             if (GUILayout.Button("Save", GUILayout.Height(36f))) Save();
             if (GUILayout.Button("Load", GUILayout.Height(36f))) Load();
             GUILayout.EndHorizontal();
+            if (GUILayout.Button(desktopWalk.IsRunning ? "Exit desktop walk" : "Walk control (desktop)",
+                    GUILayout.Height(36f)))
+                desktopWalk.Toggle(ControlLayer, controlGenerator.LastResult?.Root, pair.Control);
             if (GUILayout.Button(vrMode.IsRunning ? "Exit VR exploration" : "Explore control in VR",
                     GUILayout.Height(36f)))
                 vrMode.Toggle(ControlLayer, pair.Control);

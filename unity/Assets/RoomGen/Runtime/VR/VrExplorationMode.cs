@@ -1,4 +1,5 @@
 using System.Collections;
+using RoomGen.Contracts;
 using RoomGen.Generation;
 using UnityEngine;
 using UnityEngine.InputSystem;
