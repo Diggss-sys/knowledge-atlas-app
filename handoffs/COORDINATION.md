@@ -22,7 +22,7 @@
 
 ## The contract-change rule (unchanged, now with more surface)
 
-The contracts are: `spec/room_spec.schema.json` · `spec/study.schema.json` · `spec/response_log.schema.json` · `spec/contracts/ENGINE_SEAM.md` · `spec/contracts/ROOM_API.md` · `spec/contracts/schema.sql` · `spec/PRESETS.md` · `spec/RESPONSE_LOG.md` · the golden fixtures in `spec/fixtures/`.
+The contracts are: `spec/room_spec.schema.json` · `spec/study.schema.json` · `spec/response_log.schema.json` · `spec/contracts/ENGINE_SEAM.md` · `spec/contracts/ROOM_API.md` · `spec/contracts/AI_AUTHORING.md` · `spec/contracts/schema.sql` · `spec/PRESETS.md` · `spec/RESPONSE_LOG.md` · the golden fixtures in `spec/fixtures/`.
 
 **Any edit to any of them = ONE PR that contains:** the contract edit + regenerated/extended fixtures + updates to every consuming implementation named in the affected handoffs + a version bump (`spec_version` / `seam_version` / schema `$id` as applicable) + a line in the ARCHITECTURE.md decision log if behavior changed. No exceptions, including "tiny" ones — the fixtures are what let six people work alone safely.
 

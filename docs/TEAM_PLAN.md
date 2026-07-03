@@ -23,7 +23,7 @@
 
 | Role | Workstream (handoff) | What they own | Suggested |
 |---|---|---|---|
-| **P1 · Operator UI** | [UNITY_UI.md](../handoffs/UNITY_UI.md) | UI Toolkit editor panel (sliders within preset ranges), live diff panel, publish gate, save/load/library browse | design/UX-leaning teammate |
+| **P1 · Operator UI** | [UNITY_UI.md](../handoffs/UNITY_UI.md) | UI Toolkit editor panel (sliders within preset ranges), live diff panel, publish gate, save/load/library browse, AI edit copilot (AI_AUTHORING contract) | design/UX-leaning teammate |
 | **P2 · Contracts & validation** | fixtures + schemas + gate parity (spread across handoffs; referee duties in [COORDINATION.md](../handoffs/COORDINATION.md)) | The schemas, `validate_pair.py` stewardship, golden fixtures, the v1.1 batch, C#/JS gate conformance review | **Diego** (owns the contract) |
 | **P3 · Data & library** | [CLOUDFLARE_DATA.md](../handoffs/CLOUDFLARE_DATA.md) | Worker + D1 + R2 per ROOM_API.md, the JS pair gate, CSV export, deploy runbook | teammate with any web/JS exposure |
 

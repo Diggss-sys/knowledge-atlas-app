@@ -8,6 +8,8 @@ We are building a **native Unity HDRP platform that generates controlled, single
 
 **What changed 2026-07-02 (v3):** the runtime is a **native HDRP Windows app**, not Unity WebGL in the browser — because a working HDRP generator already exists (adopted into `unity/`), HDRP matches the Max Planck realism precedent Kirsh cites, and the WebGL constraint stack existed only for the browser. Distribution = a double-click `.exe`; the web arm is deferred, not dropped (DL-8, DL-9).
 
+**Added 2026-07-03 (DL-15):** authoring gets an **AI copilot** (a Kirsh requirement) — describe a change in plain language, Claude proposes it, *the sliders visibly move*, and the same gate rules. The AI is just another producer of RoomSpecs — sliders remain the ground truth and are never replaced. Contract: [spec/contracts/AI_AUTHORING.md](spec/contracts/AI_AUTHORING.md); minimal copilot in the demo, design assistant in M4.
+
 ## The end goal (north star — unchanged)
 
 A **subject wears a VR headset inside a generated room**; a **second student edits the room around them live** via a slider UI on the same strong PC; fully **parametric**. Single Unity PCVR app, no networking (the `ISpecChannel` seam makes networked/standalone an add-on later). Details: [docs/VR_LIVE_EDITING.md](docs/VR_LIVE_EDITING.md).
@@ -18,7 +20,7 @@ A **subject wears a VR headset inside a generated room**; a **second student edi
  ┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐
  │ 1. AUTHOR  │    │ 2. CONTRACT│    │ 3. VALIDATE│    │ 4. GENERATE│    │ 5. COLLECT │
  │ Unity UI   │──▶ │  RoomSpec  │──▶ │ single-var │──▶ │ + RENDER   │──▶ │ task + log │
- │ sliders    │    │  (JSON)    │    │ gate (C# + │    │ UNITY HDRP │    │ rows → CSV │
+ │ sliders+AI │    │  (JSON)    │    │ gate (C# + │    │ UNITY HDRP │    │ rows → CSV │
  │ (live)     │    │ THE PRODUCT│    │ py + JS)   │    │ desktop/VR │    │ + Worker   │
  └────────────┘    └────────────┘    └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
                                            │                 │                 ▼
@@ -47,9 +49,9 @@ A **subject wears a VR headset inside a generated room**; a **second student edi
 | **2 · This package** | HDRP pivot, working generator adopted into `unity/`, contracts + fixtures + handoffs | ✅ (this PR) |
 | **M0 · Land + boot** (Jul 2–8) | Team boots Unity; fixture suite green everywhere | ▶ next |
 | **M1 · Tracer bullet** (Jul 9–15) | Committed ceiling pair → adapter → walkable desktop rooms → gate-enforced → `.exe` | |
-| **M2 · Instrument** (Jul 16–22) | Operator UI + live diff + publish gate; rating task → valid rows; fidelity pass 1 | |
-| **M3 · V1 demo** (Jul 23–Aug 1) | Author→validate→publish→run→CSV end-to-end; curved-wall pair; **Kirsh demo** | |
-| **M4 · Research-grade** (Aug) | Matched luminance (the calibrated light rig), v1.1 batch, Cloudflare library | |
+| **M2 · Instrument** (Jul 16–22) | Operator UI + live diff + publish gate; rating task → valid rows; fidelity pass 1; AI edit copilot (minimal, feature-flagged) | |
+| **M3 · V1 demo** (Jul 23–Aug 1) | Author→validate→publish→run→CSV end-to-end; curved-wall pair; **Kirsh demo** (incl. the AI copilot) | |
+| **M4 · Research-grade** (Aug) | Matched luminance (the calibrated light rig), v1.1 batch, Cloudflare library, AI design assistant | |
 | **M5 · VR arm** (Aug–Sep 15) | PCVR live-edit via `NetworkChannel`-ready seam; comfort rules | |
 
 ## Who owns what

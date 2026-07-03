@@ -83,6 +83,8 @@ Consequences: RENDERING_RESEARCH.md's WebGL constraint chain (§1) and Brotli/DP
 
 **DL-14 — Team topology 3–3–1 + AI operating model.** Seven people: Engine team (3), Platform team (3), Michael floating as integrator/QA/contract referee. Each workstream = one human + their AI, fed exactly one handoff file. Planning/architecture and the hardest Unity work run at high capability ("Fable"), routine implementation at standard capability ("Opus") — see [TEAM_PLAN.md](TEAM_PLAN.md).
 
+**DL-15 — AI authoring promoted from "optional later" to scheduled.** *(2026-07-03; a Kirsh requirement relayed by Paco.)* A natural-language authoring path — the researcher describes the change or experiment, Claude proposes it — ships as: Phase A **edit copilot**, minimal version in the demo (M2–M3, feature-flagged); Phase B **design assistant** (M4, literature-grounded pair suggestions). Architecture: the AI is **a second producer of RoomSpecs** behind the same seam and the same gate — zero special powers; sliders remain ground truth (the pre-existing "AI path is a convenience, never the only way" rule stands). Rationale for cheapness: the parametric pivot reduced "AI room editing" from the old Blender-MCP agent loop to a single structured-output call that writes JSON — the guardrails (schema validation, range clamp, publish gate) do not depend on the AI behaving. Model pinned `claude-sonnet-5`; lab/professor API key, env-only, never in builds or logs. Contract: [../spec/contracts/AI_AUTHORING.md](../spec/contracts/AI_AUTHORING.md); implementation lives in the operator-UI workstream (UNITY_UI step U5).
+
 ## 5. Risk register (v3 — replaces TECH_FEASIBILITY.md's WebGL-era table)
 
 | Risk | Severity | When known | Mitigation / fallback |

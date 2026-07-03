@@ -18,10 +18,11 @@ The scientific centerpiece of your UI is the **live diff panel + publish gate**:
 - `spec/study.schema.json` — what publish produces (embedded snapshots + validation stamp + task config).
 - `spec/fixtures/diff_vectors.json` — your diff-panel rendering logic is tested against these cases (green/red + which codes show).
 - `spec/contracts/ROOM_API.md` — the library browse/save calls (OPTIONAL in v1; local save/load is the requirement, Cloudflare is P3's endpoint to wire when ready).
+- `spec/contracts/AI_AUTHORING.md` — the NL edit copilot you host (step U5): the `IAiAuthor` interface, wire protocol, guardrails, and acceptance checks.
 
 ## Scope / NOT scope
 
-**Yours:** the UI Toolkit panel (sliders/dropdowns/toggles bound to RoomSpec fields within preset ranges) · control/treatment pair workflow (save control → duplicate → edit treatment) · live diff panel · publish gate + study creation (task type + config form) · local save/load (specs + studies as JSON in `Application.persistentDataPath`) · camera-mode switcher (walk/orbit) for preview.
+**Yours:** the UI Toolkit panel (sliders/dropdowns/toggles bound to RoomSpec fields within preset ranges) · control/treatment pair workflow (save control → duplicate → edit treatment) · live diff panel · publish gate + study creation (task type + config form) · local save/load (specs + studies as JSON in `Application.persistentDataPath`) · camera-mode switcher (walk/orbit) for preview · the **AI edit copilot** text box (U5, per AI_AUTHORING.md — feature-flagged; the AI is just a second producer of specs, your sliders stay ground truth).
 **NOT yours:** rendering/generation (E1) · running participants (E3 — you produce the study document, the runner consumes it) · the Worker (P3) · gate SEMANTICS (P2 owns the validator; you render its output, never re-implement the rules).
 
 ## Build steps (in order)
@@ -31,6 +32,7 @@ The scientific centerpiece of your UI is the **live diff panel + publish gate**:
 3. **U2 — Pair workflow + live diff.** "Set as control" freezes a copy; editing continues on the treatment; a declared-variable picker (from `manipulable_variables`); the diff panel renders `validation` live: PASS state (green, "differs only in: shell.ceiling_height_m", coupled-variable notes listed) and FAIL state (red, per-violation rows with code + path + message). *DoD: reproducing each diff_vectors case in the UI shows exactly its expected codes.*
 4. **U3 — Publish gate.** "Publish study" form (title, hypothesis, task type + config per `study.schema.json`) enabled ONLY when validation.ok; emits a schema-valid study JSON with embedded spec snapshots + the validation stamp; saves locally; POSTs to `PUT /studies` when P3's Worker exists (feature-flag it). *DoD: a published study validates against `study.schema.json`; publish is provably impossible for the confounded fixture pair.*
 5. **U4 — Library + polish.** Local library browse (saved rooms/pairs/studies with thumbnails via `capture_screenshot`); replace the legacy IMGUI studio in a coordinated PR with E1. *(M2 milestone.)*
+6. **U5 — AI edit copilot (minimal).** Implement `spec/contracts/AI_AUTHORING.md` Phase A: a text box in the panel → `IAiAuthor.ProposeEdit` (direct REST, `claude-sonnet-5`, structured output per the contract) → validate + clamp client-side → apply through your normal debounced path so the sliders visibly move and the diff panel judges it → rationale shown; refusals rendered honestly. Feature flag `ai_author.enabled`; `ANTHROPIC_API_KEY` from env (settings override); EditMode tests against a mock `IAiAuthor` (CI needs no key). *DoD: the contract's four acceptance checks pass, including the canned-malformed-reply retry path.* *(M2–M3; demo includes it.)*
 
 ## Environment gotchas
 

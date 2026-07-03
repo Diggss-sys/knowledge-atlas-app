@@ -30,7 +30,7 @@ AUTHOR (Unity slider UI, live) → RoomSpec (JSON) → VALIDATE (single-var gate
 | [spec/ROOM_SPEC.md](spec/ROOM_SPEC.md) · [spec/room_spec.schema.json](spec/room_spec.schema.json) | The RoomSpec contract (frozen v1). |
 | [spec/PRESETS.md](spec/PRESETS.md) · [spec/presets/](spec/presets/) | The preset envelope contract + room-type presets. |
 | [spec/study.schema.json](spec/study.schema.json) · [spec/response_log.schema.json](spec/response_log.schema.json) · [spec/RESPONSE_LOG.md](spec/RESPONSE_LOG.md) | Study + data-row contracts. |
-| [spec/contracts/](spec/contracts/) | ENGINE_SEAM (ISpecChannel) · ROOM_API (Worker REST) · schema.sql (D1). |
+| [spec/contracts/](spec/contracts/) | ENGINE_SEAM (ISpecChannel) · ROOM_API (Worker REST) · AI_AUTHORING (NL copilot) · schema.sql (D1). |
 | [spec/fixtures/](spec/fixtures/) | Golden fixtures: `diff_vectors.json` (generated from the reference validator), seam messages, response rows. |
 | [spec/pairs/](spec/pairs/) · [spec/examples/](spec/examples/) | Committed control/treatment pairs + example specs. |
 | [tools/validate_pair.py](tools/validate_pair.py) | **The single-variable gate** — the reference implementation every port must match. |
