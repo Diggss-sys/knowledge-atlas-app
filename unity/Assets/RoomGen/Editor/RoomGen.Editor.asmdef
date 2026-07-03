@@ -1,0 +1,16 @@
+{
+  "name": "RoomGen.Editor",
+  "rootNamespace": "RoomGen.Editor",
+  "references": [
+    "RoomGen.Runtime",
+    "Unity.RenderPipelines.HighDefinition.Runtime",
+    "Unity.XR.Management",
+    "Unity.XR.Management.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true,
+  "overrideReferences": false,
+  "noEngineReferences": false
+}

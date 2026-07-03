@@ -1,0 +1,13 @@
+{
+  "name": "RoomGen.Runtime",
+  "rootNamespace": "RoomGen",
+  "references": [
+    "Unity.Newtonsoft.Json",
+    "Unity.RenderPipelines.HighDefinition.Runtime",
+    "Unity.InputSystem",
+    "Unity.XR.Management"
+  ],
+  "autoReferenced": true,
+  "overrideReferences": false,
+  "noEngineReferences": false
+}

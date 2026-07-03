@@ -1,4 +1,31 @@
+# Python
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Unity generated state (commit Assets/, Packages/, ProjectSettings/ + .meta only)
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Bb]uild/
+unity/[Bb]uilds/
+unity/[Ll]ogs/
+unity/[Uu]ser[Ss]ettings/
+unity/MemoryCaptures/
+unity/Recordings/
+unity/*.csproj
+unity/*.sln
+unity/*.suo
+unity/*.user
+
+# Node / Cloudflare (P3 workstream)
+node_modules/
+**/node_modules/
+.wrangler/
+**/.wrangler/
+.dev.vars
+**/.dev.vars

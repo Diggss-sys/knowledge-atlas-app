@@ -1,0 +1,87 @@
+{
+  "_meta": {
+    "contract": "spec/contracts/ENGINE_SEAM.md (seam_version 1)",
+    "purpose": "Sample seam messages. 'valid' entries MUST be accepted by any ISpecChannel implementation; 'invalid' entries MUST be rejected with the named error code. Used by Unity EditMode tests and any future NetworkChannel implementation."
+  },
+  "valid": [
+    {
+      "name": "apply_spec_minimal",
+      "message": {
+        "seam_version": 1,
+        "kind": "apply_spec",
+        "request_id": "r-0001",
+        "payload": {
+          "spec": {
+            "spec_version": "1.0",
+            "room_type": "dining_room",
+            "shell": { "width_m": 4.5, "length_m": 6.0, "ceiling_height_m": 2.8, "contour": "angular" },
+            "surfaces": { "wall": { "material": "plaster" }, "floor": { "material": "wood" } },
+            "lighting": { "preset": "warm_evening" }
+          }
+        }
+      }
+    },
+    {
+      "name": "switch_condition_fade",
+      "message": {
+        "seam_version": 1,
+        "kind": "switch_condition",
+        "request_id": "r-0002",
+        "payload": { "condition": "treatment", "transition": "fade" }
+      }
+    },
+    {
+      "name": "set_camera_walk",
+      "message": {
+        "seam_version": 1,
+        "kind": "set_camera_mode",
+        "request_id": "r-0003",
+        "payload": { "mode": "walk" }
+      }
+    },
+    {
+      "name": "event_spec_applied_ok",
+      "message": {
+        "seam_version": 1,
+        "kind": "spec_applied",
+        "request_id": "r-0001",
+        "payload": { "ok": true, "errors": [], "build_ms": 41, "spec_sha256": "0000000000000000000000000000000000000000000000000000000000000000" }
+      }
+    },
+    {
+      "name": "event_spec_applied_failure_keeps_last_good_room",
+      "message": {
+        "seam_version": 1,
+        "kind": "spec_applied",
+        "request_id": "r-0009",
+        "payload": {
+          "ok": false,
+          "errors": [ { "code": "schema_invalid", "path": "shell.ceiling_height_m", "message": "9.9 is greater than the maximum of 4.5" } ],
+          "build_ms": 3
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "wrong_seam_version",
+      "expect_error_code": "unsupported_seam_version",
+      "message": { "seam_version": 99, "kind": "apply_spec", "request_id": "r-0004", "payload": { "spec": {} } }
+    },
+    {
+      "name": "unknown_kind",
+      "expect_error_code": "bad_request",
+      "message": { "seam_version": 1, "kind": "reticulate_splines", "request_id": "r-0005", "payload": {} }
+    },
+    {
+      "name": "missing_request_id",
+      "expect_error_code": "bad_request",
+      "message": { "seam_version": 1, "kind": "capture_screenshot", "payload": { "width": 1920, "height": 1080 } }
+    },
+    {
+      "name": "bad_transition_value",
+      "expect_error_code": "bad_request",
+      "message": { "seam_version": 1, "kind": "switch_condition", "request_id": "r-0006", "payload": { "condition": "treatment", "transition": "explode" } }
+    }
+  ]
+}
