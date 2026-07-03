@@ -23,7 +23,9 @@ The scientific centerpiece of your UI is the **live diff panel + publish gate**:
 ## Scope / NOT scope
 
 **Yours:** the UI Toolkit panel (sliders/dropdowns/toggles bound to RoomSpec fields within preset ranges) · control/treatment pair workflow (save control → duplicate → edit treatment) · live diff panel · publish gate + study creation (task type + config form) · local save/load (specs + studies as JSON in `Application.persistentDataPath`) · camera-mode switcher (walk/orbit) for preview · the **AI edit copilot** text box (U5, per AI_AUTHORING.md — feature-flagged; the AI is just a second producer of specs, your sliders stay ground truth).
-**NOT yours:** rendering/generation (E1) · running participants (E3 — you produce the study document, the runner consumes it) · the Worker (P3) · gate SEMANTICS (P2 owns the validator; you render its output, never re-implement the rules).
+**NOT yours:** rendering/generation (E1) · running participants (E3 — you produce the study document, the runner consumes it) · **the participant-facing screens** (E3's, and deliberately unthemed — see COORDINATION.md "UI surface ownership") · the Worker (P3) · gate SEMANTICS (P2 owns the validator; you render its output, never re-implement the rules).
+
+**Folder ownership:** your panels live in `unity/Assets/RoomGen/UI/Operator/`; you also own the shared base styles in `UI/Shared/` (fonts, spacing, base USS) — E3 consumes them for the participant screens, and changes to `Shared/` are reviewed by both of you.
 
 ## Build steps (in order)
 

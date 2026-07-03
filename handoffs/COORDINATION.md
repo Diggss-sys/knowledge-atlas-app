@@ -28,6 +28,22 @@ The contracts are: `spec/room_spec.schema.json` · `spec/study.schema.json` · `
 
 `diff_vectors.json` is REGENERATED (never hand-edited) by re-running the reference validator; the `_meta.reference_commit` field must move forward.
 
+## UI surface ownership (P1 vs E3 — decided 2026-07-03)
+
+Two UI surfaces, two audiences, one owner each — they deliberately do NOT share a design philosophy:
+
+| Surface | Owner | Folder | Design rule |
+|---|---|---|---|
+| **Operator cockpit** (sliders, diff panel, publish, library) | P1 | `unity/Assets/RoomGen/UI/Operator/` | P1's design judgment governs — dense, efficient, for a researcher at a desk |
+| **Participant screens** (setup, instructions, task, done) | E3 | `unity/Assets/RoomGen/UI/Runner/` | **Neutral by scientific requirement, not taste**: minimal, unthemed, identical across studies — a styled participant UI is a stimulus confound. No creativity budget here, on purpose. |
+| **Shared base styles** (fonts, spacing, base USS) + the mock seam channel | P1 (styles) / E1+E3 (mock) | `unity/Assets/RoomGen/UI/Shared/` + `unity/Assets/RoomGen/Testing/` | Changes by PR reviewed by BOTH consumers; E3 consumes the shared base and strips, never adds, visual personality |
+
+Cross-surface edits (one lane touching the other's folder) go through the other lane's owner as reviewer — same spirit as the contract-change rule.
+
+## Nobody waits on the generator (the mock-first rule)
+
+Lanes depend on E1's **interface** (ENGINE_SEAM.md + fixtures — frozen now), not its implementation. Concretely: P1 and E3 develop against the shared `MockSpecChannel` (built once in `Testing/`, replays fixture successes/errors); the diff panel renders validator output (exists now); E3's row writer tests against the golden rows (exist now); E2 works on the legacy studio scene (renders the dining room on first boot); P3 never touches Unity. The real-generator dependency is concentrated at ONE planned moment — the mock→real swap at the M1 tracer bullet — not spread across everyone's daily work. If a lane finds itself "waiting on E1" before M1, that's a smell: the work should be restated against the mock + fixtures, or the missing fixture should be added (contract-change rule).
+
 ## The tracer-bullet checklist (M1 exit — integration proven end-to-end)
 
 Run top to bottom on ONE machine (the strong PC), from a fresh clone:

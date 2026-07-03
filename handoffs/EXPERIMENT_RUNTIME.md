@@ -23,6 +23,8 @@ Data honesty is the whole game: rows are written immediately (local append + que
 **Yours:** the participant flow (participant-id entry → instructions → room exploration → task screens → done) · seeded trial ordering (`System.Random(seed)`; the seed goes in every row) · per-trial row writing (local CSV in canonical column order + queued POST with retry + `UNIQUE(session_id, trial_index)` idempotency) · session provenance log · the Windows build stays green (`RoomGen ▸ Build Windows Application`).
 **NOT yours:** authoring/validation UI (P1) · rendering (E1) · the Worker itself (P3) · new task types without a contract change (COORDINATION.md rule).
 
+**Design rule for YOUR screens (non-negotiable):** the participant screens are part of the stimulus environment, so they are **neutral by scientific requirement** — minimal, unthemed, no animations or visual personality, identical across every study. Anything visually loud is a confound. Consume P1's base styles from `unity/Assets/RoomGen/UI/Shared/`; your screens live in `UI/Runner/`; there is deliberately no creativity budget here (see COORDINATION.md "UI surface ownership").
+
 ## The v1 participant flow (build exactly this)
 
 1. **Setup screen** (operator-facing): pick a study JSON (file dialog or library), enter/generate `participant_id`, auto-generate `session_id` (GUID) + `presentation_order_seed`.
