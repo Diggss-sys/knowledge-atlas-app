@@ -126,7 +126,7 @@ namespace RoomGen.Editor
             PlayerSettings.defaultIsNativeResolution = true;
             PlayerSettings.fullScreenMode = FullScreenMode.FullScreenWindow;
             PlayerSettings.SetApiCompatibilityLevel(
-                BuildTargetGroup.Standalone, ApiCompatibilityLevel.NET_Standard_2_1);
+                BuildTargetGroup.Standalone, ApiCompatibilityLevel.NET_Standard);
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64, new[]
             {
