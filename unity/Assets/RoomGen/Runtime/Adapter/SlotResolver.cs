@@ -85,11 +85,14 @@ namespace RoomGen.Adapter
             switch (def.Kind)
             {
                 case SlotKind.Absolute:
+                    // Ceiling slots set the MOUNT FLAG rather than baking the ceiling height into Y:
+                    // the builder derives the actual height, so pair diffs stay clean when the
+                    // ceiling is the manipulated variable.
                     return new ResolvedSlot
                     {
                         X = def.XM,
                         Z = def.ZM,
-                        Y = def.Ceiling ? geometry.CeilingHeightM : 0f,
+                        Y = 0f,
                         RotationYDeg = def.RotationDeg,
                         CeilingMounted = def.Ceiling
                     };

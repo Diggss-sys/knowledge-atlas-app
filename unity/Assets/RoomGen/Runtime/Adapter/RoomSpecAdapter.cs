@@ -301,6 +301,7 @@ namespace RoomGen.Adapter
         {
             item.PositionM = new Vec3(slot.X, slot.Y, slot.Z);
             item.RotationYDeg = slot.RotationYDeg;
+            item.CeilingMounted = slot.CeilingMounted;
         }
 
         static void AdaptProvenance(JObject root, RoomSpec spec)

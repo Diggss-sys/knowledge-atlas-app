@@ -82,13 +82,16 @@ namespace RoomGen.Tests
         }
 
         [Test]
-        public void Pendant_mounts_at_the_ceiling_over_the_table()
+        public void Pendant_is_ceiling_mounted_over_the_table()
         {
             var spec = RoomSpecAdapter.Adapt(Control).Spec;
             var pendant = Item(spec, "above_table");
             Assert.AreEqual(0f, pendant.PositionM.X, Eps);
             Assert.AreEqual(0f, pendant.PositionM.Z, Eps);
-            Assert.AreEqual(3.2f, pendant.PositionM.Y, Eps); // ceiling plane of the control room
+            // Mounting is a FLAG, not a baked Y: the builder derives the height from the room's own
+            // ceiling, so a ceiling-height manipulation never creates a furniture diff in the pair.
+            Assert.IsTrue(pendant.CeilingMounted);
+            Assert.AreEqual(0f, pendant.PositionM.Y, Eps);
         }
 
         [Test]

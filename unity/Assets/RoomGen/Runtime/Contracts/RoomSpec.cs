@@ -70,6 +70,10 @@ namespace RoomGen.Contracts
         [JsonProperty("position_m")] public Vec3 PositionM = new Vec3();
         [JsonProperty("rotation_y_deg")] public float RotationYDeg;
         [JsonProperty("footprint_m")] public Vec2 FootprintM = new Vec2(1f, 1f);
+        // Ceiling-mounted items (e.g. a pendant light) hang from the ceiling PLANE: the builder
+        // derives their Y from geometry.ceiling_height_m at build time, so PositionM.Y stays 0 and a
+        // ceiling-height manipulation does NOT create a spurious furniture difference in pair diffs.
+        [JsonProperty("ceiling_mounted")] public bool CeilingMounted;
     }
 
     [Serializable]

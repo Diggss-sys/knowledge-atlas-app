@@ -111,7 +111,7 @@ namespace RoomGen.Tests
         }
 
         [Test]
-        public void Pair_differs_only_in_ceiling_height_and_its_derived_ceiling_mounts()
+        public void Pair_differs_only_in_ceiling_height()
         {
             var control = RoomSpecAdapter.Adapt(Control).Spec;
             var treatment = RoomSpecAdapter.Adapt(Treatment).Spec;
@@ -119,21 +119,36 @@ namespace RoomGen.Tests
             Assert.AreNotEqual(control.Geometry.CeilingHeightM, treatment.Geometry.CeilingHeightM,
                 "sanity: the two conditions must differ in ceiling height");
 
-            // The pendant is CEILING-MOUNTED, so its derived Y moves with the declared ceiling
-            // change — a physical coupling (same family as Diego's ceiling->illuminance coupled-vars
-            // note), not a confound: the canonical spec still differs only in shell.ceiling_height_m.
-            var pendantControl = control.Furniture.Find(f => f.SlotId == "above_table");
-            var pendantTreatment = treatment.Furniture.Find(f => f.SlotId == "above_table");
-            Assert.AreEqual(control.Geometry.CeilingHeightM, pendantControl.PositionM.Y, 1e-3f);
-            Assert.AreEqual(treatment.Geometry.CeilingHeightM, pendantTreatment.PositionM.Y, 1e-3f);
-
-            // Normalise the declared variable + its derived mount; the rest must be byte-identical.
+            // Ceiling mounting is a flag (the builder derives the height), so even the pendant's
+            // spec entry is identical across the pair: equalising the ONE declared variable must
+            // make the two adapted specs byte-identical.
             treatment.Geometry.CeilingHeightM = control.Geometry.CeilingHeightM;
-            pendantTreatment.PositionM = new Vec3(
-                pendantTreatment.PositionM.X, pendantControl.PositionM.Y, pendantTreatment.PositionM.Z);
             Assert.AreEqual(RoomJson.Serialize(control), RoomJson.Serialize(treatment),
-                "after equalising ceiling height (and the ceiling-mounted pendant's derived Y) the "
-                + "adapted control and treatment must be identical");
+                "after equalising ceiling height the adapted control and treatment must be identical");
+        }
+
+        [Test]
+        public void Adapted_pair_passes_the_internal_validators()
+        {
+            // Regression for the black-screen bug: RoomGenerator refuses to BUILD a spec with
+            // validation errors, and PairValidator gates the studio's export. The adapted canonical
+            // pair must clear both — with the real DiningRoomPreset loaded, exactly as at runtime.
+            var preset = RoomJson.Deserialize<DiningRoomPreset>(
+                UnityEngine.Resources.Load<UnityEngine.TextAsset>("RoomGen/DiningRoomPreset").text);
+
+            var pair = RoomSpecAdapter.AdaptPair(Control, Treatment);
+            foreach (var (spec, label) in new[] { (pair.Control, "control"), (pair.Treatment, "treatment") })
+            {
+                var issues = RoomGen.Validation.RoomSpecValidator.Validate(spec, preset);
+                Assert.IsFalse(issues.Exists(i => i.Severity == "error"),
+                    label + " has validation errors: " + string.Join("; ",
+                        issues.ConvertAll(i => i.Code + " " + i.Path + " " + i.Message)));
+            }
+
+            var report = RoomGen.Validation.PairValidator.Validate(pair);
+            Assert.IsTrue(report.Ok, "pair check failed: " + string.Join("; ",
+                report.Issues.ConvertAll(i => i.Code + " " + i.Path + " " + i.Message))
+                + " | changed: " + string.Join(", ", report.ChangedFields));
         }
 
         [Test]

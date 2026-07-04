@@ -22,8 +22,11 @@ namespace RoomGen.Generation
                 var item = new GameObject(placement.SlotId + " [" + placement.AssetId + "]");
                 item.layer = layer;
                 item.transform.SetParent(root.transform, false);
+                // Ceiling-mounted items derive their height from the room, not from the spec value —
+                // see FurniturePlacementSpec.CeilingMounted.
+                var y = placement.CeilingMounted ? spec.Geometry.CeilingHeightM : placement.PositionM.Y;
                 item.transform.localPosition = new Vector3(
-                    placement.PositionM.X, placement.PositionM.Y, placement.PositionM.Z);
+                    placement.PositionM.X, y, placement.PositionM.Z);
                 item.transform.localRotation = Quaternion.Euler(0f, placement.RotationYDeg, 0f);
 
                 var resourceId = placement.AssetId.Replace('.', '-');

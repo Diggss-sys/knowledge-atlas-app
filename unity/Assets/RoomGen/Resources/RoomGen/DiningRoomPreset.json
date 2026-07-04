@@ -14,17 +14,14 @@
   ],
   "lighting_preset_ids": [
     "builtin.recessed-neutral",
-    "builtin.recessed-warm"
+    "builtin.recessed-warm",
+    "builtin.neutral_daylight",
+    "builtin.warm_evening",
+    "builtin.cool_clinical",
+    "builtin.dim",
+    "builtin.bright_office"
   ],
   "required_slots": [
-    "table-center",
-    "chair-north-left",
-    "chair-north-right",
-    "chair-south-left",
-    "chair-south-right",
-    "chair-west",
-    "chair-east",
-    "sideboard-back",
-    "plant-back-right"
+    "table_center"
   ]
 }

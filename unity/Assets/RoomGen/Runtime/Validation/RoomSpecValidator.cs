@@ -50,7 +50,7 @@ namespace RoomGen.Validation
                 CheckCatalog(issues, "surfaces.ceiling_material_id", spec.Surfaces.CeilingMaterialId, preset.MaterialIds);
                 CheckCatalog(issues, "lighting.preset_id", spec.Lighting.PresetId, preset.LightingPresetIds);
                 foreach (var requiredSlot in preset.RequiredSlots)
-                    if (!spec.Furniture.Exists(item => item.SlotId == requiredSlot))
+                    if (!spec.Furniture.Exists(item => SlotIdsMatch(item.SlotId, requiredSlot)))
                         issues.Add(Error("REQUIRED_SLOT", "furniture",
                             $"Required furniture slot '{requiredSlot}' is missing."));
             }
@@ -132,13 +132,17 @@ namespace RoomGen.Validation
                         "Furniture footprint crosses a curved corner."));
 
                 foreach (var opening in room.Openings)
-                    if (BlocksOpening(room, item, opening))
+                    if (!item.CeilingMounted && BlocksOpening(room, item, opening))
                         issues.Add(Error("FURNITURE_OPENING_COLLISION", $"furniture[{i}]",
                             $"Furniture blocks opening '{opening.OpeningId}'."));
 
                 for (var j = i + 1; j < room.Furniture.Count; j++)
                 {
                     var other = room.Furniture[j];
+                    // Footprints only collide within the same plane: a ceiling-mounted pendant over
+                    // the table is correct, not a collision.
+                    if (item.CeilingMounted != other.CeilingMounted)
+                        continue;
                     var overlapsX = Mathf.Abs(item.PositionM.X - other.PositionM.X) <
                                     (item.FootprintM.X + other.FootprintM.X) * 0.5f;
                     var overlapsZ = Mathf.Abs(item.PositionM.Z - other.PositionM.Z) <
@@ -210,6 +214,11 @@ namespace RoomGen.Validation
         static bool IsSideWall(string wall) =>
             string.Equals(wall, "left", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(wall, "right", StringComparison.OrdinalIgnoreCase);
+
+        // Slot ids appear in two dialects: the legacy internal "table-center" and the canonical
+        // Knowledge-Atlas "table_center". Compare them dash/underscore-insensitively.
+        static bool SlotIdsMatch(string a, string b) =>
+            string.Equals(a?.Replace('-', '_'), b?.Replace('-', '_'), StringComparison.OrdinalIgnoreCase);
 
         static void CheckRange(List<ValidationIssue> issues, string path, float value, float min, float max)
         {
