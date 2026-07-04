@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using RoomGen.Contracts;
 using UnityEngine;
@@ -23,12 +25,16 @@ namespace RoomGen.VR
         const float Gravity = 9.81f;
         const float PitchLimit = 85f;
 
+        const float HalfFadeSeconds = 0.11f; // each half of the crossfade; total ~= RoomRuntime.FadeMs
+
         Transform rig;
         CharacterController controller;
         Camera walkCamera;
         float pitch;
         float verticalVelocity;
         bool running;
+        bool switching;
+        float fadeAlpha;
         readonly List<Collider> suppressed = new List<Collider>();
 
         public bool IsRunning => running;
@@ -99,9 +105,62 @@ namespace RoomGen.VR
             cameraObject.AddComponent<AudioListener>();
         }
 
+        /// <summary>
+        /// While walking, crossfade to a different condition's room (seam switch_condition/fade). The
+        /// room is rebuilt at the black midpoint via <paramref name="rebuildAtBlack"/> (which returns
+        /// the new room root), so the swap is never seen — matching the seam's fade transition.
+        /// </summary>
+        public void SwitchTo(int layer, RoomSpec spec, Func<GameObject> rebuildAtBlack)
+        {
+            if (!running) return;
+            StopAllCoroutines();
+            StartCoroutine(FadeSwitch(layer, spec, rebuildAtBlack));
+        }
+
+        IEnumerator FadeSwitch(int layer, RoomSpec spec, Func<GameObject> rebuildAtBlack)
+        {
+            switching = true;
+            yield return Fade(0f, 1f);                 // to black
+
+            foreach (var col in suppressed) if (col != null) col.enabled = true;
+            suppressed.Clear();
+
+            var root = rebuildAtBlack?.Invoke();       // rebuild the target room while the screen is black
+            if (root != null) EnsureColliders(root);
+            SuppressOtherLayers(layer);
+
+            if (rig != null) Destroy(rig.gameObject);
+            CreateRig(layer, spec);
+            yield return null;                          // let the new rig register a frame
+
+            yield return Fade(1f, 0f);                  // from black
+            switching = false;
+        }
+
+        IEnumerator Fade(float from, float to)
+        {
+            var t = 0f;
+            while (t < HalfFadeSeconds)
+            {
+                t += Time.unscaledDeltaTime;
+                fadeAlpha = Mathf.Lerp(from, to, t / HalfFadeSeconds);
+                yield return null;
+            }
+            fadeAlpha = to;
+        }
+
+        void OnGUI()
+        {
+            if (fadeAlpha <= 0f) return;
+            var previous = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, Mathf.Clamp01(fadeAlpha));
+            GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
+            GUI.color = previous;
+        }
+
         void Update()
         {
-            if (!running || rig == null || controller == null) return;
+            if (!running || switching || rig == null || controller == null) return;
 
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {

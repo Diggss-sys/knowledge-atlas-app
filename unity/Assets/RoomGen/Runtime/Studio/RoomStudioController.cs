@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using KnowledgeAtlas.Seam;
 using RoomGen.Adapter;
 using RoomGen.Contracts;
 using RoomGen.Export;
@@ -8,6 +9,7 @@ using RoomGen.Generation;
 using RoomGen.Validation;
 using RoomGen.VR;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace RoomGen.Studio
 {
@@ -15,15 +17,29 @@ namespace RoomGen.Studio
     {
         const int ControlLayer = 8;
         const int TreatmentLayer = 9;
+        const int WalkLayer = 10; // the seam-driven single-room walk view (separate from the two previews)
 
         ConditionPairSpec pair;
         RoomGenerator controlGenerator;
         RoomGenerator treatmentGenerator;
+        RoomGenerator walkGenerator;
         RenderTexture controlPreview;
         RenderTexture treatmentPreview;
         ValidationReport report;
         VrExplorationMode vrMode;
         DesktopWalkMode desktopWalk;
+
+        // G4/G5 seam: the walk view is driven through ISpecChannel so it exercises the real runtime
+        // (atomic apply, gate, provenance log) exactly as the experiment runtime / networked VR will.
+        LocalChannel seamChannel;
+        RoomRuntime seamRuntime;
+        string canonicalControlJson;
+        string canonicalTreatmentJson;
+        string activeWalkCondition = "control";
+        bool walkingSeam;
+        string seamStatus = "";
+        int requestCounter;
+
         string status = "Ready";
         GUIStyle titleStyle;
         GUIStyle headingStyle;
@@ -41,7 +57,45 @@ namespace RoomGen.Studio
             desktopWalk = gameObject.AddComponent<DesktopWalkMode>();
             LoadBundledPair();
             BuildPreviewWorld();
+            SetUpSeam();
             Rebuild();
+        }
+
+        void SetUpSeam()
+        {
+            var schema = Resources.Load<TextAsset>("RoomGen/room_spec.schema");
+            if (schema == null) return; // seam walk unavailable without the schema; previews still work
+            seamRuntime = new RoomRuntime(walkGenerator, schema.text);
+            var logPath = Path.Combine(Application.persistentDataPath, "seam-session.jsonl");
+            seamChannel = new LocalChannel(seamRuntime, logPath);
+            seamChannel.OnEvent += OnSeamEvent;
+        }
+
+        void OnSeamEvent(SeamEvent ev)
+        {
+            switch (ev.Kind)
+            {
+                case SeamCodes.PairLoaded:
+                    seamStatus = ev.Ok
+                        ? "Seam: pair PASS  ·  diff [" + string.Join(", ", ev.PairDiffPaths) + "]"
+                        : "Seam: pair REFUSED  ·  [" + string.Join(", ", ev.PairViolationCodes) + "]";
+                    break;
+                case SeamCodes.ConditionSwitched:
+                    seamStatus = $"Seam: showing {ev.Condition}  ·  {ev.Transition} {ev.Ms} ms";
+                    break;
+                case SeamCodes.SpecApplied:
+                    if (!ev.Ok) seamStatus = "Seam: apply REFUSED  ·  [" + string.Join(", ", ev.ErrorCodes) + "]";
+                    break;
+            }
+        }
+
+        void Update()
+        {
+            if (walkingSeam && (desktopWalk == null || !desktopWalk.IsRunning))
+                walkingSeam = false; // walker exited via Esc
+            if (walkingSeam && desktopWalk.IsRunning &&
+                Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame)
+                SwitchWalkCondition();
         }
 
         void OnDestroy()
@@ -62,6 +116,7 @@ namespace RoomGen.Studio
         {
             controlGenerator = CreateGenerator("Control Generator", ControlLayer);
             treatmentGenerator = CreateGenerator("Treatment Generator", TreatmentLayer);
+            walkGenerator = CreateGenerator("Walk Generator", WalkLayer);
             controlPreview = CreatePreviewCamera("Control Camera", ControlLayer);
             treatmentPreview = CreatePreviewCamera("Treatment Camera", TreatmentLayer);
         }
@@ -113,9 +168,10 @@ namespace RoomGen.Studio
             EnsureStyles();
             if (desktopWalk != null && desktopWalk.IsRunning)
             {
-                GUI.Label(new Rect(24f, 20f, Screen.width - 48f, 26f),
-                    "Walking room (desktop)   ·   WASD move   ·   mouse look   ·   Esc to exit",
-                    labelStyle);
+                var hint = walkingSeam
+                    ? "Walking (seam · " + activeWalkCondition + ")   ·   WASD move   ·   mouse look   ·   Tab: switch condition (fade)   ·   Esc to exit"
+                    : "Walking room (desktop)   ·   WASD move   ·   mouse look   ·   Esc to exit";
+                GUI.Label(new Rect(24f, 20f, Screen.width - 48f, 26f), hint, labelStyle);
                 return;
             }
             GUI.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
@@ -238,6 +294,8 @@ namespace RoomGen.Studio
                 foreach (var issue in report.Issues.Take(3))
                     GUILayout.Label(issue.Path + ": " + issue.Message, labelStyle);
             }
+            if (!string.IsNullOrEmpty(seamStatus))
+                GUILayout.Label(seamStatus, labelStyle);
 
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Load KA spec pair (adapter)", GUILayout.Height(32f)))
@@ -250,6 +308,13 @@ namespace RoomGen.Studio
                 desktopWalk.Toggle(ControlLayer, controlGenerator.LastResult?.Root, pair.Control);
             if (GUILayout.Button("Walk treatment (desktop)", GUILayout.Height(36f)))
                 desktopWalk.Toggle(TreatmentLayer, treatmentGenerator.LastResult?.Root, pair.Treatment);
+            if (seamChannel != null && canonicalControlJson != null)
+            {
+                GUI.enabled = walkGenerator.LastResult?.Root != null;
+                if (GUILayout.Button(walkingSeam ? "Exit seam walk" : "Walk pair via seam", GUILayout.Height(36f)))
+                    ToggleSeamWalk();
+                GUI.enabled = true;
+            }
             if (GUILayout.Button(vrMode.IsRunning ? "Exit VR exploration" : "Explore control in VR",
                     GUILayout.Height(36f)))
                 vrMode.Toggle(ControlLayer, pair.Control);
@@ -331,10 +396,46 @@ namespace RoomGen.Studio
                 status = "KA spec fixtures not found under Resources/RoomGen/Examples.";
                 return;
             }
+            canonicalControlJson = control.text;
+            canonicalTreatmentJson = treatment.text;
             pair = RoomSpecAdapter.AdaptPair(control.text, treatment.text);
             Rebuild();
+            // Drive the SAME pair through the seam: gates it (pair_loaded) and builds the single-room
+            // walk view in the walk generator. The dual preview above is the operator design view.
+            activeWalkCondition = "control";
+            seamChannel?.LoadPair(canonicalControlJson, canonicalTreatmentJson, NextRequestId());
             status = "KA pair adapted (spec -> adapter -> rooms). " + status;
         }
+
+        void ToggleSeamWalk()
+        {
+            if (desktopWalk.IsRunning)
+            {
+                desktopWalk.StopSession();
+                walkingSeam = false;
+                return;
+            }
+            var spec = activeWalkCondition == "treatment" ? pair.Treatment : pair.Control;
+            desktopWalk.Toggle(WalkLayer, walkGenerator.LastResult?.Root, spec);
+            walkingSeam = desktopWalk.IsRunning;
+        }
+
+        // Seam switch_condition(fade): rebuild the other condition in the walk generator at the fade's
+        // black midpoint, then re-target the walker to it — the swap is never seen.
+        void SwitchWalkCondition()
+        {
+            if (!walkingSeam || !desktopWalk.IsRunning) return;
+            var next = activeWalkCondition == "control" ? "treatment" : "control";
+            var nextSpec = next == "treatment" ? pair.Treatment : pair.Control;
+            desktopWalk.SwitchTo(WalkLayer, nextSpec, () =>
+            {
+                seamChannel.SwitchCondition(next, "fade", NextRequestId()); // runtime rebuilds walkGenerator
+                activeWalkCondition = next;
+                return walkGenerator.LastResult?.Root;
+            });
+        }
+
+        string NextRequestId() => "r-" + (++requestCounter).ToString("0000");
 
         static string Friendly(string id) =>
             id.Replace("builtin.", "").Replace('-', ' ');
