@@ -37,7 +37,10 @@ namespace RoomGen.Tests
                 CornerRadiusM = 0.8f
             };
             var path = FootprintPath.Build(geometry, 12);
-            Assert.That(path.Count, Is.EqualTo(48));
+            // 4 corner arcs x 12 segments; the very first arc also contributes its inclusive start
+            // point (a real corner vertex), and consecutive arcs deduplicate their shared endpoints:
+            // 13 + 12 + 12 + 12 = 49 distinct points, closed implicitly by the polygon edge.
+            Assert.That(path.Count, Is.EqualTo(4 * 12 + 1));
             Assert.That(path.TrueForAll(point =>
                 Mathf.Abs(point.x) <= geometry.WidthM * 0.5f + 0.0001f &&
                 Mathf.Abs(point.y) <= geometry.LengthM * 0.5f + 0.0001f), Is.True);
@@ -69,7 +72,9 @@ namespace RoomGen.Tests
         static List<string> Snapshot(Transform root)
         {
             var rows = new List<string>();
-            AddRows(root, root.name, rows);
+            // Snapshot under a constant label: the two builds are deliberately named "Left"/"Right",
+            // so including the real root name would make every row differ by construction.
+            AddRows(root, "ROOT", rows);
             return rows;
         }
 

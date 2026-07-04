@@ -65,6 +65,9 @@ namespace RoomGen.Generation
                 case "builtin.plant":
                     BuildPlant(parent, surfaces, layer);
                     break;
+                case "builtin.pendant-light":
+                    BuildPendant(parent, surfaces, layer);
+                    break;
                 default:
                     BuildPlaceholder(parent, null, surfaces, layer);
                     break;
@@ -88,8 +91,10 @@ namespace RoomGen.Generation
             var fabric = surfaces.Resolve("builtin.fabric-charcoal");
             GenerationUtil.CreateBox("Seat", parent, new Vector3(0.5f, 0.1f, 0.5f),
                 new Vector3(0f, 0.48f, 0f), fabric, layer);
+            // Backrest on the item's -z side: contract convention is rotation 0 = the sitter FACES +z
+            // (spec/PRESETS.md rotation table). The backrest sits behind the sitter.
             GenerationUtil.CreateBox("Back", parent, new Vector3(0.5f, 0.62f, 0.08f),
-                new Vector3(0f, 0.78f, 0.21f), fabric, layer);
+                new Vector3(0f, 0.78f, -0.21f), fabric, layer);
             foreach (var x in new[] { -0.19f, 0.19f })
             foreach (var z in new[] { -0.19f, 0.19f })
                 GenerationUtil.CreateBox("Leg", parent, new Vector3(0.055f, 0.45f, 0.055f),
@@ -124,6 +129,23 @@ namespace RoomGen.Generation
             GenerationUtil.CreateBox("Plant", parent, new Vector3(0.45f, 1.05f, 0.45f),
                 new Vector3(0f, 0.95f, 0f), green, layer,
                 Quaternion.Euler(0f, 25f, 25f));
+        }
+
+        // Ceiling-mounted: the item's origin is placed AT the ceiling plane (SlotResolver ceiling
+        // slots), so the fixture is built hanging DOWNWARD from local y = 0.
+        static void BuildPendant(Transform parent, SurfaceResolver surfaces, int layer)
+        {
+            var metal = surfaces.Resolve("builtin.metal-black");
+            var shade = surfaces.Resolve("builtin.warm-white");
+            GenerationUtil.CreateBox("Cord", parent, new Vector3(0.02f, 0.5f, 0.02f),
+                new Vector3(0f, -0.25f, 0f), metal, layer);
+            var shadeObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            shadeObject.name = "Shade";
+            shadeObject.layer = layer;
+            shadeObject.transform.SetParent(parent, false);
+            shadeObject.transform.localPosition = new Vector3(0f, -0.58f, 0f);
+            shadeObject.transform.localScale = new Vector3(0.38f, 0.09f, 0.38f);
+            shadeObject.GetComponent<MeshRenderer>().sharedMaterial = shade;
         }
 
         static void BuildPlaceholder(

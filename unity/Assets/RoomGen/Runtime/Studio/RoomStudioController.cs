@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using RoomGen.Adapter;
 using RoomGen.Contracts;
 using RoomGen.Export;
 using RoomGen.Generation;
@@ -239,6 +240,8 @@ namespace RoomGen.Studio
             }
 
             GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Load KA spec pair (adapter)", GUILayout.Height(32f)))
+                LoadKaPair();
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save", GUILayout.Height(36f))) Save();
             if (GUILayout.Button("Load", GUILayout.Height(36f))) Load();
@@ -315,6 +318,22 @@ namespace RoomGen.Studio
         {
             var result = RoomPackageExporter.Export(pair);
             status = result.Ok ? "Exported: " + result.PackagePath : result.Message;
+        }
+
+        // G2: build the rooms from the CANONICAL Knowledge-Atlas pair via RoomSpecAdapter —
+        // end-to-end proof that Diego's contract drives this generator.
+        void LoadKaPair()
+        {
+            var control = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control");
+            var treatment = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment");
+            if (control == null || treatment == null)
+            {
+                status = "KA spec fixtures not found under Resources/RoomGen/Examples.";
+                return;
+            }
+            pair = RoomSpecAdapter.AdaptPair(control.text, treatment.text);
+            Rebuild();
+            status = "KA pair adapted (spec -> adapter -> rooms). " + status;
         }
 
         static string Friendly(string id) =>

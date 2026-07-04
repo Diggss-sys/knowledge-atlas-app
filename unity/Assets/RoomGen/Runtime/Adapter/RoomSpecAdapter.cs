@@ -223,6 +223,11 @@ namespace RoomGen.Adapter
             spec.Furniture = new List<FurniturePlacementSpec>();
             if (!(root["furniture"] is JArray arr)) return;
 
+            var layout = SlotResolver.LayoutFor(Str(root, "room_type", "room"));
+            if (layout == null)
+                r.Warnings.Add($"room_type '{Str(root, "room_type", "?")}' has no slot layout; slot-placed furniture lands at the origin.");
+
+            // Pass 1 — map items (asset + footprint + slot), honour explicit coordinates immediately.
             foreach (var token in arr)
             {
                 if (!(token is JObject f)) continue;
@@ -245,13 +250,11 @@ namespace RoomGen.Adapter
                     AssetId = asset,
                     SlotId = placement?.Value<string>("slot") ?? "explicit",
                     FootprintM = new Vec2(footprintX, footprintZ),
-                    // PART B (Fable): SlotResolver resolves PositionM + RotationYDeg from the preset's
-                    // layout_slots per spec/PRESETS.md. Left at the origin here.
                     PositionM = new Vec3(0f, 0f, 0f),
                     RotationYDeg = 0f
                 };
 
-                // KA also allows explicit-coordinate placement ({x_m, z_m, rotation_deg}); honour it so it isn't lost.
+                // KA also allows explicit-coordinate placement ({x_m, z_m, rotation_deg}).
                 if (placement?["x_m"] != null)
                 {
                     item.SlotId = "explicit";
@@ -261,6 +264,43 @@ namespace RoomGen.Adapter
 
                 spec.Furniture.Add(item);
             }
+
+            if (layout == null) return;
+
+            // Pass 2 — resolve ABSOLUTE and WALL slots (these can anchor others).
+            var resolved = new Dictionary<string, (SlotResolver.ResolvedSlot pos, Vec2 footprint)>();
+            foreach (var item in spec.Furniture)
+            {
+                if (item.SlotId == "explicit") continue;
+                if (!layout.TryGetValue(item.SlotId, out var def) || def.Kind == SlotResolver.SlotKind.Relative)
+                    continue;
+                var slot = SlotResolver.Resolve(item.SlotId, item.FootprintM, layout, spec.Geometry, null, r.Warnings);
+                Apply(item, slot);
+                resolved[item.SlotId] = (slot, item.FootprintM);
+            }
+
+            // Pass 3 — resolve RELATIVE slots against the placed anchors.
+            foreach (var item in spec.Furniture)
+            {
+                if (item.SlotId == "explicit") continue;
+                if (!layout.TryGetValue(item.SlotId, out var def) || def.Kind != SlotResolver.SlotKind.Relative)
+                {
+                    if (!layout.ContainsKey(item.SlotId))
+                        SlotResolver.Resolve(item.SlotId, item.FootprintM, layout, spec.Geometry, null, r.Warnings); // emits the warning
+                    continue;
+                }
+                var slot = SlotResolver.Resolve(
+                    item.SlotId, item.FootprintM, layout, spec.Geometry,
+                    anchorId => resolved.TryGetValue(anchorId, out var a) ? a : ((SlotResolver.ResolvedSlot, Vec2)?)null,
+                    r.Warnings);
+                Apply(item, slot);
+            }
+        }
+
+        static void Apply(FurniturePlacementSpec item, SlotResolver.ResolvedSlot slot)
+        {
+            item.PositionM = new Vec3(slot.X, slot.Y, slot.Z);
+            item.RotationYDeg = slot.RotationYDeg;
         }
 
         static void AdaptProvenance(JObject root, RoomSpec spec)

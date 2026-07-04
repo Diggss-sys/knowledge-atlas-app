@@ -13,8 +13,12 @@ namespace RoomGen.Tests
     /// </summary>
     public sealed class RoomSpecAdapterTests
     {
-        static string Control => Fixture.Replace('\'', '"').Replace("<<CEIL>>", "3.2").Replace("<<COND>>", "control");
-        static string Treatment => Fixture.Replace('\'', '"').Replace("<<CEIL>>", "2.6").Replace("<<COND>>", "treatment");
+        static string Control => KaFixture("3.2", "control");
+        static string Treatment => KaFixture("2.6", "treatment");
+
+        /// <summary>Shared canonical-pair fixture (also used by SlotResolverTests).</summary>
+        public static string KaFixture(string ceiling, string condition) =>
+            Fixture.Replace('\'', '"').Replace("<<CEIL>>", ceiling).Replace("<<COND>>", condition);
 
         const string Fixture = @"{
             'spec_version':'1.0','room_type':'dining_room','seed':42,
@@ -97,7 +101,17 @@ namespace RoomGen.Tests
         }
 
         [Test]
-        public void Pair_differs_only_in_ceiling_height()
+        public void Adapting_identical_stimuli_with_different_condition_labels_is_identical()
+        {
+            // Condition/provenance labels are experiment metadata, not stimulus: two specs that
+            // differ only in those labels must adapt to byte-identical internal specs.
+            var a = RoomSpecAdapter.Adapt(KaFixture("3.2", "control")).Spec;
+            var b = RoomSpecAdapter.Adapt(KaFixture("3.2", "treatment")).Spec;
+            Assert.AreEqual(RoomJson.Serialize(a), RoomJson.Serialize(b));
+        }
+
+        [Test]
+        public void Pair_differs_only_in_ceiling_height_and_its_derived_ceiling_mounts()
         {
             var control = RoomSpecAdapter.Adapt(Control).Spec;
             var treatment = RoomSpecAdapter.Adapt(Treatment).Spec;
@@ -105,12 +119,21 @@ namespace RoomGen.Tests
             Assert.AreNotEqual(control.Geometry.CeilingHeightM, treatment.Geometry.CeilingHeightM,
                 "sanity: the two conditions must differ in ceiling height");
 
-            // Normalise the one declared variable; everything else must then be byte-identical
-            // (RoomJson is the generator's own deterministic serializer — no external test dependency).
+            // The pendant is CEILING-MOUNTED, so its derived Y moves with the declared ceiling
+            // change — a physical coupling (same family as Diego's ceiling->illuminance coupled-vars
+            // note), not a confound: the canonical spec still differs only in shell.ceiling_height_m.
+            var pendantControl = control.Furniture.Find(f => f.SlotId == "above_table");
+            var pendantTreatment = treatment.Furniture.Find(f => f.SlotId == "above_table");
+            Assert.AreEqual(control.Geometry.CeilingHeightM, pendantControl.PositionM.Y, 1e-3f);
+            Assert.AreEqual(treatment.Geometry.CeilingHeightM, pendantTreatment.PositionM.Y, 1e-3f);
+
+            // Normalise the declared variable + its derived mount; the rest must be byte-identical.
             treatment.Geometry.CeilingHeightM = control.Geometry.CeilingHeightM;
+            pendantTreatment.PositionM = new Vec3(
+                pendantTreatment.PositionM.X, pendantControl.PositionM.Y, pendantTreatment.PositionM.Z);
             Assert.AreEqual(RoomJson.Serialize(control), RoomJson.Serialize(treatment),
-                "after equalising ceiling height the adapted control and treatment must be identical "
-                + "— i.e. the pair differs ONLY in ceiling height");
+                "after equalising ceiling height (and the ceiling-mounted pendant's derived Y) the "
+                + "adapted control and treatment must be identical");
         }
 
         [Test]
