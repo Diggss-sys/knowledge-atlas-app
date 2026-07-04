@@ -108,6 +108,41 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void Load_pair_refuses_a_confounded_copy_with_undeclared_change()
+        {
+            var control = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control").text;
+            var treatment = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment").text;
+            // Sneak a second, undeclared manipulation into the treatment: change the wall material.
+            var confounded = treatment.Replace("\"material\": \"plaster\"", "\"material\": \"brick\"");
+            Assert.AreNotEqual(treatment, confounded, "fixture edit failed — wall material was not changed");
+
+            var ev = NewRuntime().LoadPair(control, confounded, "r-c");
+
+            Assert.AreEqual(SeamCodes.PairLoaded, ev.Kind);
+            Assert.IsFalse(ev.Ok, "a pair that differs in more than the declared variable must be refused");
+            Assert.Contains("undeclared_change", ev.PairViolationCodes);
+        }
+
+        [Test]
+        public void Switch_condition_fade_flips_the_active_condition()
+        {
+            var control = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control").text;
+            var treatment = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment").text;
+
+            var runtime = NewRuntime();
+            runtime.LoadPair(control, treatment, "r-1"); // active = control
+            Assert.AreEqual("control", runtime.ActiveCondition);
+
+            var ev = runtime.SwitchCondition("treatment", "fade", "r-2");
+
+            Assert.AreEqual(SeamCodes.ConditionSwitched, ev.Kind);
+            Assert.AreEqual("treatment", ev.Condition);
+            Assert.AreEqual("fade", ev.Transition);
+            Assert.AreEqual(RoomRuntime.FadeMs, ev.Ms);
+            Assert.AreEqual("treatment", runtime.ActiveCondition);
+        }
+
+        [Test]
         public void Local_channel_writes_a_jsonl_provenance_log_and_dispatches_events()
         {
             var logPath = Path.Combine(Application.temporaryCachePath, "seam-test-session.jsonl");

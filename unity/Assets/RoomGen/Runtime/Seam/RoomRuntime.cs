@@ -104,17 +104,21 @@ namespace KnowledgeAtlas.Seam
             return SeamEvent.PairResult(requestId, gate.Ok, gate.ViolationCodes, gate.DiffPaths, ActiveCondition ?? "control");
         }
 
-        // Functional CUT (G4). Fade/teleport transitions + the visual crossfade are G5 (tracer-bullet).
+        // Nominal transition durations (ms). cut/teleport swap instantly; fade is a timed crossfade —
+        // the runtime reports the intended duration; the studio renders the actual black-overlay fade.
+        public const long FadeMs = 220;
+
+        // Geometry-safe condition switch on a loaded pair. The runtime rebuilds the target condition
+        // and reports the transition; the visual crossfade for 'fade' is applied by the studio.
         public SeamEvent SwitchCondition(string condition, string transition, string requestId)
         {
-            var timer = Stopwatch.StartNew();
             var spec = condition == "treatment" ? activeTreatment : activeControl;
             if (spec == null)
                 return SeamEvent.Error(requestId, SeamCodes.BadRequest, "no pair loaded; switch_condition requires a prior load_pair");
             generator.Build(spec);
             ActiveCondition = condition;
-            timer.Stop();
-            return SeamEvent.ConditionDone(requestId, condition, transition, timer.ElapsedMilliseconds);
+            var ms = transition == "fade" ? FadeMs : 0L;
+            return SeamEvent.ConditionDone(requestId, condition, transition, ms);
         }
 
         // Camera mode is a viewport concern with no contract event; the studio wires it to its
