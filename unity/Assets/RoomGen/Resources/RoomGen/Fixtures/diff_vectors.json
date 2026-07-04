@@ -1,0 +1,1977 @@
+{
+  "_meta": {
+    "generated_by": "tools/validate_pair.py (the reference implementation) via scratch gen_fixtures.py",
+    "reference_commit": "6c41ebb",
+    "purpose": "Golden pair-validation vectors. Any port of the single-variable gate (C#, JS) MUST reproduce every case's `expected` block exactly. Regenerate ONLY by re-running the reference validator.",
+    "expected_fields": {
+      "ok": "validate_pair(...)['ok']",
+      "violation_codes": "sorted unique codes from ['violations']",
+      "diff_paths": "sorted keys of ['diff'] (the stimulus diff)",
+      "notes_count": "len(['notes']) (coupled-variable notes)"
+    }
+  },
+  "cases": [
+    {
+      "name": "pass_ceiling_pair",
+      "description": "The canonical committed pair: differs only in shell.ceiling_height_m, correctly declared.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 2.6,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "treatment",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": true,
+        "violation_codes": [],
+        "diff_paths": [
+          "shell.ceiling_height_m"
+        ],
+        "notes_count": 1
+      }
+    },
+    {
+      "name": "undeclared_change_wall_material",
+      "description": "Treatment changes surfaces.wall.material in addition to the declared ceiling height -> confounded.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 2.6,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "wood",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "treatment",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": false,
+        "violation_codes": [
+          "undeclared_change"
+        ],
+        "diff_paths": [
+          "shell.ceiling_height_m",
+          "surfaces.wall.material"
+        ],
+        "notes_count": 1
+      }
+    },
+    {
+      "name": "declared_unchanged_warmth",
+      "description": "Declares lighting.warmth as manipulated but it is identical in both specs.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m",
+            "lighting.warmth"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 2.6,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "treatment",
+          "manipulated_variables": [
+            "shell.ceiling_height_m",
+            "lighting.warmth"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": false,
+        "violation_codes": [
+          "declared_unchanged"
+        ],
+        "diff_paths": [
+          "shell.ceiling_height_m"
+        ],
+        "notes_count": 2
+      }
+    },
+    {
+      "name": "pair_id_mismatch",
+      "description": "The two specs carry different pair_ids -> not a pair.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 2.6,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "treatment",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "some_other_study"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": false,
+        "violation_codes": [
+          "pair_id_mismatch"
+        ],
+        "diff_paths": [
+          "shell.ceiling_height_m"
+        ],
+        "notes_count": 1
+      }
+    },
+    {
+      "name": "condition_invalid_two_controls",
+      "description": "Both specs claim condition=control -> not exactly one control + one treatment.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 2.6,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": false,
+        "violation_codes": [
+          "condition_invalid"
+        ],
+        "diff_paths": [
+          "shell.ceiling_height_m"
+        ],
+        "notes_count": 1
+      }
+    },
+    {
+      "name": "missing_experiment_pair_id",
+      "description": "Treatment's experiment block lacks pair_id -> pair metadata incomplete.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 2.6,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "treatment",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ]
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": false,
+        "violation_codes": [
+          "missing_experiment"
+        ],
+        "diff_paths": [],
+        "notes_count": 0
+      }
+    },
+    {
+      "name": "declared_mismatch",
+      "description": "Control declares ceiling height; treatment declares shell.contour -> lists disagree.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 2.6,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "treatment",
+          "manipulated_variables": [
+            "shell.contour"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": false,
+        "violation_codes": [
+          "declared_mismatch"
+        ],
+        "diff_paths": [],
+        "notes_count": 0
+      }
+    },
+    {
+      "name": "schema_invalid_ceiling_out_of_range",
+      "description": "Treatment ceiling 9.9 m exceeds the schema maximum (4.5) -> schema_invalid.",
+      "spec_a": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 3.2,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "control",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "High-ceiling (3.2 m) control for the proofreading/concentration task. Treatment is identical at 2.6 m."
+        }
+      },
+      "spec_b": {
+        "spec_version": "1.0",
+        "room_type": "dining_room",
+        "seed": 42,
+        "shell": {
+          "width_m": 4.5,
+          "length_m": 6.0,
+          "ceiling_height_m": 9.9,
+          "contour": "angular"
+        },
+        "surfaces": {
+          "wall": {
+            "material": "plaster",
+            "tint_hex": "#ece7dc"
+          },
+          "floor": {
+            "material": "wood"
+          },
+          "ceiling": {
+            "material": "plaster",
+            "visible": true
+          }
+        },
+        "openings": {
+          "door": {
+            "wall": "front",
+            "position": 0.2,
+            "width_m": 1.0
+          },
+          "windows": [
+            {
+              "wall": "left",
+              "position": 0.3,
+              "width_m": 1.2
+            },
+            {
+              "wall": "left",
+              "position": 0.7,
+              "width_m": 1.2
+            }
+          ]
+        },
+        "lighting": {
+          "preset": "warm_evening",
+          "warmth": 0.2,
+          "intensity": 0.9
+        },
+        "furniture": [
+          {
+            "catalog_id": "dining_table_6",
+            "placement": {
+              "slot": "table_center"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_1"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_2"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_3"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_4"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_5"
+            }
+          },
+          {
+            "catalog_id": "dining_chair",
+            "placement": {
+              "slot": "chair_6"
+            }
+          },
+          {
+            "catalog_id": "sideboard",
+            "placement": {
+              "slot": "long_wall_back"
+            }
+          },
+          {
+            "catalog_id": "pendant_light",
+            "placement": {
+              "slot": "above_table"
+            }
+          }
+        ],
+        "experiment": {
+          "condition": "treatment",
+          "manipulated_variables": [
+            "shell.ceiling_height_m"
+          ],
+          "pair_id": "ceiling_height_study_01"
+        },
+        "provenance": {
+          "generated_by": "human_wizard",
+          "execution_path": "live",
+          "notes": "Low-ceiling (2.6 m) treatment for the proofreading/concentration task. Control is identical at 3.2 m."
+        }
+      },
+      "expected": {
+        "ok": false,
+        "violation_codes": [
+          "schema_invalid"
+        ],
+        "diff_paths": [],
+        "notes_count": 0
+      }
+    }
+  ]
+}
