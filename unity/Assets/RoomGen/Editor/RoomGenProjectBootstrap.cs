@@ -62,6 +62,8 @@ namespace RoomGen.Editor
             if (GraphicsSettings.defaultRenderPipeline == null)
                 GraphicsSettings.defaultRenderPipeline = pipeline;
             QualitySettings.renderPipeline = pipeline;
+
+            HdrpQualityConfigurator.Configure(pipeline);
         }
 
         static void EnsureBuiltInMaterials()

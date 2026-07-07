@@ -58,10 +58,14 @@ namespace RoomGen.Generation
             var triangles = new List<int>(count * 12);
             var bottomY = topY - thickness;
 
+            // Cap centroid is at world (0,0); use world-planar UVs (u=x, v=z) to match the rim
+            // below, so a UV0-mapped texture tiles without the pinch a (0.5,0.5) center caused.
+            // (CC0 materials use HDRP triplanar world mapping and ignore these UVs; this keeps
+            // the mesh correct for any UV0-mapped material.)
             vertices.Add(new Vector3(0f, topY, 0f));
-            uv.Add(new Vector2(0.5f, 0.5f));
+            uv.Add(new Vector2(0f, 0f));
             vertices.Add(new Vector3(0f, bottomY, 0f));
-            uv.Add(new Vector2(0.5f, 0.5f));
+            uv.Add(new Vector2(0f, 0f));
 
             for (var i = 0; i < count; i++)
             {

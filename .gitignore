@@ -29,3 +29,9 @@ node_modules/
 **/.wrangler/
 .dev.vars
 **/.dev.vars
+
+# Fidelity lane (L1+): fetched CC0 textures are locked in unity/ASSETS.md, not committed
+unity/[Cc]aptures/
+unity/Assets/RoomGen/.cache/
+unity/Assets/RoomGen/Resources/RoomGen/Materials/Textures/
+unity/Assets/RoomGen/Resources/RoomGen/Furniture/src/
