@@ -1,0 +1,40 @@
+{
+  "spec_version": "1.0",
+  "room_type": "dining_room",
+  "seed": 42,
+  "shell": { "width_m": 4.5, "length_m": 6.0, "ceiling_height_m": 3.2, "contour": "angular" },
+  "surfaces": {
+    "wall":    { "material": "plaster", "tint_hex": "#ece7dc" },
+    "floor":   { "material": "wood" },
+    "ceiling": { "material": "plaster", "visible": true }
+  },
+  "openings": {
+    "door": { "wall": "front", "position": 0.2, "width_m": 1.0 },
+    "windows": [
+      { "wall": "left", "position": 0.3, "width_m": 1.2 },
+      { "wall": "left", "position": 0.7, "width_m": 1.2 }
+    ]
+  },
+  "lighting": { "preset": "warm_evening", "warmth": 0.2, "intensity": 0.9 },
+  "furniture": [
+    { "catalog_id": "dining_table_6", "placement": { "slot": "table_center" } },
+    { "catalog_id": "dining_chair",   "placement": { "slot": "chair_1" } },
+    { "catalog_id": "dining_chair",   "placement": { "slot": "chair_2" } },
+    { "catalog_id": "dining_chair",   "placement": { "slot": "chair_3" } },
+    { "catalog_id": "dining_chair",   "placement": { "slot": "chair_4" } },
+    { "catalog_id": "dining_chair",   "placement": { "slot": "chair_5" } },
+    { "catalog_id": "dining_chair",   "placement": { "slot": "chair_6" } },
+    { "catalog_id": "sideboard",      "placement": { "slot": "long_wall_back" } },
+    { "catalog_id": "pendant_light",  "placement": { "slot": "above_table" } }
+  ],
+  "experiment": {
+    "condition": "control",
+    "manipulated_variables": ["shell.ceiling_height_m"],
+    "pair_id": "ceiling_height_study_01"
+  },
+  "provenance": {
+    "generated_by": "human_wizard",
+    "execution_path": "live",
+    "notes": "FIXTURE COPY of knowledge-atlas-app spec/pairs/ceiling_height_study_01/control.spec.json — keep byte-identical to the canonical file."
+  }
+}

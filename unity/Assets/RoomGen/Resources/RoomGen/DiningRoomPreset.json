@@ -1,0 +1,27 @@
+{
+  "preset_version": "1.0",
+  "preset_id": "dining-room-v1",
+  "display_name": "Dining Room",
+  "ceiling_height_range_m": { "min": 2.2, "max": 3.8 },
+  "width_range_m": { "min": 4.5, "max": 7.0 },
+  "length_range_m": { "min": 5.0, "max": 8.0 },
+  "corner_radius_range_m": { "min": 0.0, "max": 1.2 },
+  "material_ids": [
+    "builtin.oak",
+    "builtin.walnut",
+    "builtin.warm-white",
+    "builtin.ceiling-white"
+  ],
+  "lighting_preset_ids": [
+    "builtin.recessed-neutral",
+    "builtin.recessed-warm",
+    "builtin.neutral_daylight",
+    "builtin.warm_evening",
+    "builtin.cool_clinical",
+    "builtin.dim",
+    "builtin.bright_office"
+  ],
+  "required_slots": [
+    "table_center"
+  ]
+}

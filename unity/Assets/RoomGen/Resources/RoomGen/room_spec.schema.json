@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cogs160-track3.local/room_spec.schema.json",
+  "title": "RoomSpec",
+  "description": "Canonical, engine-agnostic description of ONE experimental room. One spec -> one room. Produced by a human (web wizard) OR an AI agent; consumed by the Unity generator AND the web viewer. Designed for controlled environmental-neuroscience experiments where only one or two variables are manipulated at a time.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "room_type", "shell", "surfaces", "lighting"],
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version this spec targets. Lets producers/consumers evolve safely."
+    },
+    "room_type": {
+      "type": "string",
+      "enum": ["bedroom", "dining_room", "living_room", "classroom", "bathroom", "kitchen", "office", "waiting_room", "hallway"],
+      "description": "Premade room family. Selects the RoomPreset that supplies defaults, the furniture catalog, and the named layout slots."
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Reproducibility seed for any randomized choice. Same seed + same spec => byte-identical room."
+    },
+
+    "shell": {
+      "type": "object",
+      "description": "The room's structural box.",
+      "additionalProperties": false,
+      "required": ["width_m", "length_m", "ceiling_height_m", "contour"],
+      "properties": {
+        "width_m":          { "type": "number", "minimum": 2.5, "maximum": 12, "description": "Interior width (metres)." },
+        "length_m":         { "type": "number", "minimum": 2.5, "maximum": 12, "description": "Interior length (metres)." },
+        "ceiling_height_m": { "type": "number", "minimum": 2.2, "maximum": 4.5, "description": "Floor-to-ceiling height. A primary independent variable (high vs low ceiling)." },
+        "contour":          { "type": "string", "enum": ["angular", "curved"], "description": "Wall + opening geometry. Tawil's core manipulation (angular vs curved)." }
+      }
+    },
+
+    "surfaces": {
+      "type": "object",
+      "description": "Material on each surface group.",
+      "additionalProperties": false,
+      "required": ["wall", "floor"],
+      "properties": {
+        "wall":    { "$ref": "#/$defs/surface", "description": "Wall material + optional tint." },
+        "floor":   { "$ref": "#/$defs/surface", "description": "Floor material + optional tint." },
+        "ceiling": { "$ref": "#/$defs/surface", "description": "Ceiling material. Set visible=false to leave the room open-topped (dollhouse view)." }
+      }
+    },
+
+    "openings": {
+      "type": "object",
+      "description": "Doors and windows. Built as gaps in the walls.",
+      "additionalProperties": false,
+      "properties": {
+        "door": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["wall", "position"],
+          "properties": {
+            "wall":     { "$ref": "#/$defs/wall_ref" },
+            "position": { "type": "number", "minimum": 0, "maximum": 1, "description": "Normalized slide along the wall (0 = left end, 1 = right end)." },
+            "width_m":  { "type": "number", "minimum": 0.7, "maximum": 2.0, "default": 1.0 }
+          }
+        },
+        "windows": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["wall", "position"],
+            "properties": {
+              "wall":     { "$ref": "#/$defs/wall_ref" },
+              "position": { "type": "number", "minimum": 0, "maximum": 1 },
+              "width_m":  { "type": "number", "minimum": 0.4, "maximum": 3.0, "default": 1.1 },
+              "sill_m":   { "type": "number", "minimum": 0, "maximum": 2, "default": 0.95, "description": "Height of the window bottom." },
+              "head_m":   { "type": "number", "minimum": 0.5, "maximum": 4, "default": 1.95, "description": "Height of the window top." }
+            }
+          }
+        }
+      }
+    },
+
+    "lighting": {
+      "type": "object",
+      "description": "Illumination mood. Pick a named preset; override warmth/intensity/hdri as needed.",
+      "additionalProperties": false,
+      "required": ["preset"],
+      "properties": {
+        "preset":    { "type": "string", "enum": ["neutral_daylight", "warm_evening", "cool_clinical", "dim", "bright_office"], "description": "Named mood; sets sensible warmth/intensity/HDRI." },
+        "warmth":    { "type": "number", "minimum": 0, "maximum": 1, "description": "0 = warm, 1 = cool. Overrides the preset when present." },
+        "intensity": { "type": "number", "minimum": 0, "maximum": 2, "description": "Relative brightness multiplier." },
+        "hdri":      { "type": "string", "default": "none", "description": "Environment-map id for image-based lighting, or 'none'." }
+      }
+    },
+
+    "furniture": {
+      "type": "array",
+      "description": "Items placed in the room. catalog_id MUST exist in the room_type's catalog. Placement is by named slot (preferred) or explicit coordinates.",
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["catalog_id", "placement"],
+        "properties": {
+          "catalog_id": { "type": "string", "description": "Furniture model id from the room_type catalog, e.g. 'dining_table_6', 'dining_chair'." },
+          "placement": {
+            "description": "EITHER a named slot from the preset (preferred), OR explicit metres + rotation.",
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["slot"],
+                "properties": { "slot": { "type": "string", "description": "Named anchor from the preset's layout_slots, e.g. 'table_center', 'chair_3', 'long_wall_back'." } }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["x_m", "z_m"],
+                "properties": {
+                  "x_m":          { "type": "number", "description": "Metres from room centre, +x = right." },
+                  "z_m":          { "type": "number", "description": "Metres from room centre, +z = front (door wall)." },
+                  "rotation_deg": { "type": "number", "default": 0 }
+                }
+              }
+            ]
+          },
+          "material_override": { "$ref": "#/$defs/surface", "description": "Optional. Recolour/retexture this item (e.g. a matched furniture set)." }
+        }
+      }
+    },
+
+    "experiment": {
+      "type": "object",
+      "description": "Research metadata. Keeps variation honest and CONTROLLED — only the listed variables may differ from the control.",
+      "additionalProperties": false,
+      "properties": {
+        "condition":             { "type": "string", "enum": ["baseline", "control", "treatment"], "description": "This room's role in the study." },
+        "manipulated_variables": { "type": "array", "items": { "type": "string" }, "description": "Dotted paths of the fields that intentionally differ from the control, e.g. ['shell.ceiling_height_m']. EVERYTHING ELSE must be held constant." },
+        "pair_id":               { "type": "string", "description": "Links a control/treatment pair or set." }
+      }
+    },
+
+    "provenance": {
+      "type": "object",
+      "description": "Where this spec came from + how the room is realized.",
+      "additionalProperties": false,
+      "properties": {
+        "generated_by":   { "type": "string", "enum": ["human_wizard", "ai_agent", "preset"], "description": "Who produced this spec." },
+        "execution_path": { "type": "string", "enum": ["live", "cached", "regen", "preview_only"], "description": "Honesty label (project convention): live = built now from params; cached = served from the store; regen = needs a backend rebuild; preview_only = approximate stand-in." },
+        "notes":          { "type": "string" }
+      }
+    }
+  },
+
+  "$defs": {
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "material": { "type": "string", "enum": ["plaster", "paint", "wood", "brick", "concrete", "tile", "carpet", "marble", "glass"] },
+        "tint_hex": { "type": "string", "pattern": "^#([0-9a-fA-F]{6})$", "description": "Optional sRGB tint multiplied over the material." },
+        "visible":  { "type": "boolean", "default": true }
+      }
+    },
+    "wall_ref": {
+      "type": "string",
+      "enum": ["front", "back", "left", "right"],
+      "description": "Which wall. front = the door wall (+z), back = opposite (-z), left = -x, right = +x."
+    }
+  }
+}
