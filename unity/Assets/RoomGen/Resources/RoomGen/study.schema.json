@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cogs160-track3.local/study.schema.json",
+  "title": "Study",
+  "description": "A runnable experiment definition: a validated control/treatment pair + a task + run metadata. Produced by the operator UI's publish action (which MUST be gated on the single-variable validator); consumed by the experiment runtime and the Cloudflare Worker. Full RoomSpec snapshots are embedded so a study is reproducible from this one document (determinism guardrail).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "study_id", "title", "pair_id",
+    "control_spec", "treatment_spec", "validation", "task",
+    "modality", "status", "created_at"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "study_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_\\-]{1,64}$",
+      "description": "Stable study identifier (also the D1 primary key)."
+    },
+    "title":      { "type": "string", "minLength": 1, "maxLength": 200 },
+    "hypothesis": { "type": "string", "description": "Optional plain-language hypothesis, e.g. 'higher ceilings improve divergent thinking'." },
+    "citation":   { "type": "string", "description": "Optional literature anchor (PROPOSAL.md section 2), e.g. 'Meyers-Levy & Zhu 2007'." },
+    "pair_id": {
+      "type": "string",
+      "description": "MUST equal experiment.pair_id inside both embedded specs."
+    },
+    "control_spec": {
+      "type": "object",
+      "description": "FULL RoomSpec snapshot (validates against room_spec.schema.json; embedding keeps the study self-contained — a published study never dangles on a mutable reference)."
+    },
+    "treatment_spec": {
+      "type": "object",
+      "description": "FULL RoomSpec snapshot of the treatment condition."
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "validated_at", "validator"],
+      "description": "The single-variable gate stamp. A study with ok=false MUST NOT be publishable (guardrail #2) — the publish gate enforces this, and the Worker re-checks server-side.",
+      "properties": {
+        "ok":           { "type": "boolean" },
+        "diff":         { "type": "object", "description": "The stimulus diff from validate_pair: {dotted.path: [control_value, treatment_value]}." },
+        "notes":        { "type": "array", "items": { "type": "string" }, "description": "Coupled-variable notes the researcher must account for." },
+        "validated_at": { "type": "string", "format": "date-time" },
+        "validator":    { "type": "string", "description": "Implementation + version that stamped this, e.g. 'validate_pair.py@1.0' or 'PairGate.cs@1.0' (must be diff_vectors-conformant)." }
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "config"],
+      "description": "The behavioral task run in/after the rooms. v1 registry matches response_log.schema.json task_type.",
+      "properties": {
+        "type": { "type": "string", "enum": ["rating", "choice"] },
+        "config": {
+          "type": "object",
+          "description": "Task parameters: for rating {prompt, scale_min, scale_max, per_condition:bool}; for choice {prompt, trials:int}. Kept open (additionalProperties allowed) — the runner validates per-type.",
+          "properties": {
+            "prompt":    { "type": "string" },
+            "scale_min": { "type": "integer" },
+            "scale_max": { "type": "integer" },
+            "trials":    { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "modality": {
+      "type": "string",
+      "enum": ["desktop_3d", "pcvr", "standalone_vr"],
+      "description": "The modality this study runs in (recorded per guardrail #3; one study = one modality — a cross-modality comparison is two studies)."
+    },
+    "counterbalance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Ordering policy metadata (recorded now, consumed by the runner).",
+      "properties": {
+        "order_strategy": { "type": "string", "enum": ["fixed", "seeded_shuffle", "latin_square"], "default": "seeded_shuffle" }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "published", "closed"],
+      "description": "draft = editable; published = frozen + runnable (validation.ok MUST be true); closed = no longer collecting."
+    },
+    "created_by": { "type": "string", "description": "Author identifier (cohort/student handle; auth is a later phase)." },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}
