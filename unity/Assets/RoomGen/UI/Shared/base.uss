@@ -162,7 +162,7 @@
     margin-bottom: var(--ka-space-1);
 }
 
-/* ---- sliders: give each row breathing room and a readable label/value ---- */
+/* ---- sliders: rounded track, teal fill to the thumb, round thumb (site slider look) ---- */
 .ka-slider {
     margin-top: var(--ka-space-3);
     margin-bottom: var(--ka-space-2);
@@ -175,12 +175,48 @@
 }
 
 .ka-slider .unity-base-slider__tracker {
+    height: 5px;
+    margin-top: -2.5px;          /* recenter the thicker track on the drag line */
+    border-radius: 3px;
+    border-width: 0;
     background-color: var(--ka-line);
+    overflow: hidden;            /* clips the fill to the rounded track */
+}
+
+.ka-slider-fill {
+    background-color: var(--ka-teal-lt);
 }
 
 .ka-slider .unity-base-slider__dragger {
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border-radius: 8px;
     background-color: var(--ka-teal);
+    border-width: 2px;
     border-color: var(--ka-navy);
+}
+
+.ka-slider .unity-base-slider__dragger:hover {
+    background-color: var(--ka-navy);
+}
+
+/* quieter numeric read-out: small, right-aligned, hairline underline instead of a boxed field */
+.ka-slider .unity-base-slider__text-field {
+    width: 44px;
+    margin-left: var(--ka-space-2);
+}
+
+.ka-slider .unity-base-slider__text-field .unity-text-field__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ka-line);
+    border-radius: 0;
+    padding: 0;
+    font-size: var(--ka-font-md);
+    color: var(--ka-text);
+    -unity-text-align: middle-right;
 }
 
 .ka-slider .unity-text-element {

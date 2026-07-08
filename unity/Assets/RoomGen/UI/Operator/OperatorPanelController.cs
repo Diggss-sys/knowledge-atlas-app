@@ -49,6 +49,7 @@ namespace RoomGen.UI
                 slider.SetValueWithoutNotify((float)field.Value);
                 var path = field.Path;
                 slider.RegisterValueChangedCallback(evt => vm.SetField(path, evt.newValue));
+                SliderFill.Attach(slider); // site-style value fill (visual only)
             }
 
             var dropdown = root.Q<DropdownField>("declared-variable");

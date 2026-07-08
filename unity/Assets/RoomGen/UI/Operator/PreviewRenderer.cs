@@ -44,11 +44,14 @@ namespace RoomGen.UI
             _camera.targetTexture = Texture;
             _camera.clearFlags = CameraClearFlags.SolidColor;
             _camera.backgroundColor = new Color(0.055f, 0.06f, 0.065f);
-            _camera.fieldOfView = 72f;
+            _camera.fieldOfView = 74f;
             _camera.nearClipPlane = 0.05f;
             _camera.farClipPlane = 25f;
-            _camera.transform.position = new Vector3(0f, 1.58f, 2.48f);
-            _camera.transform.LookAt(new Vector3(0f, 1.32f, -0.55f));
+            // Standing eye height with a LEVEL gaze: the ceiling line at the far wall stays in frame,
+            // so a ceiling-height manipulation is visible in the preview (the old pose looked down
+            // and cropped the ceiling — hiding the very variable the flagship pair manipulates).
+            _camera.transform.position = new Vector3(0f, 1.6f, 2.6f);
+            _camera.transform.LookAt(new Vector3(0f, 1.62f, -0.55f));
         }
 
         /// <summary>Rebuild the room from the spec and repaint the texture.</summary>
