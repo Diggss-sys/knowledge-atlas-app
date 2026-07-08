@@ -1,11 +1,16 @@
 /*
  * base.uss — the shared foundation styles for the Knowledge Atlas operator UI (UNITY_UI.md:
  * "you own the shared base styles in UI/Shared/"). E3's participant screens consume these too, so
- * changes here are reviewed by both owners. A calm dark theme consistent with the IMGUI studio:
- * one type scale, one spacing scale, panel/heading/label/status primitives — no per-control colours.
+ * changes here are reviewed by both owners.
+ *
+ * Palette = the lab's OFFICIAL design system, taken verbatim from
+ * https://xrlab.ucsd.edu/ka/160sp/_track_pages_shared.css (:root tokens): light cream surfaces,
+ * navy/teal structure, amber for warnings, rose for errors/blocked, and a reserved purple set for
+ * AI affordances (the U5 copilot). Reference typography is Georgia headings / Arial body — Unity
+ * needs font assets for those, so headings use weight+navy for now (font assets = visual polish).
  */
 
-/* ---- design tokens (spacing + type scale + palette) ---- */
+/* ---- design tokens (spacing + type scale + lab palette) ---- */
 :root {
     --ka-space-1: 4px;
     --ka-space-2: 8px;
@@ -18,14 +23,37 @@
     --ka-font-lg: 16px;
     --ka-font-xl: 20px;
 
-    --ka-bg:        rgb(28, 30, 34);
-    --ka-panel:     rgb(38, 41, 46);
-    --ka-border:    rgb(58, 62, 68);
-    --ka-text:      rgb(222, 226, 230);
-    --ka-text-dim:  rgb(150, 156, 162);
-    --ka-accent:    rgb(120, 170, 255);
-    --ka-ok:        rgb(96, 200, 128);
-    --ka-error:     rgb(226, 96, 96);
+    /* lab tokens (names mirror _track_pages_shared.css) */
+    --ka-navy:      #1C3D3A;
+    --ka-teal:      #2A7868;
+    --ka-teal-lt:   #5AC8AA;
+    --ka-teal-bg:   #E6F5F0;
+    --ka-amber:     #E8872A;
+    --ka-amber-lt:  #FFF3E0;
+    --ka-amber-dk:  #9A5010;
+    --ka-cream:     #F7F4EF;
+    --ka-ink:       #2C2C2C;
+    --ka-muted:     #6B6B6B;
+    --ka-line:      #D8D0C5;
+    --ka-white:     #FFFFFF;
+    --ka-rose:      #A84F6B;
+    --ka-rose-lt:   #F8EBF0;
+    --ka-gold:      #F5A623;
+    /* reserved for the AI copilot's affordances (U5) — do not use elsewhere */
+    --ka-ai-bg:     #F0EBF8;
+    --ka-ai-border: #C8B4E8;
+    --ka-ai-fg:     #3D2E6B;
+    --ka-ai-label:  #6B4FA8;
+
+    /* semantic aliases the components consume */
+    --ka-bg:        var(--ka-cream);
+    --ka-panel:     var(--ka-white);
+    --ka-border:    var(--ka-line);
+    --ka-text:      var(--ka-ink);
+    --ka-text-dim:  var(--ka-muted);
+    --ka-accent:    var(--ka-teal);
+    --ka-ok:        var(--ka-teal);
+    --ka-error:     var(--ka-rose);
 }
 
 /* ---- structural primitives ---- */
@@ -46,17 +74,30 @@
     margin-bottom: var(--ka-space-4);
 }
 
+/* Navy band for app chrome (matches the site's fixed nav; gold for the wordmark). */
+.ka-topbar {
+    background-color: var(--ka-navy);
+    padding: var(--ka-space-3) var(--ka-space-4);
+    margin-bottom: var(--ka-space-4);
+}
+
+.ka-wordmark {
+    color: var(--ka-gold);
+    font-size: var(--ka-font-lg);
+    -unity-font-style: bold;
+}
+
 .ka-heading {
     font-size: var(--ka-font-xl);
     -unity-font-style: bold;
-    color: var(--ka-text);
+    color: var(--ka-navy);
     margin-bottom: var(--ka-space-3);
 }
 
 .ka-subheading {
     font-size: var(--ka-font-lg);
     -unity-font-style: bold;
-    color: var(--ka-text);
+    color: var(--ka-teal);
     margin-bottom: var(--ka-space-2);
 }
 
@@ -70,7 +111,7 @@
     font-size: var(--ka-font-sm);
 }
 
-/* ---- status / validation states ---- */
+/* ---- status / validation states (site semantics: teal=valid, rose=blocked, amber=warn) ---- */
 .ka-status {
     font-size: var(--ka-font-md);
     color: var(--ka-text-dim);
@@ -79,15 +120,26 @@
 
 .ka-status--ok {
     color: var(--ka-ok);
+    background-color: var(--ka-teal-bg);
 }
 
 .ka-status--error {
     color: var(--ka-error);
+    background-color: var(--ka-rose-lt);
+}
+
+.ka-status--warn {
+    color: var(--ka-amber-dk);
+    background-color: var(--ka-amber-lt);
 }
 
 .ka-diff-list {
     min-height: 40px;
     margin-top: var(--ka-space-2);
+    border-color: var(--ka-border);
+    border-width: 1px;
+    border-radius: 4px;
+    padding: var(--ka-space-2);
 }
 
 .ka-diff-row {
@@ -98,8 +150,32 @@
 .ka-button {
     height: 32px;
     margin-top: var(--ka-space-3);
+    background-color: var(--ka-teal);
+    color: var(--ka-white);
+    border-width: 0;
+    border-radius: 4px;
+}
+
+.ka-button:hover {
+    background-color: var(--ka-navy);
 }
 
 .ka-button:disabled {
     opacity: 0.4;
+}
+
+/* AI copilot affordances (U5) — the site reserves a distinct purple so AI-driven edits are always
+   visually attributed, never disguised as the operator's own input. */
+.ka-ai-panel {
+    background-color: var(--ka-ai-bg);
+    border-color: var(--ka-ai-border);
+    border-width: 1px;
+    border-radius: 6px;
+    padding: var(--ka-space-3);
+}
+
+.ka-ai-label {
+    color: var(--ka-ai-label);
+    font-size: var(--ka-font-sm);
+    -unity-font-style: bold;
 }
