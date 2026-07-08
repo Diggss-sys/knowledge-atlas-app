@@ -30,6 +30,7 @@ namespace RoomGen.Editor
             EnsureLayers();
             EnsureScene();
             ConfigurePlayer();
+            ConfigureInputHandling();
             ConfigureOpenXr();
             AssetDatabase.SaveAssets();
         }
@@ -135,6 +136,29 @@ namespace RoomGen.Editor
                 GraphicsDeviceType.Direct3D12,
                 GraphicsDeviceType.Direct3D11
             });
+        }
+
+        // DesktopWalkMode/VrExplorationMode read the NEW Input System (Keyboard.current etc.).
+        // With activeInputHandler = 0 (legacy only) those devices are null in the PLAYER: the walk
+        // session locks the cursor and then never sees WASD/mouse/Esc — the "stuck in walk mode"
+        // bug. 2 = Both, so IMGUI and any legacy callers keep working too. Editor change takes
+        // effect on next launch (batchmode builds always relaunch, so builds are always correct).
+        static void ConfigureInputHandling()
+        {
+            var settings = new SerializedObject(
+                AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);
+            var handler = settings.FindProperty("activeInputHandler");
+            if (handler == null)
+            {
+                Debug.LogWarning("RoomGen: activeInputHandler property not found in ProjectSettings.");
+                return;
+            }
+            if (handler.intValue != 2)
+            {
+                handler.intValue = 2;
+                settings.ApplyModifiedProperties();
+                Debug.Log("RoomGen: activeInputHandler set to Both (2) — walk-mode input needs the new Input System.");
+            }
         }
 
         static void ConfigureOpenXr()
