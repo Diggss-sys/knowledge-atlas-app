@@ -1,0 +1,11 @@
+{
+  "name": "RoomGen.Testing",
+  "rootNamespace": "RoomGen.Testing",
+  "references": [
+    "RoomGen.Runtime",
+    "Unity.Newtonsoft.Json"
+  ],
+  "autoReferenced": true,
+  "overrideReferences": false,
+  "noEngineReferences": false
+}

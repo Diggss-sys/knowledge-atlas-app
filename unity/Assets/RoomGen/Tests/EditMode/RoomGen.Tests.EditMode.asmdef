@@ -4,6 +4,7 @@
   "references": [
     "RoomGen.Runtime",
     "RoomGen.Editor",
+    "RoomGen.Testing",
     "Unity.Newtonsoft.Json",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.HighDefinition.Runtime"
