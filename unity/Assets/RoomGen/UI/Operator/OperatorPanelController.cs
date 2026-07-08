@@ -101,6 +101,18 @@ namespace RoomGen.UI
             if (publish != null) publish.SetEnabled(vm.PublishEnabled);
         }
 
+        /// <summary>
+        /// Point the two live-preview panes at the control/treatment RenderTextures (from
+        /// PreviewRenderer). The panel only DISPLAYS them — it neither owns the cameras nor the rooms.
+        /// </summary>
+        public static void SetPreviews(VisualElement root, RenderTexture control, RenderTexture treatment)
+        {
+            var c = root.Q<VisualElement>("control-preview");
+            if (c != null && control != null) c.style.backgroundImage = Background.FromRenderTexture(control);
+            var t = root.Q<VisualElement>("treatment-preview");
+            if (t != null && treatment != null) t.style.backgroundImage = Background.FromRenderTexture(treatment);
+        }
+
         static IEnumerable<string> ErrorLines(OperatorPanelViewModel vm)
         {
             foreach (var e in vm.Errors)

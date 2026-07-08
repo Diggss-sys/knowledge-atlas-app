@@ -6,17 +6,14 @@
     <!--
       The operator's instrument panel (U1..U3). A thin view: every control is wired to
       OperatorPanelViewModel by OperatorPanelController — no state lives here. Sliders are named by
-      their canonical dotted path so the binder maps name -> SetField(path,value) generically, and
-      show a numeric read-out (show-input-field) so the operator sees exactly how much of each metric.
-      Styling comes from UI/Shared/base.uss (the lab's official palette).
+      their canonical dotted path so the binder maps name -> SetField(path,value) generically and
+      shows a numeric read-out. control-preview / treatment-preview are the LIVE preview panes the
+      studio feeds RenderTextures into. Styling: UI/Shared/base.uss (the lab's official palette).
     -->
     <engine:VisualElement name="operator-root" class="ka-root">
 
-        <!-- Link the shared theme so the panel renders styled in the UI Builder / preview too, not
-             only at runtime (the controller also applies it; a duplicate add is harmless). -->
         <Style src="../Shared/base.uss" />
 
-        <!-- app chrome: navy bar, gold wordmark + track subtitle -->
         <engine:VisualElement name="topbar" class="ka-topbar">
             <engine:Label text="Knowledge Atlas" class="ka-wordmark" />
             <engine:Label text="ROOM STUDIO · OPERATOR" class="ka-wordmark-sub" />
@@ -24,12 +21,11 @@
 
         <engine:VisualElement name="body" class="ka-body">
 
-            <!-- left: the editing controls -->
-            <engine:VisualElement name="controls-col" class="ka-controls-col">
+            <!-- left rail: the editing controls + the science -->
+            <engine:VisualElement name="controls-col" class="ka-rail">
 
                 <engine:VisualElement name="shell-panel" class="ka-panel">
                     <engine:Label text="Room shell" class="ka-subheading" />
-                    <engine:Label text="Dimensions of the room, in metres." class="ka-label--dim" />
                     <engine:Slider name="shell.width_m"          label="Width"          low-value="3.5" high-value="6.5" show-input-field="true" class="ka-slider" />
                     <engine:Slider name="shell.length_m"         label="Length"         low-value="4.0" high-value="8.0" show-input-field="true" class="ka-slider" />
                     <engine:Slider name="shell.ceiling_height_m" label="Ceiling height" low-value="2.4" high-value="3.4" show-input-field="true" class="ka-slider" />
@@ -37,31 +33,36 @@
 
                 <engine:VisualElement name="lighting-panel" class="ka-panel">
                     <engine:Label text="Lighting" class="ka-subheading" />
-                    <engine:Label text="Shared by both conditions — never a manipulated variable on its own here." class="ka-label--dim" />
                     <engine:Slider name="lighting.warmth"    label="Warmth"    low-value="0" high-value="1" show-input-field="true" class="ka-slider" />
                     <engine:Slider name="lighting.intensity" label="Intensity" low-value="0" high-value="2" show-input-field="true" class="ka-slider" />
                 </engine:VisualElement>
 
-            </engine:VisualElement>
-
-            <!-- right: the science — declared variable, live validation, publish gate -->
-            <engine:VisualElement name="side-col" class="ka-side-col">
-
                 <engine:VisualElement name="pair-panel" class="ka-panel ka-panel--accent">
                     <engine:Label text="Experiment pair" class="ka-subheading" />
-                    <engine:Label text="One declared difference between control and treatment. Everything else is held constant." class="ka-label--dim" />
                     <engine:DropdownField name="declared-variable" label="Independent variable" class="ka-dropdown" />
-
                     <engine:Label text="VALIDATION" class="ka-eyebrow" />
                     <engine:Label name="validation-status" text="No pair validated yet." class="ka-status" />
                     <engine:VisualElement name="diff-list" class="ka-diff-list" />
-
                     <engine:Button name="publish-button" text="Publish study" class="ka-button ka-button--primary" />
-                    <engine:Label text="Publish unlocks only when the pair differs in exactly the declared variable." class="ka-label--dim" />
                 </engine:VisualElement>
 
                 <engine:Label name="apply-status" text="" class="ka-status" />
 
+            </engine:VisualElement>
+
+            <!-- right: the live preview the operator watches while editing -->
+            <engine:VisualElement name="preview-col" class="ka-preview-col">
+                <engine:Label text="LIVE PREVIEW" class="ka-eyebrow" />
+                <engine:VisualElement name="preview-row" class="ka-preview-row">
+                    <engine:VisualElement name="control-pane" class="ka-preview-pane">
+                        <engine:Label text="Control" class="ka-preview-caption" />
+                        <engine:VisualElement name="control-preview" class="ka-preview" />
+                    </engine:VisualElement>
+                    <engine:VisualElement name="treatment-pane" class="ka-preview-pane">
+                        <engine:Label text="Treatment" class="ka-preview-caption" />
+                        <engine:VisualElement name="treatment-preview" class="ka-preview" />
+                    </engine:VisualElement>
+                </engine:VisualElement>
             </engine:VisualElement>
 
         </engine:VisualElement>

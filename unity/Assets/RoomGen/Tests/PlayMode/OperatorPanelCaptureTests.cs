@@ -1,6 +1,7 @@
 using System.Collections;
 using System.IO;
 using NUnit.Framework;
+using RoomGen.Contracts;
 using RoomGen.Testing;
 using RoomGen.UI;
 using UnityEngine;
@@ -22,6 +23,10 @@ namespace RoomGen.Tests.PlayMode
         public IEnumerator Renders_the_operator_panel_to_a_png()
         {
 #if UNITY_EDITOR
+            // This is a rendering capture, not a logic test: tolerate benign HDRP batchmode log noise
+            // (info-queue, atlas warnings) rather than failing on an unexpected engine log line.
+            LogAssert.ignoreFailingMessages = true;
+
             const int w = 1360, h = 940;
             var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
             rt.Create();
@@ -54,6 +59,19 @@ namespace RoomGen.Tests.PlayMode
             var preset = Resources.Load<TextAsset>("RoomGen/dining_room.preset");
             if (preset != null) { vm.LoadPreset(preset.text); OperatorPanelController.Bind(root, vm); }
 
+            // Live preview: build the control + treatment rooms and feed them into the panes.
+            PreviewRenderer previewControl = null, previewTreatment = null;
+            var pairAsset = Resources.Load<TextAsset>("RoomGen/Examples/ceiling-height-pair");
+            if (pairAsset != null)
+            {
+                var pair = RoomJson.Deserialize<ConditionPairSpec>(pairAsset.text);
+                previewControl = new PreviewRenderer("Control", 8);
+                previewTreatment = new PreviewRenderer("Treatment", 9);
+                previewControl.Render(pair.Control);
+                previewTreatment.Render(pair.Treatment);
+                OperatorPanelController.SetPreviews(root, previewControl.Texture, previewTreatment.Texture);
+            }
+
             for (var i = 0; i < 12; i++) yield return null; // let the player loop lay out + paint
 
             var prev = RenderTexture.active;
@@ -78,6 +96,8 @@ namespace RoomGen.Tests.PlayMode
             Object.Destroy(ps);
             rt.Release();
             Object.Destroy(rt);
+            previewControl?.Dispose();
+            previewTreatment?.Dispose();
 
             Assert.Greater(mean, 0.05, "the panel rendered black — paint did not reach the target texture");
 #else

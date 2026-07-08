@@ -106,14 +106,44 @@
     flex-grow: 1;
 }
 
-.ka-controls-col {
-    flex-grow: 1;
+/* left rail: fixed-width control column */
+.ka-rail {
+    width: 384px;
+    flex-shrink: 0;
     margin-right: var(--ka-space-4);
 }
 
-.ka-side-col {
-    width: 400px;
-    flex-shrink: 0;
+/* right: the live preview fills the remaining space */
+.ka-preview-col {
+    flex-grow: 1;
+}
+
+.ka-preview-row {
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.ka-preview-pane {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: var(--ka-space-3);
+}
+
+.ka-preview-caption {
+    font-size: var(--ka-font-md);
+    -unity-font-style: bold;
+    color: var(--ka-navy);
+    margin-bottom: var(--ka-space-1);
+}
+
+.ka-preview {
+    flex-grow: 1;
+    min-height: 360px;
+    background-color: rgb(14, 15, 17);
+    border-width: 1px;
+    border-color: var(--ka-border);
+    border-radius: 6px;
+    -unity-background-scale-mode: scale-and-crop;
 }
 
 /* the pair card carries the science; a teal left edge sets it apart from the plain control cards */
