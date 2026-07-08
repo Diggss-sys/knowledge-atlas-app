@@ -5,6 +5,7 @@
     "RoomGen.Runtime",
     "RoomGen.Editor",
     "RoomGen.Testing",
+    "RoomGen.UI",
     "Unity.Newtonsoft.Json",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.HighDefinition.Runtime"
