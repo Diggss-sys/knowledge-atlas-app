@@ -3,6 +3,8 @@
   "rootNamespace": "RoomGen.Editor",
   "references": [
     "RoomGen.Runtime",
+    "RoomGen.UI",
+    "RoomGen.Testing",
     "Unity.RenderPipelines.Core.Runtime",
     "Unity.RenderPipelines.HighDefinition.Runtime",
     "Unity.XR.Management",

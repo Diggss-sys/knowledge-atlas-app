@@ -4,37 +4,62 @@
     xmlns:editor="UnityEditor.UIElements">
 
     <!--
-      The operator's instrument panel (U1..U3 skeleton). A thin view: every control here is wired to
-      OperatorPanelViewModel by OperatorPanelController — no state lives in the UXML. Sliders are named
-      by their canonical dotted path so the binder can map name -> SetField(path,value) generically.
-      Visual polish/layout iteration is explicitly deferred (SOFTWARE_FOUNDATION.md) — this is the shell.
+      The operator's instrument panel (U1..U3). A thin view: every control is wired to
+      OperatorPanelViewModel by OperatorPanelController — no state lives here. Sliders are named by
+      their canonical dotted path so the binder maps name -> SetField(path,value) generically, and
+      show a numeric read-out (show-input-field) so the operator sees exactly how much of each metric.
+      Styling comes from UI/Shared/base.uss (the lab's official palette).
     -->
     <engine:VisualElement name="operator-root" class="ka-root">
 
-        <engine:Label text="Room Editor" class="ka-heading" />
-
-        <engine:VisualElement name="shell-panel" class="ka-panel">
-            <engine:Label text="Shell" class="ka-subheading" />
-            <engine:Slider name="shell.width_m"          label="width m"          low-value="3.5" high-value="6.5" />
-            <engine:Slider name="shell.length_m"         label="length m"         low-value="4.0" high-value="8.0" />
-            <engine:Slider name="shell.ceiling_height_m" label="ceiling height m" low-value="2.4" high-value="3.4" />
+        <!-- app chrome: navy bar, gold wordmark + track subtitle -->
+        <engine:VisualElement name="topbar" class="ka-topbar">
+            <engine:Label text="Knowledge Atlas" class="ka-wordmark" />
+            <engine:Label text="ROOM STUDIO · OPERATOR" class="ka-wordmark-sub" />
         </engine:VisualElement>
 
-        <engine:VisualElement name="lighting-panel" class="ka-panel">
-            <engine:Label text="Lighting" class="ka-subheading" />
-            <engine:Slider name="lighting.warmth"    label="warmth"    low-value="0" high-value="1" />
-            <engine:Slider name="lighting.intensity" label="intensity" low-value="0" high-value="2" />
+        <engine:VisualElement name="body" class="ka-body">
+
+            <!-- left: the editing controls -->
+            <engine:VisualElement name="controls-col" class="ka-controls-col">
+
+                <engine:VisualElement name="shell-panel" class="ka-panel">
+                    <engine:Label text="Room shell" class="ka-subheading" />
+                    <engine:Label text="Dimensions of the room, in metres." class="ka-label--dim" />
+                    <engine:Slider name="shell.width_m"          label="Width"          low-value="3.5" high-value="6.5" show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shell.length_m"         label="Length"         low-value="4.0" high-value="8.0" show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shell.ceiling_height_m" label="Ceiling height" low-value="2.4" high-value="3.4" show-input-field="true" class="ka-slider" />
+                </engine:VisualElement>
+
+                <engine:VisualElement name="lighting-panel" class="ka-panel">
+                    <engine:Label text="Lighting" class="ka-subheading" />
+                    <engine:Label text="Shared by both conditions — never a manipulated variable on its own here." class="ka-label--dim" />
+                    <engine:Slider name="lighting.warmth"    label="Warmth"    low-value="0" high-value="1" show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="lighting.intensity" label="Intensity" low-value="0" high-value="2" show-input-field="true" class="ka-slider" />
+                </engine:VisualElement>
+
+            </engine:VisualElement>
+
+            <!-- right: the science — declared variable, live validation, publish gate -->
+            <engine:VisualElement name="side-col" class="ka-side-col">
+
+                <engine:VisualElement name="pair-panel" class="ka-panel ka-panel--accent">
+                    <engine:Label text="Experiment pair" class="ka-subheading" />
+                    <engine:Label text="One declared difference between control and treatment. Everything else is held constant." class="ka-label--dim" />
+                    <engine:DropdownField name="declared-variable" label="Independent variable" class="ka-dropdown" />
+
+                    <engine:Label text="VALIDATION" class="ka-eyebrow" />
+                    <engine:Label name="validation-status" text="No pair validated yet." class="ka-status" />
+                    <engine:VisualElement name="diff-list" class="ka-diff-list" />
+
+                    <engine:Button name="publish-button" text="Publish study" class="ka-button ka-button--primary" />
+                    <engine:Label text="Publish unlocks only when the pair differs in exactly the declared variable." class="ka-label--dim" />
+                </engine:VisualElement>
+
+                <engine:Label name="apply-status" text="" class="ka-status" />
+
+            </engine:VisualElement>
+
         </engine:VisualElement>
-
-        <engine:VisualElement name="pair-panel" class="ka-panel">
-            <engine:Label text="Experiment pair" class="ka-subheading" />
-            <engine:DropdownField name="declared-variable" label="Independent variable" />
-            <engine:Label name="validation-status" text="No pair validated yet." class="ka-status" />
-            <engine:VisualElement name="diff-list" class="ka-diff-list" />
-            <engine:Button name="publish-button" text="Publish study" class="ka-button" />
-        </engine:VisualElement>
-
-        <engine:Label name="apply-status" text="" class="ka-status" />
-
     </engine:VisualElement>
 </engine:UXML>
