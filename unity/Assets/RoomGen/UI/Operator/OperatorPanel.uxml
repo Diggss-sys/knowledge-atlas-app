@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements">
+
+    <!--
+      The operator's instrument panel (U1..U3 skeleton). A thin view: every control here is wired to
+      OperatorPanelViewModel by OperatorPanelController — no state lives in the UXML. Sliders are named
+      by their canonical dotted path so the binder can map name -> SetField(path,value) generically.
+      Visual polish/layout iteration is explicitly deferred (SOFTWARE_FOUNDATION.md) — this is the shell.
+    -->
+    <engine:VisualElement name="operator-root" class="ka-root">
+
+        <engine:Label text="Room Editor" class="ka-heading" />
+
+        <engine:VisualElement name="shell-panel" class="ka-panel">
+            <engine:Label text="Shell" class="ka-subheading" />
+            <engine:Slider name="shell.width_m"          label="width m"          low-value="3.5" high-value="6.5" />
+            <engine:Slider name="shell.length_m"         label="length m"         low-value="4.0" high-value="8.0" />
+            <engine:Slider name="shell.ceiling_height_m" label="ceiling height m" low-value="2.4" high-value="3.4" />
+        </engine:VisualElement>
+
+        <engine:VisualElement name="lighting-panel" class="ka-panel">
+            <engine:Label text="Lighting" class="ka-subheading" />
+            <engine:Slider name="lighting.warmth"    label="warmth"    low-value="0" high-value="1" />
+            <engine:Slider name="lighting.intensity" label="intensity" low-value="0" high-value="2" />
+        </engine:VisualElement>
+
+        <engine:VisualElement name="pair-panel" class="ka-panel">
+            <engine:Label text="Experiment pair" class="ka-subheading" />
+            <engine:DropdownField name="declared-variable" label="Independent variable" />
+            <engine:Label name="validation-status" text="No pair validated yet." class="ka-status" />
+            <engine:VisualElement name="diff-list" class="ka-diff-list" />
+            <engine:Button name="publish-button" text="Publish study" class="ka-button" />
+        </engine:VisualElement>
+
+        <engine:Label name="apply-status" text="" class="ka-status" />
+
+    </engine:VisualElement>
+</engine:UXML>
