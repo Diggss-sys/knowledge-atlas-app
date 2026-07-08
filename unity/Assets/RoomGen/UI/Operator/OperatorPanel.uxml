@@ -12,6 +12,10 @@
     -->
     <engine:VisualElement name="operator-root" class="ka-root">
 
+        <!-- Link the shared theme so the panel renders styled in the UI Builder / preview too, not
+             only at runtime (the controller also applies it; a duplicate add is harmless). -->
+        <Style src="../Shared/base.uss" />
+
         <!-- app chrome: navy bar, gold wordmark + track subtitle -->
         <engine:VisualElement name="topbar" class="ka-topbar">
             <engine:Label text="Knowledge Atlas" class="ka-wordmark" />
