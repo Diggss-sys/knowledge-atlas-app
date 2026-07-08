@@ -6,6 +6,16 @@ foundation P1 can build on. This plan executes the foundational subset of
 testable — and leaves the interactive/visual polish to a human-at-the-machine session. Branch:
 `paco/ui-foundation` off `paco/lighting-l0-l4` (depends on the seam + runner from PR #2).*
 
+## Ownership + standing decisions (Paco, 2026-07-07)
+
+- **P1 is currently unowned** (nobody took the frontend role), so this lane IS the operator-UI
+  lane, not assistance to it — Paco carries it until someone claims P1.
+- **Unity-native UI confirmed** over a web app: a browser can't run HDRP (would discard the
+  fidelity-gate work), has no PCVR path, and forks the codebase — the web arm stays deferred
+  (DL-8/DL-9).
+- **The AI copilot (U5) will use the professor's ANTHROPIC_API_KEY** — env-var on the lab machine,
+  never committed (per AI_AUTHORING.md).
+
 ## Architectural rule (the whole point of this plan)
 
 **Thin views, testable view-models.** Every panel is (a) a pure-C# view-model that talks to the
