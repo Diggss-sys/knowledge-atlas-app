@@ -1,0 +1,17 @@
+{
+  "name": "RoomGen.Tests.PlayMode",
+  "rootNamespace": "RoomGen.Tests.PlayMode",
+  "references": [
+    "RoomGen.Runtime",
+    "RoomGen.UI",
+    "RoomGen.Testing",
+    "Unity.Newtonsoft.Json"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [],
+  "autoReferenced": false,
+  "overrideReferences": false,
+  "noEngineReferences": false
+}
