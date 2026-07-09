@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Atlas &middot; Team Hub</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/gsap.min.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+
+  <div class="breadcrumb gsap-reveal">
+    <a href="#">Knowledge Atlas</a> /
+    <span>Team Hub</span>
+  </div>
+
+  <div class="page-grid">
+    <aside class="side-nav gsap-reveal">
+      <ul>
+        <li><a href="#install" class="active">Installation Guide</a></li>
+        <li><a href="#progress">Current Progress</a></li>
+        <li><a href="#roster">Team Roster & To-Do</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+
+      <header class="hero gsap-reveal">
+        <div class="hero-track">Internal Dashboard</div>
+        <h1>Knowledge Atlas Team Hub</h1>
+        <p class="hero-sub">
+          Central coordination for the parametric room generation engine (COGS 160).
+          This hub tracks our milestones, installation guides, and what each workstream is currently owning.
+        </p>
+        <div class="hero-meta">
+          <span class="hero-pill">7 Members</span>
+          <span class="hero-pill">Target: V1 Demo (Aug 1)</span>
+        </div>
+      </header>
+
+      <section id="install" class="gsap-reveal">
+        <h2>1. Installation Guide</h2>
+        <p>Because the core engine is built in Unity HDRP, the installation process differs significantly depending on your operating system.</p>
+        
+        <h3>For Mac Users</h3>
+        <div class="callout callout-blue">
+          <strong>No Unity Required.</strong>
+          You do not need to install Unity or the Unity Hub. You interact strictly with the Python contracts, schemas, and fixtures.
+        </div>
+        <ol>
+          <li>Ensure you have <strong>Python 3.10+</strong> and <strong>Git</strong> installed.</li>
+          <li>Clone the repository and checkout the integration branch:
+            <pre><code>git clone &lt;repo-url&gt;
+git checkout Diggss-sys-branch</code></pre>
+          </li>
+          <li>Install the Python dependencies:
+            <pre><code>pip install -r requirements.txt</code></pre>
+          </li>
+          <li>Run the validation tests to verify your environment:
+            <pre><code>pytest tests -q</code></pre>
+            <em>(You should see all tests pass green).</em>
+          </li>
+        </ol>
+
+        <h3>For Windows Users</h3>
+        <div class="callout callout-teal">
+          <strong>Unity HDRP Environment.</strong>
+          You will run the generative engine and VR scaffolding.
+        </div>
+        <ol>
+          <li>Clone the repository and checkout <code>Diggss-sys-branch</code>.</li>
+          <li>Install <strong>Unity Hub</strong>.</li>
+          <li>Through Unity Hub, install exactly <strong>Unity 6000.3.16f1</strong>.</li>
+          <li>Open the <code>unity/</code> directory as your project. (Wait for packages to resolve).</li>
+          <li>Run the menu command: <code>RoomGen ▸ Bootstrap Project</code> (Run this once).</li>
+          <li>Press <strong>Play</strong>. You should see the dining room rendering.</li>
+        </ol>
+      </section>
+
+      <section id="progress" class="gsap-reveal">
+        <h2>2. Current Progress</h2>
+        <p>This board tracks the integration status of the six core workstreams towards our M5 target.</p>
+        
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Workstream</th>
+              <th>Owner</th>
+              <th>M0 Boot</th>
+              <th>M1 Tracer</th>
+              <th>M2 Instrument</th>
+              <th>M3 Demo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Generator</td>
+              <td>Diego</td>
+              <td><span class="status-indicator status-progress">In Progress</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Fidelity/VR</td>
+              <td>Diego</td>
+              <td><span class="status-indicator status-done">Done</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-progress">In Progress (L0-L4)</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Runtime</td>
+              <td>Diego</td>
+              <td><span class="status-indicator status-progress">In Progress</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Operator UI</td>
+              <td>Paco</td>
+              <td><span class="status-indicator status-progress">In Progress</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Contracts</td>
+              <td>TBD</td>
+              <td><span class="status-indicator status-progress">In Progress</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Data Layer</td>
+              <td>TBD</td>
+              <td><span class="status-indicator status-progress">In Progress</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-amber">
+          <strong>Latest Update:</strong> Paco's lane has absorbed the E2 fidelity half. The L0–L4 lighting sprint delivered the M2 fidelity gate, and we have a verified matched-luminance result (2.4 m vs 3.2 m ceilings read within 4.7% at eye height).
+        </div>
+      </section>
+
+      <section id="roster" class="gsap-reveal">
+        <h2>3. Team Roster & To-Do</h2>
+        <p>The project is divided into two Trios (Engine and Platform) and one Integrator. Remember: <strong>Nobody waits on the generator.</strong> Use the MockSpecChannel to develop your interfaces.</p>
+
+        <h3>Diego (Engine)</h3>
+        <ul>
+          <li><strong>Generator & Fidelity:</strong> Owns RoomSpecAdapter, desktop walk mode, the C# pair gate, HDRP light rig, and materials. <em>(Follow up: Add furniture models + SSGI bounce before M3).</em></li>
+          <li><strong>Experiment Runtime:</strong> Participant flow, seeded ordering, response rows. <em>(To-Do: Consume the shared base UI and build the neutral participant flow).</em></li>
+        </ul>
+
+        <h3>Paco (Software/UI)</h3>
+        <ul>
+          <li><strong>Operator UI:</strong> UI Toolkit editor panel, live diff panel, save/load. <em>(To-Do: Build the slider UI against the mock channel).</em></li>
+        </ul>
+
+        <h3>Michael (The Bouncer)</h3>
+        <ul>
+          <li><strong>Role:</strong> Helps out and unblocks both the frontend (UI/Contracts) and backend (Unity Engine) workstreams as needed.</li>
+        </ul>
+
+        <h3>Data Layer (TBD)</h3>
+        <ul>
+          <li><strong>Cloudflare:</strong> Cloudflare Worker, D1, R2. <em>(To-Do: Ensure the JS pair gate and CSV export are functioning).</em></li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+</body>
+</html>
