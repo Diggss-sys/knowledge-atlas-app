@@ -5,18 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Knowledge Atlas &middot; Team Hub</title>
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/gsap.min.js" defer></script>
-  <script src="js/app.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    /* Ensure elements are visible by default if JS fails */
+    .gsap-reveal { opacity: 1; }
+  </style>
 </head>
 <body>
+  
+  <div class="loader-overlay">
+    <div class="loader-circle-container">
+      <svg class="loader-svg" width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="54" fill="none" stroke="var(--color-border)" stroke-width="8" />
+        <circle class="loader-progress" cx="60" cy="60" r="54" fill="none" stroke="#228B22" stroke-width="8" stroke-linecap="round" stroke-dasharray="339.29" stroke-dashoffset="339.29" transform="rotate(-90 60 60)" />
+      </svg>
+      <div class="loader-count" style="color: #228B22;">0%</div>
+    </div>
+  </div>
 
-  <div class="breadcrumb gsap-reveal">
+  <div class="breadcrumb gsap-reveal-immediate">
     <a href="#">Knowledge Atlas</a> /
     <span>Team Hub</span>
   </div>
 
   <div class="page-grid">
-    <aside class="side-nav gsap-reveal">
+    <aside class="side-nav gsap-reveal-immediate">
       <ul>
         <li><a href="#install" class="active">Installation Guide</a></li>
         <li><a href="#progress">Current Progress</a></li>
@@ -26,7 +39,7 @@
 
     <main class="content">
 
-      <header class="hero gsap-reveal">
+      <header class="hero gsap-reveal-immediate">
         <div class="hero-track">Internal Dashboard</div>
         <h1>Knowledge Atlas Team Hub</h1>
         <p class="hero-sub">
@@ -39,7 +52,7 @@
         </div>
       </header>
 
-      <section id="install" class="gsap-reveal">
+      <section id="install" class="gsap-section">
         <h2>1. Installation Guide</h2>
         <p>Because the core engine is built in Unity HDRP, the installation process differs significantly depending on your operating system.</p>
         
@@ -78,7 +91,7 @@ git checkout Diggss-sys-branch</code></pre>
         </ol>
       </section>
 
-      <section id="progress" class="gsap-reveal">
+      <section id="progress" class="gsap-section">
         <h2>2. Current Progress</h2>
         <p>This board tracks the integration status of the six core workstreams towards our M5 target.</p>
         
@@ -150,7 +163,7 @@ git checkout Diggss-sys-branch</code></pre>
         </div>
       </section>
 
-      <section id="roster" class="gsap-reveal">
+      <section id="roster" class="gsap-section">
         <h2>3. Team Roster & To-Do</h2>
         <p>The project is divided into two Trios (Engine and Platform) and one Integrator. Remember: <strong>Nobody waits on the generator.</strong> Use the MockSpecChannel to develop your interfaces.</p>
 
@@ -180,4 +193,77 @@ git checkout Diggss-sys-branch</code></pre>
   </div>
 
 </body>
+  <script>
+    // Constants for uniform motion as dictated by the design system
+    const EASE = "power3.inOut";
+    const DURATION = { fast: 0.3, base: 0.8, slow: 1.2 };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Set up the animations immediately so they hide instantly (no flash)
+      // We will cascade the entire page in one smooth motion after the loader finishes.
+      const allElements = document.querySelectorAll(".hero-track, h1, .hero-sub, .hero-meta, .side-nav li, h2, p, .callout, table, ul, ol, pre, h3");
+      
+      let pageTween;
+      if (allElements.length > 0) {
+        pageTween = gsap.from(allElements, {
+          y: 30,
+          opacity: 0,
+          duration: DURATION.base,
+          stagger: 0.05, // Fast cascade
+          ease: EASE,
+          paused: true // Wait for loader
+        });
+      }
+
+      // Subtle hover effects on nav
+      const navLinks = document.querySelectorAll(".side-nav a");
+      navLinks.forEach(link => {
+        link.addEventListener("mouseenter", () => {
+          if(!link.classList.contains("active")) {
+            gsap.to(link, { x: 5, duration: DURATION.fast, ease: EASE });
+          }
+        });
+        link.addEventListener("mouseleave", () => {
+          if(!link.classList.contains("active")) {
+            gsap.to(link, { x: 0, duration: DURATION.fast, ease: EASE });
+          }
+        });
+      });
+
+      // 2. Cinematic Intro Loader
+      const counter = document.querySelector('.loader-count');
+      const overlay = document.querySelector('.loader-overlay');
+      let progress = 0;
+      
+      const progressCircle = document.querySelector('.loader-progress');
+      const circumference = 339.29;
+      
+      const interval = setInterval(() => {
+        progress += Math.random() * 8;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          
+          // Wipe the overlay away
+          gsap.to(overlay, {
+            yPercent: -100, 
+            duration: DURATION.slow, 
+            ease: EASE,
+            delay: 0.2,
+            onComplete: () => {
+              // Play the full page cascade now that the overlay is gone
+              if (pageTween) pageTween.play();
+            }
+          });
+        }
+        if (counter) counter.textContent = Math.floor(progress) + '%';
+        
+        // Animate the SVG stroke
+        if (progressCircle) {
+          const offset = circumference - (progress / 100) * circumference;
+          gsap.to(progressCircle, { strokeDashoffset: offset, duration: 0.1, ease: "none" });
+        }
+      }, 80);
+    });
+  </script>
 </html>
