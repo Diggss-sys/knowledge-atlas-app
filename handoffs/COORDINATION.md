@@ -2,11 +2,16 @@
 
 *The integrator's (Michael's) operating manual + the rules that bind everyone. Team topology + AI model: [docs/TEAM_PLAN.md](../docs/TEAM_PLAN.md). Timeline: [../PLAN.md](../PLAN.md) roadmap (V1 demo ≈ Aug 1; hard stop end of summer).*
 
-## Branching + merging
+## Branching + merging (simplified 2026-07-09 with the July replan)
 
-- `main` — stable snapshots only (Michael tags after each milestone).
-- **`Diggss-sys-branch` — the integration branch.** All feature branches PR into it; Michael (or Diego) merges.
-- Feature branches: `<name>/<workstream>-<thing>`, e.g. `paco/gen-adapter`, `nk/ui-diff-panel`. Small PRs (one milestone step), reviewed by the workstream's contract counterpart (table below).
+- **`main` — the integration point AND the stable branch.** All feature branches PR straight into
+  it; the automated suite (92 checks) gates every merge, and Michael runs the fresh-clone/build
+  check after each one. With two code contributors (Diego on engine, Paco+Claude on the
+  instrument), a separate integration branch is overhead — retired.
+- **`Diggss-sys-branch` — Diego's personal engine workspace.** Not a shared target anymore; his
+  work reaches the team via PRs to `main` like everyone else's.
+- Feature branches: `<name>/<thing>` (e.g. `paco/ui-foundation`, `diego/engine-x`). Small PRs,
+  reviewed by the other code contributor when it touches their side.
 - Commits explain the *why*; convention: end with `Co-Authored-By: Claude <model> <noreply@anthropic.com>` when AI-written.
 
 ## Review pairs (who reviews whom)
