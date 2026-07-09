@@ -4,6 +4,17 @@
 "what happened lately" narrative; `status.json` carries the structured state. Neither is ever
 rewritten retroactively — append only.*
 
+## 2026-07-08 (later) — Anti's hub design lands; content corrected
+- Antigravity shipped the hub design in `team_hub/` (GSAP loader + cascade, cream/forest palette,
+  side-nav layout) — design approved by Paco and kept as-is.
+- Claude corrected the page CONTENT (it had been authored, not synced): Mac install now matches
+  GETTING_STARTED.md (Unity from source — not "Python only"), branch guidance fixed, progress
+  table owners/states made truthful, PR #2 top-ask + gate-verdict + Mac-volunteer asks added,
+  source-of-truth callout + Updated pill added.
+- Contract v2: data moved to `team_hub/data/` (old `teamhub/` removed); ANTI_README.md rewritten —
+  the rule is now "sync, don't author". Pages deploy workflow switched to MANUAL only (privacy:
+  public internet exposure needs a team decision). Reduced-motion guard added to the page.
+
 ## 2026-07-08 — UI polish, Mac path, hub handoff
 - Slider redesign in the operator panel (teal fill, round thumb, quiet read-outs) + preview camera
   now level so the ceiling-height manipulation is visible in the panes. 92/92 + play-mode capture.

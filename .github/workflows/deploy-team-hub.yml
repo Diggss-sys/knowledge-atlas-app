@@ -1,11 +1,9 @@
 name: Deploy Team Hub to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default or integration branches
-  push:
-    branches: ["main", "Diggss-sys-branch", "paco/ui-foundation"]
-
-  # Allows you to run this workflow manually from the Actions tab
+  # MANUAL ONLY (deliberate): GitHub Pages on this repo would publish the team's names and plans
+  # to the public internet. Deploys wait on an explicit team decision — run from the Actions tab
+  # when that decision is made. Do not re-add push triggers without asking Paco.
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages

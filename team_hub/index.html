@@ -49,6 +49,7 @@
         <div class="hero-meta">
           <span class="hero-pill">7 Members</span>
           <span class="hero-pill">Target: V1 Demo (Aug 1)</span>
+          <span class="hero-pill">Updated: July 8, 2026</span>
         </div>
       </header>
 
@@ -56,39 +57,41 @@
         <h2>1. Installation Guide</h2>
         <p>Because the core engine is built in Unity HDRP, the installation process differs significantly depending on your operating system.</p>
         
-        <h3>For Mac Users</h3>
+        <div class="callout callout-amber">
+          <strong>Branch note.</strong> Until PR #2 merges, <code>Diggss-sys-branch</code> and <code>main</code> do NOT contain the current work.
+          Check out <code>paco/ui-foundation</code> to get everything. This note disappears after the merge.
+        </div>
+
+        <h3>For Mac Users (M1/M2 — yes, your MacBook runs it)</h3>
         <div class="callout callout-blue">
-          <strong>No Unity Required.</strong>
-          You do not need to install Unity or the Unity Hub. You interact strictly with the Python contracts, schemas, and fixtures.
+          <strong>Run the Unity project from source.</strong>
+          The scene is light enough for Apple Silicon. ~30 minutes the first time, almost all of it Unity importing.
         </div>
         <ol>
-          <li>Ensure you have <strong>Python 3.10+</strong> and <strong>Git</strong> installed.</li>
-          <li>Clone the repository and checkout the integration branch:
-            <pre><code>git clone &lt;repo-url&gt;
-git checkout Diggss-sys-branch</code></pre>
+          <li>Get collaborator access (ask Diego), then:
+            <pre><code>git clone https://github.com/Diggss-sys/knowledge-atlas-app.git
+git checkout paco/ui-foundation</code></pre>
           </li>
-          <li>Install the Python dependencies:
-            <pre><code>pip install -r requirements.txt</code></pre>
-          </li>
-          <li>Run the validation tests to verify your environment:
-            <pre><code>pytest tests -q</code></pre>
-            <em>(You should see all tests pass green).</em>
-          </li>
+          <li>Install <strong>Unity Hub</strong> (Apple Silicon version), free Personal license.</li>
+          <li>Install exactly <strong>Unity 6000.3.16f1</strong> (use the download archive if the Hub doesn't list it).</li>
+          <li>Open the <code>unity/</code> folder; wait out the first import (10&ndash;20 min).</li>
+          <li>Run <code>RoomGen ▸ Fetch CC0 Materials</code> once (real textures; needs internet).</li>
+          <li>Open <code>Assets/RoomGen/Scenes/RoomStudio.unity</code> and press <strong>Play</strong>.</li>
         </ol>
+        <p><em>Contracts-only contributors (schemas, fixtures, validators) can skip Unity: Python 3.10+, then <code>pytest tests -q</code>.</em></p>
 
         <h3>For Windows Users</h3>
         <div class="callout callout-teal">
-          <strong>Unity HDRP Environment.</strong>
-          You will run the generative engine and VR scaffolding.
+          <strong>Fastest path: the built app.</strong>
+          Ask Paco for the current <code>RoomStudio.exe</code> folder — double-click, "Load KA spec pair", "Walk control".
+          WASD + mouse, Tab switches condition, Esc exits.
         </div>
-        <ol>
-          <li>Clone the repository and checkout <code>Diggss-sys-branch</code>.</li>
-          <li>Install <strong>Unity Hub</strong>.</li>
-          <li>Through Unity Hub, install exactly <strong>Unity 6000.3.16f1</strong>.</li>
-          <li>Open the <code>unity/</code> directory as your project. (Wait for packages to resolve).</li>
-          <li>Run the menu command: <code>RoomGen ▸ Bootstrap Project</code> (Run this once).</li>
-          <li>Press <strong>Play</strong>. You should see the dining room rendering.</li>
-        </ol>
+        <p>To run from source instead, follow the Mac steps above (skip the Apple Silicon notes).</p>
+
+        <h3>Mac .app — one volunteer needed</h3>
+        <p>The macOS build target exists (<code>RoomGen ▸ Build macOS Application</code>) but nobody has smoke-tested a .app on
+        real hardware. First M2 owner to build it and report unlocks a no-Unity install for every Mac on the team.</p>
+        <p>Full guide with troubleshooting: <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md">docs/GETTING_STARTED.md</a></p>
       </section>
 
       <section id="progress" class="gsap-section">
@@ -108,49 +111,49 @@ git checkout Diggss-sys-branch</code></pre>
           </thead>
           <tbody>
             <tr>
-              <td>Generator</td>
-              <td>Diego</td>
-              <td><span class="status-indicator status-progress">In Progress</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Fidelity/VR</td>
-              <td>Diego</td>
+              <td>Generator (E1)</td>
+              <td>Diego (from Paco)</td>
               <td><span class="status-indicator status-done">Done</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-progress">In Progress (L0-L4)</span></td>
+              <td><span class="status-indicator status-done">Done (engine side)</span></td>
+              <td><span class="status-indicator status-pending">—</span></td>
               <td><span class="status-indicator status-pending">Pending</span></td>
             </tr>
             <tr>
-              <td>Runtime</td>
+              <td>Fidelity / VR (E2)</td>
+              <td>E2 teammate (VR half)</td>
+              <td><span class="status-indicator status-done">Done</span></td>
+              <td><span class="status-indicator status-done">Done</span></td>
+              <td><span class="status-indicator status-progress">Gate verdict pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Runtime (E3)</td>
+              <td>E3 teammate</td>
+              <td><span class="status-indicator status-done">Done (R0/R1 built)</span></td>
+              <td><span class="status-indicator status-progress">Needs a human session (R2)</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Operator UI (P1)</td>
+              <td>Paco (unclaimed — open)</td>
+              <td><span class="status-indicator status-done">Done (foundation, 92/92)</span></td>
+              <td><span class="status-indicator status-progress">Studio scene queued</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td>Contracts (P2)</td>
               <td>Diego</td>
-              <td><span class="status-indicator status-progress">In Progress</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Operator UI</td>
-              <td>Paco</td>
-              <td><span class="status-indicator status-progress">In Progress</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
+              <td><span class="status-indicator status-done">Done (PR #1)</span></td>
+              <td><span class="status-indicator status-progress">2 contract calls waiting</span></td>
               <td><span class="status-indicator status-pending">Pending</span></td>
               <td><span class="status-indicator status-pending">Pending</span></td>
             </tr>
             <tr>
-              <td>Contracts</td>
-              <td>TBD</td>
-              <td><span class="status-indicator status-progress">In Progress</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Data Layer</td>
-              <td>TBD</td>
-              <td><span class="status-indicator status-progress">In Progress</span></td>
+              <td>Data Layer (P3)</td>
+              <td>P3 teammate</td>
+              <td><span class="status-indicator status-pending">Not started (scope settled)</span></td>
               <td><span class="status-indicator status-pending">Pending</span></td>
               <td><span class="status-indicator status-pending">Pending</span></td>
               <td><span class="status-indicator status-pending">Pending</span></td>
@@ -159,7 +162,16 @@ git checkout Diggss-sys-branch</code></pre>
         </table>
 
         <div class="callout callout-amber">
-          <strong>Latest Update:</strong> Paco's lane has absorbed the E2 fidelity half. The L0–L4 lighting sprint delivered the M2 fidelity gate, and we have a verified matched-luminance result (2.4 m vs 3.2 m ceilings read within 4.7% at eye height).
+          <strong>Top ask right now:</strong> Diego — merge
+          <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/2">PR #2</a> with
+          <em>"Create a merge commit"</em> (not squash). It carries the fidelity gate, the runtime core,
+          three experiment pairs, and the walk-mode fix; every other lane builds on it.
+        </div>
+        <div class="callout callout-teal">
+          <strong>Latest results:</strong> 92/92 automated checks green. The L0&ndash;L4 lighting sprint delivered the
+          M2 fidelity gate with a <em>measured</em> matched-luminance result — 2.4 m vs 3.2 m ceilings read within
+          4.7% at eye height (<a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FIDELITY_GATE.md">evidence</a>).
+          Team verdict on the gate is pending — proposed: conditional pass.
         </div>
       </section>
 
@@ -167,26 +179,46 @@ git checkout Diggss-sys-branch</code></pre>
         <h2>3. Team Roster & To-Do</h2>
         <p>The project is divided into two Trios (Engine and Platform) and one Integrator. Remember: <strong>Nobody waits on the generator.</strong> Use the MockSpecChannel to develop your interfaces.</p>
 
-        <h3>Diego (Engine)</h3>
+        <h3>Diego (Engine + Contracts)</h3>
         <ul>
-          <li><strong>Generator & Fidelity:</strong> Owns RoomSpecAdapter, desktop walk mode, the C# pair gate, HDRP light rig, and materials. <em>(Follow up: Add furniture models + SSGI bounce before M3).</em></li>
-          <li><strong>Experiment Runtime:</strong> Participant flow, seeded ordering, response rows. <em>(To-Do: Consume the shared base UI and build the neutral participant flow).</em></li>
+          <li><strong>Do first:</strong> Merge <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/2">PR #2</a> ("Create a merge commit", not squash; skip re-merging <code>hdrp-master-plan</code> — it's already in), then tell the team the integration-branch plan.</li>
+          <li><strong>Contract calls waiting:</strong> the <code>lighting.warmth</code> label/formula inversion, and coupled-vars notes (pendant&harr;ceiling height, sun-tint&harr;color temperature).</li>
+          <li><strong>Then:</strong> the engine lane is yours — generator, gate, HDRP rig are all green and handed over.</li>
         </ul>
 
-        <h3>Paco (Software/UI)</h3>
+        <h3>Paco (Software / UI)</h3>
         <ul>
-          <li><strong>Operator UI:</strong> UI Toolkit editor panel, live diff panel, save/load. <em>(To-Do: Build the slider UI against the mock channel).</em></li>
+          <li><strong>Operator UI foundation shipped</strong> (panel, live control/treatment previews, publish gate, 92/92 checks). Waiting on Diego's merge to open PR #3.</li>
+          <li><strong>Queued:</strong> interactive studio scene (after syncing with Diego), diff panel vs golden fixtures, publish form.</li>
         </ul>
 
-        <h3>Michael (The Bouncer)</h3>
+        <h3>Michael (Integrator)</h3>
         <ul>
-          <li><strong>Role:</strong> Helps out and unblocks both the frontend (UI/Contracts) and backend (Unity Engine) workstreams as needed.</li>
+          <li>After Diego's merge: cut the integration branch, refresh COORDINATION.md's branch rules + status board.</li>
+          <li>Fresh-clone check on any machine (clone &rarr; open in Unity &rarr; Fetch CC0 Materials &rarr; run tests; expect green).</li>
         </ul>
 
-        <h3>Data Layer (TBD)</h3>
+        <h3>Fidelity / VR (E2)</h3>
         <ul>
-          <li><strong>Cloudflare:</strong> Cloudflare Worker, D1, R2. <em>(To-Do: Ensure the JS pair gate and CSV export are functioning).</em></li>
+          <li>Cast your M2 gate verdict on <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/lighting-l0-l4/docs/fidelity">the evidence renders</a>. Your fidelity half was absorbed and shipped — your lane is now the VR half (V0/V1; Quest 3 + Link recommended).</li>
         </ul>
+
+        <h3>Runtime (E3)</h3>
+        <ul>
+          <li>R0/R1 (rows, seeded ordering, study gate) are <strong>built and tested for you</strong> — status note atop <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/EXPERIMENT_RUNTIME.md">EXPERIMENT_RUNTIME.md</a>. Claim R2 (the neutral participant screens + real rooms), or say so if we should keep carrying it.</li>
+        </ul>
+
+        <h3>Data Layer (P3)</h3>
+        <ul>
+          <li><strong>Decision settled:</strong> Cloudflare is a save/load store only — never the live path. Scope: a thin Worker storing RoomSpec/study JSON + <code>POST /responses</code> (hooks in at R3). Spec: handoffs/CLOUDFLARE_DATA.md.</li>
+        </ul>
+
+        <div class="callout callout-blue">
+          <strong>Source of truth is the repo.</strong> Plans live in
+          <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/ui-foundation/handoffs">handoffs/</a>,
+          the machine-readable state behind this page in <code>team_hub/data/status.json</code>. If this page and the
+          repo disagree, the repo wins — tell Paco so the page gets regenerated.
+        </div>
       </section>
 
     </main>
@@ -199,6 +231,13 @@ git checkout Diggss-sys-branch</code></pre>
     const DURATION = { fast: 0.3, base: 0.8, slow: 1.2 };
 
     document.addEventListener("DOMContentLoaded", () => {
+      // Accessibility: honor prefers-reduced-motion — skip the loader and all tweens entirely.
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const overlay = document.querySelector(".loader-overlay");
+        if (overlay) overlay.remove();
+        return;
+      }
+
       // 1. Set up the animations immediately so they hide instantly (no flash)
       // We will cascade the entire page in one smooth motion after the loader finishes.
       const allElements = document.querySelectorAll(".hero-track, h1, .hero-sub, .hero-meta, .side-nav li, h2, p, .callout, table, ul, ol, pre, h3");
