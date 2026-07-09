@@ -28,14 +28,28 @@ namespace RoomGen.Generation
             walls.transform.SetParent(shell.transform, false);
             var wallMaterial = surfaces.Resolve(spec.Surfaces.WallMaterialId);
             var radius = Mathf.Max(0f, geometry.CornerRadiusM);
-            BuildStraightWall(spec, "front", geometry.WidthM - 2f * radius,
-                OpeningGenerator.ForWall(spec, "front"), walls.transform, wallMaterial, layer);
-            BuildStraightWall(spec, "back", geometry.WidthM - 2f * radius,
-                OpeningGenerator.ForWall(spec, "back"), walls.transform, wallMaterial, layer);
-            BuildStraightWall(spec, "left", geometry.LengthM - 2f * radius,
-                OpeningGenerator.ForWall(spec, "left"), walls.transform, wallMaterial, layer);
-            BuildStraightWall(spec, "right", geometry.LengthM - 2f * radius,
-                OpeningGenerator.ForWall(spec, "right"), walls.transform, wallMaterial, layer);
+
+            foreach (var wall in new[] { "front", "back", "left", "right" })
+            {
+                var length = (wall == "front" || wall == "back" ? geometry.WidthM : geometry.LengthM)
+                             - 2f * radius;
+                var openings = OpeningGenerator.ForWall(spec, wall);
+                var bowAmount = geometry.WallBow?.For(wall) ?? 0f;
+
+                if (Mathf.Abs(bowAmount) * geometry.BowMaxM > 0.001f)
+                {
+                    // Bowed wall = one smooth curved band (openings are illegal on bowed walls —
+                    // the validator reports opening_on_bowed_wall; we build honestly without them).
+                    if (openings.Count > 0)
+                        Debug.LogWarning($"RoomGen: wall '{wall}' is bowed but has {openings.Count} opening(s); " +
+                                         "openings on bowed walls are not supported (v1) and were skipped.");
+                    BuildBowedWall(spec, wall, walls.transform, wallMaterial, layer);
+                }
+                else
+                {
+                    BuildStraightWall(spec, wall, length, openings, walls.transform, wallMaterial, layer);
+                }
+            }
 
             if (radius > 0.0001f)
                 BuildRoundedCorners(spec, walls.transform, wallMaterial, layer);
@@ -124,60 +138,47 @@ namespace RoomGen.Generation
                 layer);
         }
 
+        /// <summary>
+        /// A bowed wall (wall_bow != 0): one smooth curved band mesh — sagitta arc through the
+        /// wall's corner points, analytic normals, arc-length UVs (WallBand). Concave (-) bows into
+        /// the room, convex (+) bulges outward.
+        /// </summary>
+        static void BuildBowedWall(RoomSpec spec, string wall, Transform parent, Material material, int layer)
+        {
+            var span = FootprintPath.BuildWallSpan(spec.Geometry, wall);
+            var mesh = WallBand.BuildMesh(span, 0f, spec.Geometry.CeilingHeightM,
+                spec.Geometry.WallThicknessM, char.ToUpperInvariant(wall[0]) + wall.Substring(1) + " Bowed Wall Mesh");
+            GenerationUtil.CreateMeshObject(
+                char.ToUpperInvariant(wall[0]) + wall.Substring(1) + " Wall (Bowed)",
+                parent, mesh, material, layer);
+        }
+
+        /// <summary>
+        /// Rounded corners as ONE smooth curved band per corner (replaces the old fan of overlapping
+        /// boxes: hard-edged facets, z-fighting, box UVs — PR-review finding). Smooth radial normals
+        /// + arc-length UVs come from WallBand.
+        /// </summary>
         static void BuildRoundedCorners(RoomSpec spec, Transform parent, Material material, int layer)
         {
             var geometry = spec.Geometry;
             var radius = geometry.CornerRadiusM;
             var halfWidth = geometry.WidthM * 0.5f;
             var halfLength = geometry.LengthM * 0.5f;
-            var corners = new[]
+            var corners = new (Vector2 center, float start, float end, string name)[]
             {
-                new Corner(new Vector2(halfWidth - radius, halfLength - radius), 0f, 90f, "Front Right"),
-                new Corner(new Vector2(-halfWidth + radius, halfLength - radius), 90f, 180f, "Front Left"),
-                new Corner(new Vector2(-halfWidth + radius, -halfLength + radius), 180f, 270f, "Back Left"),
-                new Corner(new Vector2(halfWidth - radius, -halfLength + radius), 270f, 360f, "Back Right")
+                (new Vector2(halfWidth - radius, halfLength - radius), 0f, 90f, "Front Right"),
+                (new Vector2(-halfWidth + radius, halfLength - radius), 90f, 180f, "Front Left"),
+                (new Vector2(-halfWidth + radius, -halfLength + radius), 180f, 270f, "Back Left"),
+                (new Vector2(halfWidth - radius, -halfLength + radius), 270f, 360f, "Back Right")
             };
 
             foreach (var corner in corners)
             {
-                var root = new GameObject(corner.Name + " Curve");
-                root.layer = layer;
-                root.transform.SetParent(parent, false);
-                var arc = FootprintPath.BuildCornerArc(corner.Center, radius,
-                    corner.StartDegrees, corner.EndDegrees);
-                for (var i = 0; i < arc.Count - 1; i++)
-                {
-                    var a = arc[i];
-                    var b = arc[i + 1];
-                    var midpoint = (a + b) * 0.5f;
-                    var outward = (midpoint - corner.Center).normalized;
-                    var segment = Vector2.Distance(a, b) + 0.003f;
-                    var position = new Vector3(
-                        midpoint.x + outward.x * geometry.WallThicknessM * 0.5f,
-                        geometry.CeilingHeightM * 0.5f,
-                        midpoint.y + outward.y * geometry.WallThicknessM * 0.5f);
-                    var rotation = Quaternion.LookRotation(
-                        new Vector3(outward.x, 0f, outward.y), Vector3.up);
-                    GenerationUtil.CreateBox($"Curve {i:00}", root.transform,
-                        new Vector3(segment, geometry.CeilingHeightM, geometry.WallThicknessM),
-                        position, material, layer, rotation);
-                }
-            }
-        }
-
-        readonly struct Corner
-        {
-            public readonly Vector2 Center;
-            public readonly float StartDegrees;
-            public readonly float EndDegrees;
-            public readonly string Name;
-
-            public Corner(Vector2 center, float startDegrees, float endDegrees, string name)
-            {
-                Center = center;
-                StartDegrees = startDegrees;
-                EndDegrees = endDegrees;
-                Name = name;
+                var samples = FootprintPath.BuildCornerSamples(
+                    corner.center, radius, corner.start, corner.end);
+                var mesh = WallBand.BuildMesh(samples, 0f, geometry.CeilingHeightM,
+                    geometry.WallThicknessM, corner.name + " Curve Mesh");
+                GenerationUtil.CreateMeshObject(corner.name + " Curve", parent, mesh, material, layer);
             }
         }
     }

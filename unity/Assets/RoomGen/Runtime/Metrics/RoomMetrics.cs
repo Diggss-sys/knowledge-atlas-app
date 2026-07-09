@@ -10,10 +10,26 @@ namespace RoomGen.Metrics
         {
             var g = spec.Geometry;
             var radius = Mathf.Clamp(g.CornerRadiusM, 0f, Mathf.Min(g.WidthM, g.LengthM) * 0.5f);
-            var area = g.WidthM * g.LengthM - (4f - Mathf.PI) * radius * radius;
-            var perimeter = radius <= 0f
-                ? 2f * (g.WidthM + g.LengthM)
-                : 2f * (g.WidthM + g.LengthM - 4f * radius) + 2f * Mathf.PI * radius;
+            float area;
+            float perimeter;
+            if (g.WallBow != null && g.WallBow.AnyBowed())
+            {
+                // Bowed walls change floor area and perimeter — closed-form rectangle math would
+                // hide the coupled deltas. Measure the ACTUAL footprint polygon instead (shoelace +
+                // segment lengths over the tessellated ring; exact within ~2 mm chord error).
+                var ring = Generation.FootprintPath.Build(g);
+                area = Mathf.Abs(Generation.EarClip.SignedArea(ring));
+                perimeter = 0f;
+                for (var i = 0; i < ring.Count; i++)
+                    perimeter += Vector2.Distance(ring[i], ring[(i + 1) % ring.Count]);
+            }
+            else
+            {
+                area = g.WidthM * g.LengthM - (4f - Mathf.PI) * radius * radius;
+                perimeter = radius <= 0f
+                    ? 2f * (g.WidthM + g.LengthM)
+                    : 2f * (g.WidthM + g.LengthM - 4f * radius) + 2f * Mathf.PI * radius;
+            }
             var grossWallArea = perimeter * g.CeilingHeightM;
             var windowArea = 0f;
             var allOpeningArea = 0f;

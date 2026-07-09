@@ -39,6 +39,18 @@ namespace RoomGen.Validation
             var maximumRadius = Mathf.Min(spec.Geometry.WidthM, spec.Geometry.LengthM) * 0.5f - 0.1f;
             CheckRange(issues, "geometry.corner_radius_m", spec.Geometry.CornerRadiusM, 0f, maximumRadius);
 
+            if (spec.Geometry.WallBow != null)
+            {
+                CheckRange(issues, "geometry.wall_bow.front", spec.Geometry.WallBow.Front, -1f, 1f);
+                CheckRange(issues, "geometry.wall_bow.back", spec.Geometry.WallBow.Back, -1f, 1f);
+                CheckRange(issues, "geometry.wall_bow.left", spec.Geometry.WallBow.Left, -1f, 1f);
+                CheckRange(issues, "geometry.wall_bow.right", spec.Geometry.WallBow.Right, -1f, 1f);
+                // A concave bow eats interior space: cap the sagitta well below half the room span
+                // so opposite walls can never meet.
+                var maxSagitta = Mathf.Min(spec.Geometry.WidthM, spec.Geometry.LengthM) * 0.25f;
+                CheckRange(issues, "geometry.bow_max_m", spec.Geometry.BowMaxM, 0f, maxSagitta);
+            }
+
             if (preset != null)
             {
                 CheckPresetRange(issues, "geometry.width_m", spec.Geometry.WidthM, preset.WidthRangeM);
@@ -84,6 +96,13 @@ namespace RoomGen.Validation
             var straightLength = Mathf.Max(0f, wallLength - 2f * room.Geometry.CornerRadiusM);
             if (Mathf.Abs(opening.CenterM) + opening.WidthM * 0.5f > straightLength * 0.5f - 0.05f)
                 issues.Add(Error("OPENING_BOUNDS", path, "Opening must remain inside a straight wall section."));
+
+            // Openings on a bowed wall are unsupported in v1 (the curved band carries no gaps yet);
+            // honesty rule: refuse rather than silently render a wall without its window.
+            var bow = room.Geometry.WallBow?.For(opening.Wall.ToLowerInvariant()) ?? 0f;
+            if (Mathf.Abs(bow) * room.Geometry.BowMaxM > 0.001f)
+                issues.Add(Error("OPENING_ON_BOWED_WALL", path,
+                    $"Wall '{opening.Wall}' is bowed (wall_bow={bow:0.##}); openings on bowed walls are not supported."));
         }
 
         static void ValidateOpeningOverlap(RoomSpec room, List<ValidationIssue> issues)

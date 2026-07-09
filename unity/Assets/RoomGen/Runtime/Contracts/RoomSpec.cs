@@ -28,6 +28,34 @@ namespace RoomGen.Contracts
         [JsonProperty("ceiling_height_m")] public float CeilingHeightM = 2.4f;
         [JsonProperty("wall_thickness_m")] public float WallThicknessM = 0.15f;
         [JsonProperty("corner_radius_m")] public float CornerRadiusM;
+        // Per-wall bow: -1 = concave (bows INTO the room) .. 0 = flat .. +1 = convex (bows outward).
+        // Sagitta at mid-wall = bow * bow_max_m. Openings are not allowed on a bowed wall (v1).
+        [JsonProperty("wall_bow")] public WallBowSpec WallBow = new WallBowSpec();
+        [JsonProperty("bow_max_m")] public float BowMaxM = 0.6f;
+    }
+
+    [Serializable]
+    public sealed class WallBowSpec
+    {
+        [JsonProperty("front")] public float Front;
+        [JsonProperty("back")] public float Back;
+        [JsonProperty("left")] public float Left;
+        [JsonProperty("right")] public float Right;
+
+        public float For(string wall)
+        {
+            switch (wall)
+            {
+                case "front": return Front;
+                case "back": return Back;
+                case "left": return Left;
+                default: return Right;
+            }
+        }
+
+        public bool AnyBowed(float epsilon = 0.001f) =>
+            Math.Abs(Front) > epsilon || Math.Abs(Back) > epsilon ||
+            Math.Abs(Left) > epsilon || Math.Abs(Right) > epsilon;
     }
 
     [Serializable]

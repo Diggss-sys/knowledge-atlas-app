@@ -16,6 +16,9 @@ namespace RoomGen.Tests
             foreach (var item in cleanup)
                 if (item != null) Object.DestroyImmediate(item);
             cleanup.Clear();
+            foreach (var mesh in cleanupMeshes)
+                if (mesh != null) Object.DestroyImmediate(mesh);
+            cleanupMeshes.Clear();
         }
 
         [Test]
@@ -36,16 +39,109 @@ namespace RoomGen.Tests
                 LengthM = 6.2f,
                 CornerRadiusM = 0.8f
             };
-            var path = FootprintPath.Build(geometry, 12);
-            // 4 corner arcs x 12 segments; the very first arc also contributes its inclusive start
-            // point (a real corner vertex), and consecutive arcs deduplicate their shared endpoints:
-            // 13 + 12 + 12 + 12 = 49 distinct points, closed implicitly by the polygon edge.
-            Assert.That(path.Count, Is.EqualTo(4 * 12 + 1));
+            // Tessellation is chord-error-driven now (RENDERING_RESEARCH §4): assert geometry
+            // properties, not a hardcoded segment count.
+            var path = FootprintPath.Build(geometry);
+            Assert.That(path.Count, Is.GreaterThanOrEqualTo(4 * 3));
             Assert.That(path.TrueForAll(point =>
                 Mathf.Abs(point.x) <= geometry.WidthM * 0.5f + 0.0001f &&
                 Mathf.Abs(point.y) <= geometry.LengthM * 0.5f + 0.0001f), Is.True);
             Assert.That(Vector2.Distance(path[0], path[path.Count - 1]), Is.GreaterThan(0.001f));
+            // Area must match the rounded-rect closed form within tessellation error.
+            var expected = geometry.WidthM * geometry.LengthM
+                           - (4f - Mathf.PI) * geometry.CornerRadiusM * geometry.CornerRadiusM;
+            Assert.That(Mathf.Abs(EarClip.SignedArea(path)), Is.EqualTo(expected).Within(0.02f));
         }
+
+        [Test]
+        public void BowedWallChangesFootprintAreaInTheRightDirection()
+        {
+            var flat = new GeometrySpec { WidthM = 5f, LengthM = 6f };
+            var concave = new GeometrySpec
+            {
+                WidthM = 5f, LengthM = 6f,
+                WallBow = new WallBowSpec { Back = -1f }, BowMaxM = 0.6f
+            };
+            var convex = new GeometrySpec
+            {
+                WidthM = 5f, LengthM = 6f,
+                WallBow = new WallBowSpec { Back = 1f }, BowMaxM = 0.6f
+            };
+
+            var flatArea = Mathf.Abs(EarClip.SignedArea(FootprintPath.Build(flat)));
+            var concaveArea = Mathf.Abs(EarClip.SignedArea(FootprintPath.Build(concave)));
+            var convexArea = Mathf.Abs(EarClip.SignedArea(FootprintPath.Build(convex)));
+
+            Assert.That(concaveArea, Is.LessThan(flatArea - 0.1f), "concave bow must EAT floor area");
+            Assert.That(convexArea, Is.GreaterThan(flatArea + 0.1f), "convex bow must ADD floor area");
+        }
+
+        [Test]
+        public void EarClipTriangulatesConcaveFootprintCompletely()
+        {
+            var concave = new GeometrySpec
+            {
+                WidthM = 5f, LengthM = 6f,
+                WallBow = new WallBowSpec { Back = -1f, Left = -0.5f }, BowMaxM = 0.6f
+            };
+            var ring = FootprintPath.Build(concave);
+            var triangles = EarClip.Triangulate(ring);
+
+            // n-2 triangles for a simple polygon, and triangle area must reconstruct ring area.
+            Assert.That(triangles.Count, Is.EqualTo((ring.Count - 2) * 3));
+            var triangleArea = 0f;
+            for (var t = 0; t < triangles.Count; t += 3)
+            {
+                var a = ring[triangles[t]];
+                var b = ring[triangles[t + 1]];
+                var c = ring[triangles[t + 2]];
+                triangleArea += Mathf.Abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)) * 0.5f;
+            }
+            Assert.That(triangleArea, Is.EqualTo(Mathf.Abs(EarClip.SignedArea(ring))).Within(0.01f));
+        }
+
+        [Test]
+        public void WallBandMeshHasUnitNormalsAndTangents()
+        {
+            var geometry = new GeometrySpec
+            {
+                WidthM = 5f, LengthM = 6f,
+                WallBow = new WallBowSpec { Back = 1f }, BowMaxM = 0.6f
+            };
+            var span = FootprintPath.BuildWallSpan(geometry, "back");
+            var mesh = WallBand.BuildMesh(span, 0f, 2.6f, 0.15f, "Test Band");
+            cleanupMeshes.Add(mesh);
+
+            Assert.That(span.Count, Is.GreaterThanOrEqualTo(3), "bowed wall must tessellate");
+            Assert.That(mesh.vertexCount, Is.GreaterThan(0));
+            Assert.That(mesh.triangles.Length, Is.GreaterThan(0));
+            Assert.That(mesh.normals.Length, Is.EqualTo(mesh.vertexCount));
+            Assert.That(mesh.tangents.Length, Is.EqualTo(mesh.vertexCount));
+            foreach (var normal in mesh.normals)
+                Assert.That(normal.magnitude, Is.EqualTo(1f).Within(0.001f));
+            // Arc-length UVs: u must be strictly non-decreasing along the span.
+            var uv = mesh.uv;
+            Assert.That(uv[uv.Length - 1].x, Is.GreaterThan(0f));
+        }
+
+        [Test]
+        public void OpeningOnBowedWallIsRejected()
+        {
+            var pair = LoadExamplePair();
+            var spec = pair.Control;
+            spec.Geometry.WallBow = new WallBowSpec { Left = -0.8f };
+            spec.Geometry.BowMaxM = 0.6f;
+            var hasLeftOpening = spec.Openings.Exists(o =>
+                string.Equals(o.Wall, "left", System.StringComparison.OrdinalIgnoreCase));
+            if (!hasLeftOpening)
+                spec.Openings.Add(new OpeningSpec { OpeningId = "test-window", Kind = "window", Wall = "left", CenterM = 0f, WidthM = 1.2f, BottomM = 0.9f, TopM = 2f });
+
+            var issues = Validation.RoomSpecValidator.Validate(spec);
+            Assert.That(issues.Exists(issue => issue.Code == "OPENING_ON_BOWED_WALL"), Is.True,
+                string.Join("\n", issues.ConvertAll(i => i.Code + " " + i.Path)));
+        }
+
+        readonly List<Mesh> cleanupMeshes = new List<Mesh>();
 
         [Test]
         public void TreatmentRegeneratesCeilingWithoutScalingRoot()

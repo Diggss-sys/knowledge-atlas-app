@@ -207,8 +207,14 @@ namespace RoomGen.Studio
             GUILayout.Space(8f);
 
             var isCeilingManipulation = string.Equals(pair.ManipulatedVariable, "geometry.ceiling_height_m", StringComparison.Ordinal);
-            if (GUILayout.Button(isCeilingManipulation ? "Variable: Ceiling Height" : "Variable: Corner Radius", GUILayout.Height(32f)))
+            var isBowManipulation = string.Equals(pair.ManipulatedVariable, "geometry.wall_bow.back", StringComparison.Ordinal);
+            var variableLabel = isCeilingManipulation ? "Variable: Ceiling Height"
+                : isBowManipulation ? "Variable: Wall Bow (back)"
+                : "Variable: Corner Radius";
+            if (GUILayout.Button(variableLabel, GUILayout.Height(32f)))
             {
+                // Cycle ceiling -> corner radius -> wall bow -> ceiling; reset the other variables
+                // so the pair stays single-variable.
                 if (isCeilingManipulation)
                 {
                     pair.ManipulatedVariable = "geometry.corner_radius_m";
@@ -216,18 +222,50 @@ namespace RoomGen.Studio
                     pair.Control.Geometry.CornerRadiusM = 0f;
                     pair.Treatment.Geometry.CornerRadiusM = maxRadius;
                     pair.Treatment.Geometry.CeilingHeightM = pair.Control.Geometry.CeilingHeightM;
+                    ResetBow(pair.Control);
+                    ResetBow(pair.Treatment);
+                }
+                else if (!isBowManipulation)
+                {
+                    pair.ManipulatedVariable = "geometry.wall_bow.back";
+                    pair.Control.Geometry.CornerRadiusM = 0f;
+                    pair.Treatment.Geometry.CornerRadiusM = 0f;
+                    pair.Treatment.Geometry.CeilingHeightM = pair.Control.Geometry.CeilingHeightM;
+                    ResetBow(pair.Control);
+                    ResetBow(pair.Treatment);
+                    pair.Treatment.Geometry.WallBow.Back = 1f; // start with a visible full convex bow
                 }
                 else
                 {
                     pair.ManipulatedVariable = "geometry.ceiling_height_m";
                     pair.Control.Geometry.CornerRadiusM = 0f;
                     pair.Treatment.Geometry.CornerRadiusM = 0f;
+                    ResetBow(pair.Control);
+                    ResetBow(pair.Treatment);
                 }
                 Rebuild();
             }
             GUILayout.Space(8f);
 
-            if (!isCeilingManipulation)
+            if (isBowManipulation)
+            {
+                var controlBow = pair.Control.Geometry.WallBow.Back;
+                GUILayout.Label($"Control bow  {controlBow:0.00}  ({BowWord(controlBow)})", labelStyle);
+                var nextControl = GUILayout.HorizontalSlider(controlBow, -1f, 1f, GUILayout.Height(24f));
+                GUILayout.Space(8f);
+
+                var treatmentBow = pair.Treatment.Geometry.WallBow.Back;
+                GUILayout.Label($"Treatment bow  {treatmentBow:0.00}  ({BowWord(treatmentBow)})", labelStyle);
+                var nextTreatment = GUILayout.HorizontalSlider(treatmentBow, -1f, 1f, GUILayout.Height(24f));
+
+                if (!Mathf.Approximately(nextControl, controlBow) || !Mathf.Approximately(nextTreatment, treatmentBow))
+                {
+                    pair.Control.Geometry.WallBow.Back = Mathf.Round(nextControl * 20f) / 20f;
+                    pair.Treatment.Geometry.WallBow.Back = Mathf.Round(nextTreatment * 20f) / 20f;
+                    Rebuild();
+                }
+            }
+            else if (!isCeilingManipulation)
             {
                 var maxRadius = CalculateMaxSafeRadius(pair.Control);
                 var controlRadius = pair.Control.Geometry.CornerRadiusM;
@@ -270,9 +308,11 @@ namespace RoomGen.Studio
             GUILayout.Label($"Room  {pair.Control.Geometry.WidthM:0.0} x {pair.Control.Geometry.LengthM:0.0} m", labelStyle);
             GUILayout.Label("Openings, furniture, player start and seed are matched", labelStyle);
             if (isCeilingManipulation)
-                GUILayout.Label("Corner radius  0.00 m", labelStyle);
+                GUILayout.Label("Corner radius  0.00 m  ·  wall bow  0", labelStyle);
+            else if (isBowManipulation)
+                GUILayout.Label($"Ceiling {pair.Control.Geometry.CeilingHeightM:0.00} m  ·  corner radius 0.00 m", labelStyle);
             else
-                GUILayout.Label($"Ceiling height  {pair.Control.Geometry.CeilingHeightM:0.00} m", labelStyle);
+                GUILayout.Label($"Ceiling height  {pair.Control.Geometry.CeilingHeightM:0.00} m  ·  wall bow  0", labelStyle);
 
             GUILayout.Space(14f);
             GUILayout.Label("SHARED PRESETS", headingStyle);
@@ -329,14 +369,30 @@ namespace RoomGen.Studio
             GUI.Box(rect, GUIContent.none, panelStyle);
             GUI.Label(new Rect(rect.x + 15f, rect.y + 11f, rect.width - 30f, 24f),
                 condition, headingStyle);
-            var text = string.Equals(pair.ManipulatedVariable, "geometry.corner_radius_m", StringComparison.Ordinal)
-                ? $"{spec.Geometry.CornerRadiusM:0.00} m radius"
-                : $"{spec.Geometry.CeilingHeightM:0.00} m ceiling";
+            string text;
+            if (string.Equals(pair.ManipulatedVariable, "geometry.corner_radius_m", StringComparison.Ordinal))
+                text = $"{spec.Geometry.CornerRadiusM:0.00} m radius";
+            else if (string.Equals(pair.ManipulatedVariable, "geometry.wall_bow.back", StringComparison.Ordinal))
+                text = $"bow {spec.Geometry.WallBow.Back:0.00} ({BowWord(spec.Geometry.WallBow.Back)})";
+            else
+                text = $"{spec.Geometry.CeilingHeightM:0.00} m ceiling";
             GUI.Label(new Rect(rect.x + 15f, rect.y + 34f, rect.width - 30f, 24f),
                 text, labelStyle);
             var imageRect = new Rect(rect.x + 12f, rect.y + 65f, rect.width - 24f, rect.height - 77f);
             GUI.DrawTexture(imageRect, texture, ScaleMode.ScaleAndCrop, false);
         }
+
+        static void ResetBow(RoomSpec spec)
+        {
+            spec.Geometry.WallBow ??= new WallBowSpec();
+            spec.Geometry.WallBow.Front = 0f;
+            spec.Geometry.WallBow.Back = 0f;
+            spec.Geometry.WallBow.Left = 0f;
+            spec.Geometry.WallBow.Right = 0f;
+        }
+
+        static string BowWord(float bow) =>
+            bow < -0.025f ? "concave, bows in" : bow > 0.025f ? "convex, bulges out" : "flat";
 
         void CycleFloor()
         {
