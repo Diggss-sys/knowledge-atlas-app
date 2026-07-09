@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "_contract": "This file is the ONLY content source for the team-hub page. Written by Claude (Fable/Opus sessions) at every work checkpoint; read by Antigravity, which renders it and NEVER invents or edits status. If it isn't in this file, it doesn't go on the hub.",
+  "updated_at": "2026-07-08",
+  "project": {
+    "name": "Knowledge Atlas",
+    "track": "Track 3 · Room Studio",
+    "repo": "https://github.com/Diggss-sys/knowledge-atlas-app",
+    "milestone_now": "M2",
+    "headline": "Where the project is, and what's yours to do"
+  },
+  "metrics": [
+    { "value": "92 / 92", "label": "automated checks green", "tone": "ok" },
+    { "value": "PR #2", "label": "open — needs Diego's merge", "tone": "warn", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/2" },
+    { "value": "3", "label": "validated experiment pairs", "tone": "plain" },
+    { "value": "4.7%", "label": "ceiling-pair luminance match (goal ≤ 25%)", "tone": "ok" },
+    { "value": "M2 gate", "label": "evidence in, verdict pending", "tone": "warn" }
+  ],
+  "milestones": [
+    { "id": "M0", "label": "Boot", "state": "done", "note": "builds, walks, gated" },
+    { "id": "M1", "label": "Tracer", "state": "done", "note": "engine side done; needs a human session + operator UI" },
+    { "id": "M2", "label": "Instrument", "state": "now", "note": "gate verdict + UI" },
+    { "id": "M3", "label": "Kirsh demo", "state": "todo", "note": "≈ Aug 1" },
+    { "id": "M4", "label": "Library", "state": "todo", "note": "August" },
+    { "id": "M5", "label": "VR arm", "state": "todo", "note": "≤ Sep 15" }
+  ],
+  "shipped": [
+    { "title": "Fidelity gate package", "blurb": "real materials + furniture models, pendant luminaire, measured luminance match", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FIDELITY_GATE.md" },
+    { "title": "Experiment runtime core", "blurb": "schema-valid response rows → CSV, seeded ordering, study honesty-gate (E3's R0+R1)", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/EXPERIMENT_RUNTIME.md" },
+    { "title": "Experiment library", "blurb": "ceiling height · curved walls · lighting warmth — each provably single-variable", "link": null },
+    { "title": "Operator UI foundation", "blurb": "panel + live control/treatment previews in the lab palette", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/fidelity/ui-operator.jpg" },
+    { "title": "Fixes that matter", "blurb": "walk-mode input bug fixed (rebuild needed on old exes); adversarial review: 7 defects found & fixed", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FABLE_REVIEW.md" }
+  ],
+  "people": [
+    {
+      "name": "Diego", "role": "ENGINE · CONTRACTS", "pill": { "text": "unblocks everyone", "tone": "hot" },
+      "actions": [
+        { "text": "Merge PR #2 using 'Create a merge commit' — not squash (the UI branch stacks on it). Skip re-merging hdrp-master-plan; it's already in.", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/2" },
+        { "text": "Tell the team the integration-branch plan so PR #3 (UI work) has a target.", "link": null },
+        { "text": "Two contract calls waiting: lighting.warmth label/formula inversion; coupled-vars notes (pendant↔ceiling, sun-tint↔color-temp).", "link": null }
+      ]
+    },
+    {
+      "name": "Michael", "role": "INTEGRATOR", "pill": null,
+      "actions": [
+        { "text": "After Diego's merge: cut the integration branch, update COORDINATION.md branch rules.", "link": null },
+        { "text": "Fresh-clone check: clone → open in Unity → RoomGen ▸ Fetch CC0 Materials → run tests; expect all green.", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md" },
+        { "text": "Status-board pass on COORDINATION.md — several cells are stale.", "link": null }
+      ]
+    },
+    {
+      "name": "Fidelity / VR", "role": "E2", "pill": null,
+      "actions": [
+        { "text": "Cast your M2 fidelity-gate verdict against Kirsh's bar (proposed: conditional pass).", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/lighting-l0-l4/docs/fidelity" },
+        { "text": "Your fidelity half was absorbed and shipped — your lane is now the VR half (V0/V1); Quest 3 + Link is the recommendation on record.", "link": null }
+      ]
+    },
+    {
+      "name": "Runtime", "role": "E3", "pill": { "text": "core built for you", "tone": "ok" },
+      "actions": [
+        { "text": "Read the status note atop EXPERIMENT_RUNTIME.md — R0/R1 are done and tested.", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/EXPERIMENT_RUNTIME.md" },
+        { "text": "Claim R2 (participant screens + real rooms) — or say if we should keep carrying it.", "link": null }
+      ]
+    },
+    {
+      "name": "Operator UI", "role": "P1", "pill": { "text": "unowned — claim it", "tone": "open" },
+      "actions": [
+        { "text": "Currently carried by Paco. Foundation built: panel, live previews, view-models, publish gate.", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/SOFTWARE_FOUNDATION.md" },
+        { "text": "Open work: diff-panel vs golden fixtures, publish form, fonts.", "link": null }
+      ]
+    },
+    {
+      "name": "Data layer", "role": "P3 · CLOUDFLARE", "pill": null,
+      "actions": [
+        { "text": "Settled: Cloudflare is a save/load store only, never the live path.", "link": null },
+        { "text": "Scope: thin Worker storing RoomSpec/study JSON + POST /responses (runtime upload lands in R3). Spec: handoffs/CLOUDFLARE_DATA.md.", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/CLOUDFLARE_DATA.md" }
+      ]
+    },
+    {
+      "name": "Everyone on a Mac", "role": "MOST OF THE TEAM", "pill": null,
+      "actions": [
+        { "text": "Your M-series MacBook runs this — follow GETTING_STARTED.md (~30 min, mostly Unity importing).", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md" },
+        { "text": "First M2 volunteer: build the Mac .app (RoomGen ▸ Build macOS Application) and report — unlocks the no-Unity install for everyone.", "link": null }
+      ]
+    },
+    {
+      "name": "Paco", "role": "GENERATOR → SOFTWARE/UI", "pill": null,
+      "actions": [
+        { "text": "Waiting on Diego's merge to open PR #3 (UI foundation).", "link": null },
+        { "text": "Queued: interactive studio scene (after syncing with Diego), diff panel, publish form.", "link": null }
+      ]
+    }
+  ],
+  "run_paths": [
+    { "title": "Mac — from source", "state": "works now", "tone": "ok", "steps": ["Clone, git checkout paco/ui-foundation", "Unity Hub → install 6000.3.16f1 exactly", "Open unity/, wait out first import (10–20 min)", "RoomGen ▸ Fetch CC0 Materials, open RoomStudio scene, Play"], "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md" },
+    { "title": "Windows — the exe", "state": "works now", "tone": "ok", "steps": ["Ask Paco for the RoomStudio.exe folder", "Double-click → Load KA spec pair → Walk control (WASD/mouse, Tab switches, Esc exits)"], "link": null },
+    { "title": "Mac — the .app", "state": "needs one volunteer", "tone": "hot", "steps": ["Build on an M2 (RoomGen ▸ Build macOS Application)", "Right-click → Open (unsigned), report back"], "link": null }
+  ],
+  "footer_links": [
+    { "text": "repo", "link": "https://github.com/Diggss-sys/knowledge-atlas-app" },
+    { "text": "PR #2", "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/2" }
+  ]
+}
