@@ -24,11 +24,28 @@ namespace RoomGen.Generation
             var shader = Shader.Find("HDRP/Lit") ?? Shader.Find("Standard");
             var material = new Material(shader) { name = stableId + " (generated)" };
             var color = ColorFor(stableId);
+            var pbr = PbrFor(stableId);
+
             if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
             if (material.HasProperty("_Color")) material.SetColor("_Color", color);
-            if (material.HasProperty("_Smoothness"))
-                material.SetFloat("_Smoothness", stableId.Contains("oak") ? 0.28f : 0.12f);
+            // Per-surface-class PBR so untextured fallbacks read as real materials, not flat
+            // shaded plastic: wood is semi-rough dielectric, paint matte, metal reflective, glass
+            // near-mirror. Values feed HDRP/Lit (and Standard, which shares the property names).
+            if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", pbr.smoothness);
+            if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", pbr.metallic);
             return material;
+        }
+
+        // (smoothness 0..1, metallic 0..1) grouped by material family.
+        static (float smoothness, float metallic) PbrFor(string stableId)
+        {
+            if (stableId.Contains("glass")) return (0.96f, 0f);
+            if (stableId.Contains("metal")) return (0.62f, 0.9f);
+            if (stableId.Contains("oak")) return (0.34f, 0f);
+            if (stableId.Contains("walnut")) return (0.42f, 0f);   // walnut reads glossier than oak
+            if (stableId.Contains("fabric")) return (0.06f, 0f);
+            if (stableId.Contains("ceiling")) return (0.08f, 0f);  // matte painted ceiling
+            return (0.12f, 0f);                                     // painted wall default
         }
 
         static Color ColorFor(string stableId)
