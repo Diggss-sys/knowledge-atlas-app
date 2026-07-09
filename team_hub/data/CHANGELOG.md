@@ -4,6 +4,15 @@
 "what happened lately" narrative; `status.json` carries the structured state. Neither is ever
 rewritten retroactively — append only.*
 
+## 2026-07-09 — the July replan: two tracks
+- Honest reset (handoffs/REPLAN_JULY.md): the 6-lane structure assumed seven engineers; reality is
+  one build lane + a reviewer. Track A (Paco+Claude) finishes the instrument — two build items left
+  (A1 interactive operator studio, A2 minimal participant flow). Track B (everyone) runs the
+  science: study design, piloting on each other, gate verdicts, demo writing — no Unity required.
+- This week's unblocks: Diego merges PR #2 (5-day fallback agreed?); Michael runs the fresh-clone
+  check + the M2 Mac smoke test.
+- VR and Cloudflare are parked until after the Aug 1 demo; local CSV is the demo data path.
+
 ## 2026-07-08 (later) — Anti's hub design lands; content corrected
 - Antigravity shipped the hub design in `team_hub/` (GSAP loader + cascade, cream/forest palette,
   side-nav layout) — design approved by Paco and kept as-is.
