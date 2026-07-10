@@ -18,6 +18,10 @@ namespace RoomGen.UI
     {
         public RenderTexture Texture { get; }
 
+        /// <summary>The last built room's GameObject (null before the first Render). The studio hands
+        /// this to DesktopWalkMode so the operator can walk exactly the room the preview shows.</summary>
+        public GameObject Root => _generator.LastResult?.Root;
+
         readonly GameObject _root;
         readonly RoomGenerator _generator;
         readonly Camera _camera;

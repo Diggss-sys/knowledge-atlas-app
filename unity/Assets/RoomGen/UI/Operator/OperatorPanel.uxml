@@ -40,10 +40,22 @@
                 <engine:VisualElement name="pair-panel" class="ka-panel ka-panel--accent">
                     <engine:Label text="Experiment pair" class="ka-subheading" />
                     <engine:DropdownField name="declared-variable" label="Independent variable" class="ka-dropdown" />
+                    <!-- Pair workflow: freeze the current room as the control, dial the treatment, then
+                         gate it. Wired by OperatorStudio (studio-level actions), not the generic binder. -->
+                    <engine:VisualElement name="pair-actions" class="ka-button-row">
+                        <engine:Button name="set-control-button" text="Set as control" class="ka-button" />
+                        <engine:Button name="submit-pair-button" text="Validate pair" class="ka-button" />
+                    </engine:VisualElement>
                     <engine:Label text="VALIDATION" class="ka-eyebrow" />
                     <engine:Label name="validation-status" text="No pair validated yet." class="ka-status" />
                     <engine:VisualElement name="diff-list" class="ka-diff-list" />
                     <engine:Button name="publish-button" text="Publish study" class="ka-button ka-button--primary" />
+                </engine:VisualElement>
+
+                <engine:VisualElement name="walk-panel" class="ka-panel">
+                    <engine:Label text="Immersion" class="ka-subheading" />
+                    <engine:Button name="walk-button" text="Walk this room" class="ka-button" />
+                    <engine:Label text="WASD to move · mouse to look · Esc to return" class="ka-hint" />
                 </engine:VisualElement>
 
                 <engine:Label name="apply-status" text="" class="ka-status" />

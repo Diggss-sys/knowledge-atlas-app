@@ -336,3 +336,23 @@
     font-size: var(--ka-font-sm);
     -unity-font-style: bold;
 }
+
+/* A1 pair-workflow: two matched-width buttons side by side (Set as control / Validate pair). */
+.ka-button-row {
+    flex-direction: row;
+}
+
+.ka-button-row > .ka-button {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: var(--ka-space-1);
+    margin-right: var(--ka-space-1);
+}
+
+/* small muted helper text (walk controls hint). */
+.ka-hint {
+    color: var(--ka-text-dim);
+    font-size: var(--ka-font-sm);
+    margin-top: var(--ka-space-2);
+    white-space: normal;
+}
