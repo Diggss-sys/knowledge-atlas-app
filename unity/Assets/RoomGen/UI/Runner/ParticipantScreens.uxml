@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements">
+
+    <!--
+      Participant runner: four neutral screens (id -> instructions -> walk+rate per trial -> done)
+      driven by ParticipantFlow, which shows exactly one card at a time. Neutral by scientific
+      requirement (COORDINATION.md) — see UI/Runner/runner.uss. The rating scale buttons are built at
+      runtime from the study's scale, so the same UXML serves any rating study.
+    -->
+    <engine:VisualElement name="runner-root" class="runner-root">
+
+        <Style src="runner.uss" />
+
+        <!-- 1. Participant id -->
+        <engine:VisualElement name="screen-id" class="runner-card">
+            <engine:Label text="Session setup" class="runner-title" />
+            <engine:Label text="Enter the participant identifier for this session." class="runner-body" />
+            <engine:Label text="Participant ID" class="runner-label" />
+            <engine:TextField name="participant-id" class="runner-input" />
+            <engine:Button name="begin-button" text="Begin" class="runner-button" />
+            <engine:Label name="id-error" text="" class="runner-error" />
+        </engine:VisualElement>
+
+        <!-- 2. Instructions -->
+        <engine:VisualElement name="screen-instructions" class="runner-card">
+            <engine:Label text="Before you start" class="runner-title" />
+            <engine:Label text="You will explore a few rooms, one at a time. In each room, move with W A S D and look with the mouse. Take a moment to get a feel for the space, then press Esc to leave and answer one question about it." class="runner-body" />
+            <engine:Label text="There are no right or wrong answers — we are interested in your honest impression." class="runner-body" />
+            <engine:Button name="start-button" text="Start" class="runner-button" />
+        </engine:VisualElement>
+
+        <!-- 3. Walk the current room -->
+        <engine:VisualElement name="screen-walk" class="runner-card">
+            <engine:Label name="walk-progress" text="Room 1 of 4" class="runner-progress" />
+            <engine:Label text="Explore this room" class="runner-title" />
+            <engine:Label text="Enter the room and walk around. Move with W A S D, look with the mouse. When you are ready to answer, press Esc." class="runner-body" />
+            <engine:Button name="enter-walk-button" text="Enter room" class="runner-button" />
+        </engine:VisualElement>
+
+        <!-- 4. Rate the room just walked -->
+        <engine:VisualElement name="screen-rating" class="runner-card">
+            <engine:Label name="rating-progress" text="Room 1 of 4" class="runner-progress" />
+            <engine:Label name="rating-prompt" text="How does this room feel?" class="runner-title" />
+            <engine:VisualElement name="rating-scale" class="runner-scale" />
+            <engine:VisualElement class="runner-scale-ends">
+                <engine:Label name="scale-low-label" text="1 = not at all" class="runner-scale-end" />
+                <engine:Label name="scale-high-label" text="7 = very much" class="runner-scale-end" />
+            </engine:VisualElement>
+            <engine:Label text="Choose the number that best matches your impression." class="runner-hint" />
+        </engine:VisualElement>
+
+        <!-- 5. Done -->
+        <engine:VisualElement name="screen-done" class="runner-card">
+            <engine:Label text="Session complete" class="runner-title" />
+            <engine:Label text="Thank you. Your responses have been saved." class="runner-body" />
+            <engine:Label name="done-path" text="" class="runner-hint" />
+        </engine:VisualElement>
+
+    </engine:VisualElement>
+</engine:UXML>

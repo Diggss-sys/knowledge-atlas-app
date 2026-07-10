@@ -1,0 +1,131 @@
+/*
+  Participant runner styles — NEUTRAL BY SCIENTIFIC REQUIREMENT, not taste (COORDINATION.md).
+  Grayscale only, system font, no brand personality: a styled participant screen is a stimulus
+  confound, and every study must look identical. There is deliberately no creativity budget here.
+  This is intentionally separate from UI/Shared/base.uss (the themed operator palette).
+*/
+
+.runner-root {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(250, 250, 250);
+}
+
+.runner-card {
+    width: 560px;
+    max-width: 90%;
+    padding: 40px;
+    align-items: stretch;
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(224, 224, 224);
+    border-width: 1px;
+    border-radius: 6px;
+}
+
+.runner-title {
+    font-size: 22px;
+    color: rgb(26, 26, 26);
+    -unity-font-style: bold;
+    margin-bottom: 16px;
+}
+
+.runner-body {
+    font-size: 15px;
+    color: rgb(51, 51, 51);
+    white-space: normal;
+    margin-bottom: 12px;
+}
+
+.runner-label {
+    font-size: 13px;
+    color: rgb(102, 102, 102);
+    margin-bottom: 6px;
+}
+
+.runner-input {
+    margin-bottom: 20px;
+}
+
+.runner-input .unity-base-text-field__input {
+    min-height: 32px;
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(180, 180, 180);
+    border-width: 1px;
+    border-radius: 4px;
+    padding-left: 8px;
+}
+
+.runner-button {
+    height: 40px;
+    margin-top: 12px;
+    background-color: rgb(240, 240, 240);
+    color: rgb(26, 26, 26);
+    border-color: rgb(160, 160, 160);
+    border-width: 1px;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.runner-button:hover {
+    background-color: rgb(228, 228, 228);
+}
+
+.runner-progress {
+    font-size: 12px;
+    color: rgb(120, 120, 120);
+    margin-bottom: 8px;
+    -unity-text-align: middle-center;
+}
+
+.runner-hint {
+    font-size: 12px;
+    color: rgb(120, 120, 120);
+    white-space: normal;
+    margin-top: 12px;
+    -unity-text-align: middle-center;
+}
+
+.runner-error {
+    font-size: 13px;
+    color: rgb(150, 40, 40);
+    white-space: normal;
+    margin-top: 10px;
+}
+
+/* the rating scale: a centered row of identical neutral buttons, 1..N */
+.runner-scale {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+
+.runner-scale-button {
+    width: 46px;
+    height: 46px;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: rgb(240, 240, 240);
+    color: rgb(26, 26, 26);
+    border-color: rgb(160, 160, 160);
+    border-width: 1px;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.runner-scale-button:hover {
+    background-color: rgb(220, 220, 220);
+}
+
+.runner-scale-ends {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.runner-scale-end {
+    font-size: 11px;
+    color: rgb(120, 120, 120);
+}

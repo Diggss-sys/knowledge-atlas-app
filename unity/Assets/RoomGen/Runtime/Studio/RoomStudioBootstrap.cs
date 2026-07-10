@@ -5,16 +5,17 @@ namespace RoomGen.Studio
 {
     public static class RoomStudioBootstrap
     {
-        // The additive interactive studio (A1) lives in its own scene and composes the UI Toolkit
-        // panel itself; auto-spawning the legacy IMGUI controller there would draw a second studio
-        // over it and fight for input. Skip that one scene by name — every other scene (the built
-        // RoomStudio demo, a bare test scene) behaves exactly as before.
-        const string OperatorStudioScene = "OperatorStudio";
+        // The additive scenes (A1 operator studio, A2 participant runner) compose their own UI and
+        // rooms; auto-spawning the legacy IMGUI controller there would draw a second studio over them
+        // and fight for input. Skip those scenes by name — every other scene (the built RoomStudio
+        // demo, a bare test scene) behaves exactly as before.
+        static readonly string[] AdditiveScenes = { "OperatorStudio", "ParticipantRunner" };
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void EnsureStudio()
         {
-            if (SceneManager.GetActiveScene().name == OperatorStudioScene) return;
+            var active = SceneManager.GetActiveScene().name;
+            if (System.Array.IndexOf(AdditiveScenes, active) >= 0) return;
             if (Object.FindFirstObjectByType<RoomStudioController>() != null) return;
             var root = new GameObject("Room Studio");
             root.AddComponent<RoomStudioController>();
