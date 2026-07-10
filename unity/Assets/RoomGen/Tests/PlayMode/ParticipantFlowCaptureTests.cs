@@ -56,6 +56,13 @@ namespace RoomGen.Tests.PlayMode
             var flow = flowGo.AddComponent<ParticipantFlow>();
             flow.Boot(root, study.text, () => "2026-07-20T18:42:11Z", outDir);
 
+            // Same display-camera gate as the operator studio: without the backdrop camera the UI
+            // overlay never composites onto the camera-less display in the built scene.
+            var anyDisplayCam = false;
+            foreach (var cam in Camera.allCameras)
+                if (cam.isActiveAndEnabled && cam.targetTexture == null) { anyDisplayCam = true; break; }
+            Assert.IsTrue(anyDisplayCam, "no enabled camera renders to the display — the screens cannot composite");
+
             // ID entry -> instructions -> first rating screen (skip the walk itself in the test).
             var began = flow.Begin("P01");
             Assert.IsTrue(began, "study should run: " + flow.Session.Reason);

@@ -46,6 +46,13 @@ namespace RoomGen.Editor
             doc.panelSettings = panelSettings;
             doc.visualTreeAsset = uxml;   // runner.uss is pulled in by the uxml's own <Style src=.../>
 
+            // Belt-and-braces: the batchmode panelSettings setter did not reach the serialized stream
+            // (see OperatorStudioSceneSetup) — write the reference through SerializedObject.
+            var so = new SerializedObject(doc);
+            so.FindProperty("m_PanelSettings").objectReferenceValue = panelSettings;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(doc);
+
             EditorSceneManager.SaveScene(scene, ScenePath);
             Debug.Log("ParticipantRunnerSceneSetup: saved additive scene to " + ScenePath
                       + " — open it and press Play.");

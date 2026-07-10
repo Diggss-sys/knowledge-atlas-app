@@ -24,5 +24,18 @@ namespace RoomGen.Tests
             Assert.IsFalse(ps.clearColor,
                 "clearColor must stay FALSE on screen-space panels or the walk view is wiped (see A1_A2_REVIEW.md)");
         }
+
+        // The batchmode scene generator once serialized the UIDocument's panel-settings reference as
+        // {fileID: 0} — the panel bound to a DETACHED root and rendered nowhere (grey screen, zero
+        // errors, every test green). Gate the scene YAML itself so that can never ship again.
+        [TestCase("Assets/RoomGen/Scenes/OperatorStudio.unity")]
+        [TestCase("Assets/RoomGen/Scenes/ParticipantRunner.unity")]
+        public void Scene_uidocument_carries_its_panel_settings_reference(string path)
+        {
+            var yaml = System.IO.File.ReadAllText(path);
+            StringAssert.Contains("m_PanelSettings:", yaml, "scene has no UIDocument at all: " + path);
+            StringAssert.DoesNotContain("m_PanelSettings: {fileID: 0}", yaml,
+                "UIDocument's PanelSettings reference is NULL — the panel renders nowhere (see A1_A2_REVIEW.md)");
+        }
     }
 }

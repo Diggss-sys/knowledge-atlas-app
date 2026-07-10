@@ -42,6 +42,7 @@ namespace RoomGen.UI
         PreviewRenderer _previewTreatment;
         RoomGenerator _seamGenerator;
         DesktopWalkMode _walk;
+        Camera _backdrop;
 
         RoomSpec _controlSpec;    // last-adapted control spec (frozen control, or current before Set-as-control)
         RoomSpec _treatmentSpec;  // last-adapted current/treatment spec — the room the Walk button enters
@@ -58,6 +59,25 @@ namespace RoomGen.UI
         {
             if (_booted) return;
             var doc = GetComponent<UIDocument>();
+#if UNITY_EDITOR
+            // Self-heal: the pre-fix scene generator serialized m_PanelSettings as {fileID: 0} in
+            // batchmode (the visualTreeAsset assignment stuck; panelSettings didn't), so the panel
+            // bound to a DETACHED root and rendered nowhere — grey screen, zero errors. The scene
+            // YAML is fixed, but a stale in-memory copy of the old scene heals here too.
+            if (doc != null && doc.panelSettings == null)
+            {
+                doc.panelSettings = UnityEditor.AssetDatabase.LoadAssetAtPath<PanelSettings>(
+                    "Assets/RoomGen/UI/Operator/OperatorPanelSettings.asset");
+                if (doc.panelSettings != null)
+                    Debug.LogWarning("OperatorStudio: UIDocument had no PanelSettings (stale scene) — healed from the asset.");
+            }
+#endif
+            if (doc != null && doc.panelSettings == null)
+            {
+                Debug.LogError("OperatorStudio: UIDocument has NO PanelSettings — the panel would render " +
+                               "nowhere. Re-run RoomGen ▸ Setup Operator Studio Scene.");
+                return;
+            }
             if (doc != null && doc.rootVisualElement != null)
                 Boot(doc.rootVisualElement, () => Time.timeAsDouble);
             else
@@ -87,6 +107,20 @@ namespace RoomGen.UI
             RenderQualityProfiles.ApplyDesktop();
             _root = root;
             _baseTemplate = StudioSpecChannel.BuildBase(template.text);
+
+            // Backdrop camera: the ONLY thing rendering to the display on the panel screens (the
+            // preview cameras target RenderTextures). Without it the display has no camera at all and
+            // the UI overlay never composites ("No cameras rendering" + black screen). It draws
+            // nothing (cullingMask 0) and clears to the panel's cream, then steps aside for the walk
+            // camera. Pairs with clearColor=false on the PanelSettings — that fix alone left the
+            // display camera-less.
+            var backdropGo = new GameObject("UI Backdrop Camera");
+            backdropGo.transform.SetParent(transform, false);
+            _backdrop = backdropGo.AddComponent<Camera>();
+            _backdrop.cullingMask = 0;
+            _backdrop.depth = -100f;
+            _backdrop.clearFlags = CameraClearFlags.SolidColor;
+            _backdrop.backgroundColor = new Color(0.968f, 0.956f, 0.937f, 1f); // --ka-cream
 
             // Real engine: apply/load_pair are validated + built + gated by the runtime. The scaffold
             // channel completes the panel's partial spec into a full canonical one on the way in.
@@ -140,6 +174,7 @@ namespace RoomGen.UI
             if (_walking && (_walk == null || !_walk.IsRunning))
             {
                 _walking = false;
+                if (_backdrop != null) _backdrop.enabled = true;
                 ShowPanel(true);
             }
             if (_walking) return;   // panel hidden; don't pump/refresh under the walk view
@@ -189,6 +224,7 @@ namespace RoomGen.UI
             {
                 _walk.StopSession();
                 _walking = false;
+                if (_backdrop != null) _backdrop.enabled = true;
                 ShowPanel(true);
                 return;
             }
@@ -198,7 +234,11 @@ namespace RoomGen.UI
             if (roomRoot == null) return;
             _walk.Toggle(TreatmentLayer, roomRoot, _treatmentSpec);
             _walking = _walk.IsRunning;
-            if (_walking) ShowPanel(false);
+            if (_walking)
+            {
+                if (_backdrop != null) _backdrop.enabled = false; // the walk camera owns the display now
+                ShowPanel(false);
+            }
         }
 
         void ShowPanel(bool show)

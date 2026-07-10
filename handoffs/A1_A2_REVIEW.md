@@ -80,6 +80,14 @@ commit; suites re-run green (97 EditMode + 3 PlayMode).*
 | F3 | Minor (provenance honesty) | Every plain apply carried the **fixture's** experiment block (`pair_id: ceiling_height_study_01`) into the session provenance JSONL — the log that exists to be the faithful record of operator actions. | `StudioSpecChannel.BuildBase` strips `experiment`; `LoadPair` stamps the real declaration as before. |
 | F4 | Minor (test isolation) | `RoomStudioBootstrap` auto-spawned the full legacy IMGUI studio inside every PlayMode test (`InitTestScene…` doesn't match the scene guard), building its bundled pair on layers 8/9 at the origin — superimposed on the tests' own preview rooms. Pre-existing, benign today, but the preview assertions were less isolated than they looked. | Guard now also skips `InitTestScene*`. |
 
+| F5 | **Critical (found live, 2026-07-10)** | The batchmode scene generator serialized the UIDocument's `m_PanelSettings` as `{fileID: 0}` in BOTH scenes (the `visualTreeAsset` assignment survived; `panelSettings` didn't). The panel bound to a **detached root** — booted fine, previews spawned, every test green, and the screen showed nothing. Compounding it: with the panel absent and both preview cameras targeting RenderTextures, the display had **no camera at all** ("No cameras rendering"). | Three layers: (1) scene YAMLs fixed to reference the PanelSettings assets; (2) generators now write the reference through `SerializedObject` (guaranteed to serialize); (3) editor-only self-heal in `Start()` + a hard error if still null. Plus a **backdrop camera** per scene (clears to the panel colour, draws nothing, steps aside during walks) so the display always has a camera. New gates: scene-YAML must carry the reference; some camera must render to the display after Boot. |
+
+**Live verification (driven end-to-end in the editor, 2026-07-10):** panel renders on Play (warmth/
+intensity correctly disabled, publish locked) → **Walk this room** puts you inside the treatment room →
+**Esc** returns to the panel. Screenshots in the session log. This was the first time the built scenes
+ran on a real display — the headless suite structurally cannot see this class of bug, which is exactly
+where F1 and F5 both lived.
+
 **Verified sound (no action):** the stamped experiment block matches `PairGate` exactly (`experiment`/
 `provenance` are non-stimulus prefixes; `IsCovered` is exact-or-prefix); lights are layer-masked
 (`LightingSystem` sets `cullingMask = 1 << layer`) so the overlapping-rooms design has no cross-lighting;

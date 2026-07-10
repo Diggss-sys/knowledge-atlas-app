@@ -32,6 +32,7 @@ namespace RoomGen.UI
         ParticipantSession _session;
         RoomGenerator _roomGen;
         DesktopWalkMode _walk;
+        Camera _backdrop;
 
         bool _booted;
         bool _walking;
@@ -43,6 +44,24 @@ namespace RoomGen.UI
         {
             if (_booted) return;
             var doc = GetComponent<UIDocument>();
+#if UNITY_EDITOR
+            // Self-heal a scene saved by the pre-fix generator (m_PanelSettings serialized as
+            // {fileID: 0} in batchmode) — without a PanelSettings the panel binds to a detached
+            // root and renders nowhere. See OperatorStudio.Start for the full story.
+            if (doc != null && doc.panelSettings == null)
+            {
+                doc.panelSettings = UnityEditor.AssetDatabase.LoadAssetAtPath<PanelSettings>(
+                    "Assets/RoomGen/UI/Runner/ParticipantPanelSettings.asset");
+                if (doc.panelSettings != null)
+                    Debug.LogWarning("ParticipantFlow: UIDocument had no PanelSettings (stale scene) — healed from the asset.");
+            }
+#endif
+            if (doc != null && doc.panelSettings == null)
+            {
+                Debug.LogError("ParticipantFlow: UIDocument has NO PanelSettings — the screens would render " +
+                               "nowhere. Re-run RoomGen ▸ Setup Participant Runner Scene.");
+                return;
+            }
             var study = Resources.Load<TextAsset>("RoomGen/Examples/ceiling-study");
             if (doc != null && doc.rootVisualElement != null && study != null)
                 Boot(doc.rootVisualElement, study.text, null, Application.persistentDataPath);
@@ -61,6 +80,17 @@ namespace RoomGen.UI
             _outputDir = outputDir;
 
             RenderQualityProfiles.ApplyDesktop();
+
+            // Backdrop camera: the screens have no other camera rendering to the display, and the UI
+            // overlay never composites onto a camera-less display ("No cameras rendering" + black).
+            // Draws nothing, clears to the neutral off-white, steps aside during the room walk.
+            var backdropGo = new GameObject("UI Backdrop Camera");
+            backdropGo.transform.SetParent(transform, false);
+            _backdrop = backdropGo.AddComponent<Camera>();
+            _backdrop.cullingMask = 0;
+            _backdrop.depth = -100f;
+            _backdrop.clearFlags = CameraClearFlags.SolidColor;
+            _backdrop.backgroundColor = new Color(0.98f, 0.98f, 0.98f, 1f); // neutral, not a brand colour
 
             var go = new GameObject("Participant Room");
             go.transform.SetParent(transform, false);
@@ -116,6 +146,7 @@ namespace RoomGen.UI
             ShowPanel(false);
             _walk.Toggle(RoomLayer, _roomGen.LastResult?.Root, _session.CurrentSpec);
             _walking = _walk.IsRunning;
+            if (_walking && _backdrop != null) _backdrop.enabled = false; // walk camera owns the display
             if (!_walking) { ShowPanel(true); ShowRating(); }   // room failed to build — don't strand the participant
         }
 
@@ -154,6 +185,7 @@ namespace RoomGen.UI
             if (_walking && (_walk == null || !_walk.IsRunning))   // participant pressed Esc
             {
                 _walking = false;
+                if (_backdrop != null) _backdrop.enabled = true;
                 ShowPanel(true);
                 ShowRating();
             }

@@ -61,6 +61,11 @@ namespace RoomGen.Tests.PlayMode
             var booted = studio.Boot(root, () => clock);
             Assert.IsTrue(booted, "studio failed to boot (missing Resources under RoomGen/?)");
 
+            // The preview cameras target RenderTextures, so without the backdrop camera NOTHING
+            // renders to the display and the UI overlay never composites — the built scene showed
+            // "No cameras rendering" over black (found live, 2026-07-10). Gate it.
+            Assert.IsTrue(AnyDisplayCamera(), "no enabled camera renders to the display — the panel cannot composite");
+
             // 1) Slider -> real seam apply is ACCEPTED. This is the integration gap A1 closes: the
             //    view-model's partial spec (shell/surfaces/lighting only, no spec_version/room_type)
             //    is completed to a full canonical spec before it reaches the schema-checking runtime.
@@ -118,6 +123,13 @@ namespace RoomGen.Tests.PlayMode
         }
 
 #if UNITY_EDITOR
+        static bool AnyDisplayCamera()
+        {
+            foreach (var cam in Camera.allCameras)
+                if (cam.isActiveAndEnabled && cam.targetTexture == null) return true;
+            return false;
+        }
+
         static string StatusDetail(OperatorPanelViewModel vm)
         {
             if (vm.Errors.Count == 0) return vm.Status;
