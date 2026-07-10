@@ -6,6 +6,7 @@ using RoomGen.Adapter;
 using RoomGen.Contracts;
 using RoomGen.Export;
 using RoomGen.Generation;
+using RoomGen.Metrics;
 using RoomGen.Validation;
 using RoomGen.VR;
 using UnityEngine;
@@ -47,8 +48,21 @@ namespace RoomGen.Studio
         GUIStyle statusStyle;
         GUIStyle panelStyle;
 
-        readonly string[] floorMaterials = { "builtin.oak", "builtin.walnut" };
-        readonly string[] lightingPresets = { "builtin.recessed-neutral", "builtin.recessed-warm" };
+        // cc0.* floors resolve to the fetched ambientCG materials (AssetFetcher); on a machine that
+        // hasn't fetched, SurfaceResolver falls back to a flat tint — graceful, never broken.
+        readonly string[] floorMaterials = { "builtin.oak", "builtin.walnut", "cc0.carpet", "cc0.tile" };
+
+        // The demo-able manipulations. Cycling equalises everything first so the pair always has
+        // exactly ONE declared difference (the gate re-checks on every rebuild regardless).
+        static readonly string[] VariablePaths =
+            { "geometry.ceiling_height_m", "geometry.corner_radius_m", "geometry.width_m" };
+        static readonly string[] VariableLabels =
+            { "Ceiling Height", "Corner Radius", "Room Width" };
+
+        const float MinRoomWidth = 5.0f;   // keeps the bundled front-door opening in bounds
+        const float MaxRoomWidth = 7.0f;
+        const float MinRoomLength = 5.6f;  // keeps the bundled window openings in bounds
+        const float MaxRoomLength = 7.5f;
 
         void Awake()
         {
@@ -178,8 +192,8 @@ namespace RoomGen.Studio
             GUI.Box(new Rect(0f, 0f, Screen.width, Screen.height), GUIContent.none, panelStyle);
 
             GUI.Label(new Rect(24f, 15f, Screen.width - 48f, 38f), "Room Studio", titleStyle);
-            var pairTitle = string.Equals(pair.ManipulatedVariable, "geometry.corner_radius_m", StringComparison.Ordinal)
-                ? "Dining room / corner-radius pair" : "Dining room / ceiling-height pair";
+            var titleIndex = Mathf.Max(0, Array.IndexOf(VariablePaths, pair.ManipulatedVariable));
+            var pairTitle = "Dining room / " + VariableLabels[titleIndex].ToLowerInvariant() + " pair";
             GUI.Label(new Rect(184f, 22f, Screen.width - 208f, 28f),
                 pairTitle, labelStyle);
 
@@ -206,80 +220,58 @@ namespace RoomGen.Studio
             GUILayout.Label("CONDITION PAIR", headingStyle);
             GUILayout.Space(8f);
 
-            var isCeilingManipulation = string.Equals(pair.ManipulatedVariable, "geometry.ceiling_height_m", StringComparison.Ordinal);
-            if (GUILayout.Button(isCeilingManipulation ? "Variable: Ceiling Height" : "Variable: Corner Radius", GUILayout.Height(32f)))
-            {
-                if (isCeilingManipulation)
-                {
-                    pair.ManipulatedVariable = "geometry.corner_radius_m";
-                    var maxRadius = CalculateMaxSafeRadius(pair.Control);
-                    pair.Control.Geometry.CornerRadiusM = 0f;
-                    pair.Treatment.Geometry.CornerRadiusM = maxRadius;
-                    pair.Treatment.Geometry.CeilingHeightM = pair.Control.Geometry.CeilingHeightM;
-                }
-                else
-                {
-                    pair.ManipulatedVariable = "geometry.ceiling_height_m";
-                    pair.Control.Geometry.CornerRadiusM = 0f;
-                    pair.Treatment.Geometry.CornerRadiusM = 0f;
-                }
-                Rebuild();
-            }
+            var variableIndex = Mathf.Max(0, Array.IndexOf(VariablePaths, pair.ManipulatedVariable));
+            if (GUILayout.Button("Variable: " + VariableLabels[variableIndex], GUILayout.Height(32f)))
+                SelectManipulatedVariable(VariablePaths[(variableIndex + 1) % VariablePaths.Length]);
             GUILayout.Space(8f);
 
-            if (!isCeilingManipulation)
+            switch (pair.ManipulatedVariable)
             {
-                var maxRadius = CalculateMaxSafeRadius(pair.Control);
-                var controlRadius = pair.Control.Geometry.CornerRadiusM;
-                GUILayout.Label($"Control radius  {controlRadius:0.00} m", labelStyle);
-                var nextControl = GUILayout.HorizontalSlider(controlRadius, 0f, maxRadius, GUILayout.Height(24f));
-                GUILayout.Space(8f);
-
-                var treatmentRadius = pair.Treatment.Geometry.CornerRadiusM;
-                GUILayout.Label($"Treatment radius  {treatmentRadius:0.00} m", labelStyle);
-                var nextTreatment = GUILayout.HorizontalSlider(treatmentRadius, 0f, maxRadius, GUILayout.Height(24f));
-
-                if (!Mathf.Approximately(nextControl, controlRadius) || !Mathf.Approximately(nextTreatment, treatmentRadius))
+                case "geometry.corner_radius_m":
                 {
-                    pair.Control.Geometry.CornerRadiusM = Mathf.Round(nextControl * 20f) / 20f;
-                    pair.Treatment.Geometry.CornerRadiusM = Mathf.Round(nextTreatment * 20f) / 20f;
-                    Rebuild();
+                    var maxRadius = CalculateMaxSafeRadius(pair.Control);
+                    DrawConditionSliders("radius", "0.00", " m", 0f, maxRadius, 20f,
+                        pair.Control.Geometry.CornerRadiusM, pair.Treatment.Geometry.CornerRadiusM,
+                        (c, t) => { pair.Control.Geometry.CornerRadiusM = c; pair.Treatment.Geometry.CornerRadiusM = t; });
+                    break;
                 }
-            }
-            else
-            {
-                var controlHeight = pair.Control.Geometry.CeilingHeightM;
-                GUILayout.Label($"Control ceiling  {controlHeight:0.00} m", labelStyle);
-                var nextControl = GUILayout.HorizontalSlider(controlHeight, 2.2f, 3.8f, GUILayout.Height(24f));
-                GUILayout.Space(8f);
-
-                var treatmentHeight = pair.Treatment.Geometry.CeilingHeightM;
-                GUILayout.Label($"Treatment ceiling  {treatmentHeight:0.00} m", labelStyle);
-                var nextTreatment = GUILayout.HorizontalSlider(treatmentHeight, 2.2f, 3.8f, GUILayout.Height(24f));
-
-                if (!Mathf.Approximately(nextControl, controlHeight) || !Mathf.Approximately(nextTreatment, treatmentHeight))
-                {
-                    pair.Control.Geometry.CeilingHeightM = Mathf.Round(nextControl * 20f) / 20f;
-                    pair.Treatment.Geometry.CeilingHeightM = Mathf.Round(nextTreatment * 20f) / 20f;
-                    Rebuild();
-                }
+                case "geometry.width_m":
+                    DrawConditionSliders("width", "0.0", " m", MinRoomWidth, MaxRoomWidth, 10f,
+                        pair.Control.Geometry.WidthM, pair.Treatment.Geometry.WidthM,
+                        (c, t) => { pair.Control.Geometry.WidthM = c; pair.Treatment.Geometry.WidthM = t; });
+                    break;
+                default:
+                    DrawConditionSliders("ceiling", "0.00", " m", 2.2f, 3.8f, 20f,
+                        pair.Control.Geometry.CeilingHeightM, pair.Treatment.Geometry.CeilingHeightM,
+                        (c, t) => { pair.Control.Geometry.CeilingHeightM = c; pair.Treatment.Geometry.CeilingHeightM = t; });
+                    break;
             }
 
             GUILayout.Space(14f);
-            GUILayout.Label("LOCKED BASELINE", headingStyle);
-            GUILayout.Label($"Room  {pair.Control.Geometry.WidthM:0.0} x {pair.Control.Geometry.LengthM:0.0} m", labelStyle);
-            GUILayout.Label("Openings, furniture, player start and seed are matched", labelStyle);
-            if (isCeilingManipulation)
-                GUILayout.Label("Corner radius  0.00 m", labelStyle);
-            else
-                GUILayout.Label($"Ceiling height  {pair.Control.Geometry.CeilingHeightM:0.00} m", labelStyle);
+            GUILayout.Label("SHARED ROOM (applies to both)", headingStyle);
+            if (pair.ManipulatedVariable != "geometry.width_m")
+                DrawSharedSlider("Width", "0.0", " m", MinRoomWidth, MaxRoomWidth, 10f,
+                    pair.Control.Geometry.WidthM,
+                    v => { pair.Control.Geometry.WidthM = v; pair.Treatment.Geometry.WidthM = v; });
+            DrawSharedSlider("Length", "0.0", " m", MinRoomLength, MaxRoomLength, 10f,
+                pair.Control.Geometry.LengthM,
+                v => { pair.Control.Geometry.LengthM = v; pair.Treatment.Geometry.LengthM = v; });
 
             GUILayout.Space(14f);
-            GUILayout.Label("SHARED PRESETS", headingStyle);
+            GUILayout.Label("SHARED LIGHTING (applies to both)", headingStyle);
+            var temperature = pair.Control.Lighting.ColorTemperatureK;
+            var mood = temperature < 3300f ? "warm" : temperature < 5000f ? "neutral" : "cool";
+            DrawSharedSlider($"Color temp ({mood})", "0", " K", 2700f, 6500f, 0.02f,
+                temperature,
+                v => { pair.Control.Lighting.ColorTemperatureK = v; pair.Treatment.Lighting.ColorTemperatureK = v; });
+            DrawSharedSlider("Brightness target", "0", " lux", 100f, 500f, 0.1f,
+                pair.Control.Lighting.TargetLux,
+                v => { pair.Control.Lighting.TargetLux = v; pair.Treatment.Lighting.TargetLux = v; });
             if (GUILayout.Button("Floor: " + Friendly(pair.Control.Surfaces.FloorMaterialId), GUILayout.Height(32f)))
                 CycleFloor();
-            if (GUILayout.Button("Lighting: " + Friendly(pair.Control.Lighting.PresetId), GUILayout.Height(32f)))
-                CycleLighting();
+
+            GUILayout.Space(10f);
+            GUILayout.Label("Openings, furniture, player start and seed are always matched", labelStyle);
 
             GUILayout.Space(14f);
             GUILayout.Label("PAIR CHECK", headingStyle);
@@ -329,11 +321,18 @@ namespace RoomGen.Studio
             GUI.Box(rect, GUIContent.none, panelStyle);
             GUI.Label(new Rect(rect.x + 15f, rect.y + 11f, rect.width - 30f, 24f),
                 condition, headingStyle);
-            var text = string.Equals(pair.ManipulatedVariable, "geometry.corner_radius_m", StringComparison.Ordinal)
-                ? $"{spec.Geometry.CornerRadiusM:0.00} m radius"
-                : $"{spec.Geometry.CeilingHeightM:0.00} m ceiling";
+            var g = spec.Geometry;
+            string varText;
+            switch (pair.ManipulatedVariable)
+            {
+                case "geometry.corner_radius_m": varText = $"{g.CornerRadiusM:0.00} m radius"; break;
+                case "geometry.width_m": varText = $"{g.WidthM:0.0} m wide"; break;
+                default: varText = $"{g.CeilingHeightM:0.00} m ceiling"; break;
+            }
+            var metrics = RoomMetrics.Calculate(spec);
             GUI.Label(new Rect(rect.x + 15f, rect.y + 34f, rect.width - 30f, 24f),
-                text, labelStyle);
+                $"{varText}   ·   {g.WidthM:0.0} × {g.LengthM:0.0} m   ·   {metrics.VolumeM3:0.0} m³   ·   {spec.Lighting.ColorTemperatureK:0} K / {spec.Lighting.TargetLux:0} lux",
+                labelStyle);
             var imageRect = new Rect(rect.x + 12f, rect.y + 65f, rect.width - 24f, rect.height - 77f);
             GUI.DrawTexture(imageRect, texture, ScaleMode.ScaleAndCrop, false);
         }
@@ -347,16 +346,65 @@ namespace RoomGen.Studio
             Rebuild();
         }
 
-        void CycleLighting()
+        /// <summary>
+        /// Switch which single variable the pair manipulates: equalise EVERY manipulable field first
+        /// (so no stale second difference survives), then open a sensible starting gap on the new one.
+        /// </summary>
+        void SelectManipulatedVariable(string path)
         {
-            var current = Array.IndexOf(lightingPresets, pair.Control.Lighting.PresetId);
-            var next = lightingPresets[(current + 1 + lightingPresets.Length) % lightingPresets.Length];
-            pair.Control.Lighting.PresetId = next;
-            pair.Treatment.Lighting.PresetId = next;
-            var temperature = next.EndsWith("warm", StringComparison.Ordinal) ? 3000f : 3500f;
-            pair.Control.Lighting.ColorTemperatureK = temperature;
-            pair.Treatment.Lighting.ColorTemperatureK = temperature;
+            pair.Treatment.Geometry.CeilingHeightM = pair.Control.Geometry.CeilingHeightM;
+            pair.Control.Geometry.CornerRadiusM = 0f;
+            pair.Treatment.Geometry.CornerRadiusM = 0f;
+            pair.Treatment.Geometry.WidthM = pair.Control.Geometry.WidthM;
+            pair.ManipulatedVariable = path;
+
+            switch (path)
+            {
+                case "geometry.corner_radius_m":
+                    pair.Treatment.Geometry.CornerRadiusM = CalculateMaxSafeRadius(pair.Control);
+                    break;
+                case "geometry.width_m":
+                    pair.Treatment.Geometry.WidthM =
+                        Mathf.Min(pair.Control.Geometry.WidthM + 1f, MaxRoomWidth);
+                    break;
+                default:
+                    pair.Treatment.Geometry.CeilingHeightM =
+                        Mathf.Min(pair.Control.Geometry.CeilingHeightM + 0.8f, 3.8f);
+                    break;
+            }
             Rebuild();
+        }
+
+        // Control + treatment sliders for the active manipulated variable. `step` is the rounding
+        // divisor (20 = 0.05m increments, 10 = 0.1m, 0.02 = 50K, 0.1 = 10lux).
+        void DrawConditionSliders(string name, string fmt, string unit, float min, float max, float step,
+            float control, float treatment, Action<float, float> apply)
+        {
+            GUILayout.Label($"Control {name}  {control.ToString(fmt)}{unit}", labelStyle);
+            var nextControl = GUILayout.HorizontalSlider(control, min, max, GUILayout.Height(24f));
+            GUILayout.Space(8f);
+            GUILayout.Label($"Treatment {name}  {treatment.ToString(fmt)}{unit}", labelStyle);
+            var nextTreatment = GUILayout.HorizontalSlider(treatment, min, max, GUILayout.Height(24f));
+
+            if (!Mathf.Approximately(nextControl, control) || !Mathf.Approximately(nextTreatment, treatment))
+            {
+                apply(Mathf.Round(nextControl * step) / step, Mathf.Round(nextTreatment * step) / step);
+                Rebuild();
+            }
+        }
+
+        // One slider whose value is applied to BOTH conditions (a shared/nuisance parameter — it can
+        // never create a pair difference, so the gate stays green by construction).
+        void DrawSharedSlider(string name, string fmt, string unit, float min, float max, float step,
+            float value, Action<float> apply)
+        {
+            GUILayout.Label($"{name}  {value.ToString(fmt)}{unit}", labelStyle);
+            var next = GUILayout.HorizontalSlider(value, min, max, GUILayout.Height(24f));
+            if (!Mathf.Approximately(next, value))
+            {
+                apply(Mathf.Round(next * step) / step);
+                Rebuild();
+            }
         }
 
         void Save()
@@ -438,7 +486,7 @@ namespace RoomGen.Studio
         string NextRequestId() => "r-" + (++requestCounter).ToString("0000");
 
         static string Friendly(string id) =>
-            id.Replace("builtin.", "").Replace('-', ' ');
+            id.Replace("builtin.", "").Replace("cc0.", "").Replace('-', ' ');
 
         void EnsureStyles()
         {

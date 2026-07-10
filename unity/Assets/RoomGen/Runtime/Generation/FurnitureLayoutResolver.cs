@@ -129,9 +129,11 @@ namespace RoomGen.Generation
             potObject.transform.localPosition = new Vector3(0f, 0.25f, 0f);
             potObject.transform.localScale = new Vector3(0.34f, 0.25f, 0.34f);
             potObject.GetComponent<MeshRenderer>().sharedMaterial = pot;
+            // Slight lean only: a strong Z tilt read as a fallen object once real furniture
+            // models landed around it (Fable review).
             GenerationUtil.CreateBox("Plant", parent, new Vector3(0.45f, 1.05f, 0.45f),
                 new Vector3(0f, 0.95f, 0f), green, layer,
-                Quaternion.Euler(0f, 25f, 25f));
+                Quaternion.Euler(0f, 25f, 6f));
         }
 
         // Ceiling-mounted: the item's origin is placed AT the ceiling plane (SlotResolver ceiling

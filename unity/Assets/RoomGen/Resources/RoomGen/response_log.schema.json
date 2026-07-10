@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cogs160-track3.local/response_log.schema.json",
+  "title": "ResponseLogRow",
+  "description": "ONE participant response = ONE row. Produced by the experiment runtime (Unity), consumed by the Cloudflare Worker (POST /responses), local CSV export, and analysis. Canonical CSV column order is defined in spec/RESPONSE_LOG.md and MUST match the required+optional field order here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "study_id", "pair_id", "participant_id", "session_id",
+    "trial_index", "task_type", "condition", "manipulated_variables",
+    "modality", "execution_path", "response", "timestamp_utc",
+    "presentation_order_seed", "runner_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version of this row schema."
+    },
+    "study_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The study this row belongs to (study.schema.json)."
+    },
+    "pair_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The control/treatment pair shown (experiment.pair_id in the RoomSpecs)."
+    },
+    "participant_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Anonymous participant identifier (assigned by the runner, never PII)."
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One sitting = one session (UUID). Distinguishes re-runs by the same participant."
+    },
+    "trial_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "0-based position of this trial within the session's presentation order."
+    },
+    "task_type": {
+      "type": "string",
+      "enum": ["rating", "choice"],
+      "description": "v1 task registry: 'rating' (single-stimulus scale rating) or 'choice' (A-vs-B paired comparison). Extending this enum is a contract change (COORDINATION.md rule)."
+    },
+    "condition": {
+      "type": "string",
+      "enum": ["control", "treatment", "both"],
+      "description": "Which condition the participant responded to. 'both' for A-vs-B choice trials that present the pair together."
+    },
+    "manipulated_variables": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Copied verbatim from the pair's experiment.manipulated_variables — every row is self-describing for analysis."
+    },
+    "modality": {
+      "type": "string",
+      "enum": ["desktop_3d", "pcvr", "standalone_vr"],
+      "description": "How the room was experienced. Guardrail #3: modality is a recorded variable — NEVER pool rows across modalities. 3D-only project: there is deliberately no 2D/image modality."
+    },
+    "execution_path": {
+      "type": "string",
+      "enum": ["live", "cached", "regen", "preview_only"],
+      "description": "Honesty label of the stimulus the participant actually saw (project convention)."
+    },
+    "response": {
+      "type": "object",
+      "description": "Task-specific payload, discriminated by task_type.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scale_min", "scale_max", "value"],
+          "properties": {
+            "scale_min": { "type": "integer", "description": "Lowest point on the rating scale (e.g. 1)." },
+            "scale_max": { "type": "integer", "description": "Highest point on the rating scale (e.g. 7)." },
+            "value":     { "type": "integer", "description": "The participant's rating. MUST lie within [scale_min, scale_max] — runner-enforced." },
+            "prompt":    { "type": "string", "description": "The question wording shown, for the record." }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["chosen", "left_condition", "right_condition"],
+          "properties": {
+            "chosen":          { "type": "string", "enum": ["left", "right"], "description": "Which side the participant picked." },
+            "left_condition":  { "type": "string", "enum": ["control", "treatment"], "description": "Condition shown on the left (side assignment is counterbalanced via the seed)." },
+            "right_condition": { "type": "string", "enum": ["control", "treatment"], "description": "Condition shown on the right." },
+            "prompt":          { "type": "string", "description": "The comparison question wording shown." }
+          }
+        }
+      ]
+    },
+    "rt_ms": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Response time in milliseconds (stimulus onset -> response). OPTIONAL: rating/choice tasks are accuracy-first; native desktop timing is trustworthy, but treat any future browser arm's RT as approximate (~80-100 ms platform lag, PROPOSAL.md section 4)."
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC time the response was recorded."
+    },
+    "presentation_order_seed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Seed of the deterministic shuffle that produced this session's trial order (determinism guardrail: seed + trial_index fully reconstructs what was shown when)."
+    },
+    "runner_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version of the experiment runtime that produced this row (provenance)."
+    },
+    "spec_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "OPTIONAL content hash of the exact RoomSpec shown (STORAGE.md content-addressing) — pins the row to an immutable stimulus."
+    }
+  }
+}

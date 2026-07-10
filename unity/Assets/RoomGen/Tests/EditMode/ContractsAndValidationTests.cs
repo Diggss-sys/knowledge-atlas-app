@@ -32,6 +32,26 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void CurvedWallPairDiffersOnlyByCornerRadius()
+        {
+            var asset = Resources.Load<TextAsset>("RoomGen/Examples/curved-wall-pair");
+            Assert.That(asset, Is.Not.Null, "curved-wall-pair resource is missing.");
+            var report = PairValidator.Validate(RoomJson.Deserialize<ConditionPairSpec>(asset.text));
+            Assert.That(report.Ok, Is.True, IssueSummary(report));
+            Assert.That(report.ChangedFields, Is.EqualTo(new[] { "geometry.corner_radius_m" }));
+        }
+
+        [Test]
+        public void WarmthPairDiffersOnlyByColorTemperature()
+        {
+            var asset = Resources.Load<TextAsset>("RoomGen/Examples/warmth-pair");
+            Assert.That(asset, Is.Not.Null, "warmth-pair resource is missing.");
+            var report = PairValidator.Validate(RoomJson.Deserialize<ConditionPairSpec>(asset.text));
+            Assert.That(report.Ok, Is.True, IssueSummary(report));
+            Assert.That(report.ChangedFields, Is.EqualTo(new[] { "lighting.color_temperature_k" }));
+        }
+
+        [Test]
         public void ValidatorRejectsUndeclaredDifference()
         {
             var pair = LoadExamplePair();
