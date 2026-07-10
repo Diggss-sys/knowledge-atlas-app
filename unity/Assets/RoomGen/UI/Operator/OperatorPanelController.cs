@@ -62,7 +62,13 @@ namespace RoomGen.UI
             var dropdown = root.Q<DropdownField>("declared-variable");
             if (dropdown != null)
             {
-                dropdown.choices = new List<string>(vm.ManipulableVariables);
+                // Offer only declarable variables the panel can actually change today (the preset's
+                // manipulable list ∩ its wired ranges): declaring a variable with no wired control can
+                // only ever produce a declared_unchanged red verdict — a dead end for the operator.
+                // The rest return as the preset gains ranges (the UXML hint says so).
+                dropdown.choices = new List<string>();
+                foreach (var v in vm.ManipulableVariables)
+                    if (wired.Contains(v)) dropdown.choices.Add(v);
                 if (dropdown.choices.Count > 0)
                 {
                     dropdown.index = 0;
@@ -77,6 +83,25 @@ namespace RoomGen.UI
         /// <summary>Reflect view-model observable state back onto the controls (status, diff, publish gate).</summary>
         public static void Refresh(VisualElement root, OperatorPanelViewModel vm)
         {
+            // Which room do the sliders shape right now? Before Set-as-control everything is the
+            // control-to-be (both previews mirror it); after, the control is frozen and edits flow to
+            // the treatment. The operator kept losing track of this — say it, loudly, at the top.
+            var banner = root.Q<Label>("editing-status");
+            if (banner != null)
+            {
+                banner.text = vm.HasControl
+                    ? "CONTROL FROZEN — editing: TREATMENT. Change exactly one thing, then Validate pair."
+                    : "EDITING: CONTROL — shape this room, then press 'Set as control' to freeze the baseline.";
+                banner.EnableInClassList("ka-banner--treatment", vm.HasControl);
+            }
+
+            var controlCaption = root.Q<Label>("control-caption");
+            if (controlCaption != null)
+                controlCaption.text = vm.HasControl ? "Control — frozen baseline" : "Control — editing now";
+            var treatmentCaption = root.Q<Label>("treatment-caption");
+            if (treatmentCaption != null)
+                treatmentCaption.text = vm.HasControl ? "Treatment — editing now" : "Treatment — starts as a copy of the control";
+
             var applyStatus = root.Q<Label>("apply-status");
             if (applyStatus != null)
             {

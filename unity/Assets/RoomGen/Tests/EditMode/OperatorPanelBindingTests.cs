@@ -98,7 +98,7 @@ namespace RoomGen.Tests
         }
 
         [Test]
-        public void Binder_populates_the_declared_variable_dropdown_from_manipulable_variables()
+        public void Declared_variable_dropdown_offers_only_manipulable_variables_with_a_wired_control()
         {
             var ch = new MockSpecChannel();
             var vm = new OperatorPanelViewModel(ch, () => 0.0);
@@ -107,9 +107,13 @@ namespace RoomGen.Tests
             var root = BuildTree();
             OperatorPanelController.Bind(root, vm);
 
+            // manipulable ∩ wired ranges: declaring a variable with no wired slider is a guaranteed
+            // declared_unchanged red verdict — the picker must not offer that dead end. Today only the
+            // flagship ceiling variable qualifies; contour/wall-material/warmth return with preset ranges.
             var dropdown = root.Q<DropdownField>("declared-variable");
-            CollectionAssert.AreEquivalent(vm.ManipulableVariables.ToList(), dropdown.choices,
-                "the picker offers exactly the preset's manipulable variables");
+            CollectionAssert.AreEqual(new[] { "shell.ceiling_height_m" }, dropdown.choices,
+                "the picker offers only declarable variables the panel can actually change");
+            Assert.AreEqual("shell.ceiling_height_m", vm.DeclaredVariable, "default declaration follows the first offered choice");
         }
 
         [Test]

@@ -21,8 +21,14 @@
 
         <engine:VisualElement name="body" class="ka-body">
 
-            <!-- left rail: the editing controls + the science -->
-            <engine:VisualElement name="controls-col" class="ka-rail">
+            <!-- left rail: the editing controls + the science. A ScrollView so the rail can hold more
+                 content than the window is tall — panels keep their natural height (flex-shrink 0)
+                 and the operator scrolls, instead of UI Toolkit compressing panels into each other. -->
+            <engine:ScrollView name="controls-col" class="ka-rail">
+
+                <!-- Which room the sliders currently shape (text + colour set by the controller):
+                     navy = shaping the control; teal = control frozen, edits flow to the treatment. -->
+                <engine:Label name="editing-status" text="EDITING: CONTROL" class="ka-banner" />
 
                 <engine:VisualElement name="shell-panel" class="ka-panel">
                     <engine:Label text="Room shell" class="ka-subheading" />
@@ -35,21 +41,26 @@
                     <engine:Label text="Lighting" class="ka-subheading" />
                     <engine:Slider name="lighting.warmth"    label="Warmth"    low-value="0" high-value="1" show-input-field="true" class="ka-slider" />
                     <engine:Slider name="lighting.intensity" label="Intensity" low-value="0" high-value="2" show-input-field="true" class="ka-slider" />
+                    <engine:Label text="Locked — these are not wired to the engine yet (the room preset defines no ranges for them; they unlock with a preset update)." class="ka-hint" />
                 </engine:VisualElement>
 
                 <engine:VisualElement name="pair-panel" class="ka-panel ka-panel--accent">
                     <engine:Label text="Experiment pair" class="ka-subheading" />
+                    <engine:Label text="An experiment compares two rooms that differ in exactly ONE thing. Shape a room, freeze it as the baseline, change one thing, then validate." class="ka-hint" />
                     <engine:DropdownField name="declared-variable" label="Independent variable" class="ka-dropdown" />
+                    <engine:Label text="The one variable your pair is allowed to differ in. More appear here when the preset adds ranges (warmth, contour, wall material)." class="ka-hint" />
                     <!-- Pair workflow: freeze the current room as the control, dial the treatment, then
                          gate it. Wired by OperatorStudio (studio-level actions), not the generic binder. -->
                     <engine:VisualElement name="pair-actions" class="ka-button-row">
                         <engine:Button name="set-control-button" text="Set as control" class="ka-button" />
                         <engine:Button name="submit-pair-button" text="Validate pair" class="ka-button" />
                     </engine:VisualElement>
+                    <engine:Label text="Set as control freezes the current room as the baseline. Validate pair checks the two rooms differ in only the declared variable." class="ka-hint" />
                     <engine:Label text="VALIDATION" class="ka-eyebrow" />
                     <engine:Label name="validation-status" text="No pair validated yet." class="ka-status" />
                     <engine:VisualElement name="diff-list" class="ka-diff-list" />
                     <engine:Button name="publish-button" text="Publish study" class="ka-button ka-button--primary" />
+                    <engine:Label text="Publish unlocks after a green validation — a confounded pair can never be published." class="ka-hint" />
                 </engine:VisualElement>
 
                 <engine:VisualElement name="walk-panel" class="ka-panel">
@@ -60,18 +71,18 @@
 
                 <engine:Label name="apply-status" text="" class="ka-status" />
 
-            </engine:VisualElement>
+            </engine:ScrollView>
 
             <!-- right: the live preview the operator watches while editing -->
             <engine:VisualElement name="preview-col" class="ka-preview-col">
                 <engine:Label text="LIVE PREVIEW" class="ka-eyebrow" />
                 <engine:VisualElement name="preview-row" class="ka-preview-row">
                     <engine:VisualElement name="control-pane" class="ka-preview-pane">
-                        <engine:Label text="Control" class="ka-preview-caption" />
+                        <engine:Label name="control-caption" text="Control" class="ka-preview-caption" />
                         <engine:VisualElement name="control-preview" class="ka-preview" />
                     </engine:VisualElement>
                     <engine:VisualElement name="treatment-pane" class="ka-preview-pane">
-                        <engine:Label text="Treatment" class="ka-preview-caption" />
+                        <engine:Label name="treatment-caption" text="Treatment" class="ka-preview-caption" />
                         <engine:VisualElement name="treatment-preview" class="ka-preview" />
                     </engine:VisualElement>
                 </engine:VisualElement>

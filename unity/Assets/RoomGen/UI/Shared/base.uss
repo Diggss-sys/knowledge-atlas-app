@@ -72,6 +72,7 @@
     border-radius: 6px;
     padding: var(--ka-space-4);
     margin-bottom: var(--ka-space-4);
+    flex-shrink: 0; /* never compress a panel to fit the viewport — the rail scrolls instead */
 }
 
 /* Navy band for app chrome (matches the site's fixed nav; gold for the wordmark). */
@@ -355,4 +356,21 @@
     font-size: var(--ka-font-sm);
     margin-top: var(--ka-space-2);
     white-space: normal;
+}
+
+/* which-room-am-I-editing banner at the top of the rail: navy while shaping the control,
+   teal once the control is frozen and edits flow to the treatment. */
+.ka-banner {
+    background-color: var(--ka-navy);
+    color: var(--ka-white);
+    font-size: var(--ka-font-sm);
+    -unity-font-style: bold;
+    padding: var(--ka-space-2) var(--ka-space-3);
+    border-radius: 4px;
+    margin-bottom: var(--ka-space-3);
+    white-space: normal;
+}
+
+.ka-banner--treatment {
+    background-color: var(--ka-teal);
 }
