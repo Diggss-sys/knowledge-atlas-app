@@ -6,6 +6,7 @@ using RoomGen.Adapter;
 using RoomGen.Contracts;
 using RoomGen.Export;
 using RoomGen.Generation;
+using RoomGen.Lighting;
 using RoomGen.Metrics;
 using RoomGen.Validation;
 using RoomGen.VR;
@@ -63,6 +64,11 @@ namespace RoomGen.Studio
         const float MaxRoomWidth = 7.0f;
         const float MinRoomLength = 5.6f;  // keeps the bundled window openings in bounds
         const float MaxRoomLength = 7.5f;
+
+        // Time-of-day sun (SunSkySystem). Negative = off: the static calibrated sun from
+        // LightingSystem is left untouched. Shared across both conditions (nuisance parameter),
+        // never serialized into the pair spec.
+        float sunHour = -1f;
 
         void Awake()
         {
@@ -175,6 +181,16 @@ namespace RoomGen.Studio
                 status = "Lighting calibration is outside tolerance.";
             else
                 status = report.Ok ? "Pair valid and ready to export." : "Resolve validation errors before export.";
+            ApplySunSky(); // rebuilds recreate the Sun lights with static values; re-aim if a time is set
+        }
+
+        // Re-apply the time-of-day sun to all three views (previews + walk). No-op when off.
+        void ApplySunSky()
+        {
+            if (sunHour < 0f) return;
+            SunSkySystem.Apply(controlGenerator.transform, sunHour, pair.Control.Lighting.TargetLux);
+            SunSkySystem.Apply(treatmentGenerator.transform, sunHour, pair.Treatment.Lighting.TargetLux);
+            SunSkySystem.Apply(walkGenerator.transform, sunHour, pair.Control.Lighting.TargetLux);
         }
 
         void OnGUI()
@@ -283,6 +299,26 @@ namespace RoomGen.Studio
                 v => { pair.Control.Lighting.TargetLux = v; pair.Treatment.Lighting.TargetLux = v; });
             if (GUILayout.Button("Floor: " + Friendly(pair.Control.Surfaces.FloorMaterialId), GUILayout.Height(32f)))
                 CycleFloor();
+
+            // Time-of-day sun (visual only, shared by both conditions). Slider engages the solar
+            // arc; the button restores the static calibrated sun exactly as LightingSystem built it.
+            var sunLabel = sunHour < 0f ? "Sun: static (calibrated)" : $"Sun: {(int)sunHour:00}:{(int)((sunHour % 1f) * 60f):00}";
+            GUILayout.Label(sunLabel, labelStyle);
+            var nextHour = GUILayout.HorizontalSlider(
+                sunHour < 0f ? SunSkySystem.PeakHour : sunHour,
+                SunSkySystem.MinHour, SunSkySystem.MaxHour, GUILayout.Height(24f));
+            if (sunHour >= 0f ? !Mathf.Approximately(nextHour, sunHour) : Mathf.Abs(nextHour - SunSkySystem.PeakHour) > 0.01f)
+            {
+                sunHour = Mathf.Round(nextHour * 4f) / 4f; // 15-minute steps
+                ApplySunSky();
+            }
+            if (sunHour >= 0f && GUILayout.Button("Reset sun to calibrated", GUILayout.Height(24f)))
+            {
+                sunHour = -1f;
+                SunSkySystem.Reset(controlGenerator.transform, pair.Control.Lighting.ColorTemperatureK, pair.Control.Lighting.TargetLux);
+                SunSkySystem.Reset(treatmentGenerator.transform, pair.Treatment.Lighting.ColorTemperatureK, pair.Treatment.Lighting.TargetLux);
+                SunSkySystem.Reset(walkGenerator.transform, pair.Control.Lighting.ColorTemperatureK, pair.Control.Lighting.TargetLux);
+            }
 
             GUILayout.Space(10f);
             GUILayout.Label("Openings, furniture, player start and seed are always matched", labelStyle);
