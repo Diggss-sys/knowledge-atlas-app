@@ -113,6 +113,23 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void Sliders_without_a_preset_range_are_disabled_not_left_as_silent_noops()
+        {
+            var ch = new MockSpecChannel();
+            var vm = new OperatorPanelViewModel(ch, () => 0.0);
+            vm.LoadPreset(Preset);
+
+            var root = BuildTree();
+            OperatorPanelController.Bind(root, vm);
+
+            // warmth/intensity exist in the UXML but have no preset range yet -> the binder can't wire
+            // them; dragging a control that does nothing would mislead the operator (Fable review).
+            Assert.IsFalse(root.Q<Slider>("lighting.warmth").enabledSelf, "unwired warmth slider must be disabled");
+            Assert.IsFalse(root.Q<Slider>("lighting.intensity").enabledSelf, "unwired intensity slider must be disabled");
+            Assert.IsTrue(root.Q<Slider>("shell.ceiling_height_m").enabledSelf, "ranged sliders stay live");
+        }
+
+        [Test]
         public void Publish_button_is_disabled_until_validation_passes_then_enabled()
         {
             var ch = new MockSpecChannel();

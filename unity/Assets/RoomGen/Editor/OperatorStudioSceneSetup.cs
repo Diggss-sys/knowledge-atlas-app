@@ -61,8 +61,12 @@ namespace RoomGen.Editor
             var theme = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(ThemePath);
             if (theme != null) ps.themeStyleSheet = theme;
             ps.scaleMode = PanelScaleMode.ConstantPhysicalSize;
-            ps.clearColor = true;
-            ps.colorClearValue = new Color(0.968f, 0.956f, 0.937f, 1f); // --ka-cream
+            // clearColor must stay FALSE on a screen-space panel: the panel clears the whole
+            // backbuffer before drawing (even with its root display:none), which would wipe the walk
+            // camera's view the moment the operator enters a room. The UI root (.ka-root) is opaque
+            // and full-bleed, so the panel needs no clear of its own. (The capture tests build their
+            // own RT-targeted settings, where clearing IS correct.) Guarded by ScenePanelSettingsTests.
+            ps.clearColor = false;
             AssetDatabase.CreateAsset(ps, PanelSettingsPath);
             AssetDatabase.SaveAssets();
             return ps;

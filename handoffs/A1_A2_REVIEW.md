@@ -63,3 +63,38 @@ Proof captures: `unity/captures/capture-ui-operator-studio.png`, `capture-ui-par
 VR (parked until after Aug 1), Cloudflare Worker (local CSV is the demo path), and A1's "Publish study"
 button currently logs + is gated by the verdict — wiring it to `StudyPublisher` to emit a study JSON is
 the natural next small step if we want the operator to author the very study A2 consumes.
+
+---
+
+## Fable review verdict (2026-07-10) — PASS after fixes
+
+*Method: verified the gate semantics, light-layer masking, adapter tolerances and panel styling against
+the actual code, then hunted specifically in what the tests structurally cannot see (screen rendering,
+input-driven walk, test isolation). Four findings survived verification; all four fixed in the review
+commit; suites re-run green (97 EditMode + 3 PlayMode).*
+
+| # | Severity | Finding | Fix |
+|---|---|---|---|
+| F1 | **Critical (demo-blocking)** | Both production `PanelSettings` assets had `clearColor=true` + an opaque clear value (cargo-culted from the RT capture tests, where it's correct). A screen-space panel clears the whole backbuffer every frame — even with its root `display:none` — so **"Walk this room" / "Enter room" showed a solid cream screen instead of the room.** Sat exactly in the one acceptance criterion no automated test covers (walk needs input devices). | `m_ClearColor: 0` in both assets + both scene-setup generators; new `ScenePanelSettingsTests` EditMode gate so it can't regress. UI look unchanged (both UI roots are opaque + full-bleed). |
+| F2 | Moderate (UX honesty) | Warmth/intensity sliders drag freely but are wired to nothing (no preset range) — a silent no-op control mid-demo misleads the operator. | Binder now disables any slider it can't wire; test added. Re-enabling = add ranges to the preset (contract change, Diego's call). |
+| F3 | Minor (provenance honesty) | Every plain apply carried the **fixture's** experiment block (`pair_id: ceiling_height_study_01`) into the session provenance JSONL — the log that exists to be the faithful record of operator actions. | `StudioSpecChannel.BuildBase` strips `experiment`; `LoadPair` stamps the real declaration as before. |
+| F4 | Minor (test isolation) | `RoomStudioBootstrap` auto-spawned the full legacy IMGUI studio inside every PlayMode test (`InitTestScene…` doesn't match the scene guard), building its bundled pair on layers 8/9 at the origin — superimposed on the tests' own preview rooms. Pre-existing, benign today, but the preview assertions were less isolated than they looked. | Guard now also skips `InitTestScene*`. |
+
+**Verified sound (no action):** the stamped experiment block matches `PairGate` exactly (`experiment`/
+`provenance` are non-stimulus prefixes; `IsCovered` is exact-or-prefix); lights are layer-masked
+(`LightingSystem` sets `cullingMask = 1 << layer`) so the overlapping-rooms design has no cross-lighting;
+`ParticipantSession` rows are shape-identical to `StudyRunner`'s; id sanitization and the stable
+per-participant seed are correct; `runner.uss` is genuinely neutral.
+
+**Noted, deliberately not fixed (decisions, not defects):**
+- **Dwell timer** (REPLAN's A2 sketch mentions one): a participant can Esc after 2 seconds and rate.
+  The right minimum-dwell is a study-design call → Track B decides the threshold, then it's a ~10-line
+  change gating the rating buttons.
+- **`Camera.Render()` in `PreviewRenderer` is a no-op under HDRP** (SRP doesn't support manual render).
+  Previews work because RT cameras render every frame. Consequences: don't ever "optimize" by disabling
+  those cameras, and two 720×460 HDRP renders run per frame (three during walk) — fine on the lab PC,
+  watch it on the M2 Macs.
+- `OperatorStudio.Update` refreshes the diff list every frame (allocation churn) — same pattern as the
+  pre-existing controller; harmless at this scale.
+- A2 hardcodes the fixture study; the publish→consume loop (A1 `StudyPublisher` → A2 reads it) is the
+  natural next step, as noted above.

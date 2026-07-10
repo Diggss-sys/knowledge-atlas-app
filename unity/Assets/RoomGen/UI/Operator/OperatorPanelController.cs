@@ -40,6 +40,7 @@ namespace RoomGen.UI
         /// </summary>
         public static void Bind(VisualElement root, OperatorPanelViewModel vm)
         {
+            var wired = new HashSet<string>();
             foreach (var field in vm.Fields)
             {
                 var slider = root.Q<Slider>(field.Path);
@@ -50,7 +51,13 @@ namespace RoomGen.UI
                 var path = field.Path;
                 slider.RegisterValueChangedCallback(evt => vm.SetField(path, evt.newValue));
                 SliderFill.Attach(slider); // site-style value fill (visual only)
+                wired.Add(field.Path);
             }
+
+            // Sliders in the UXML with no matching preset range (today: lighting.warmth / .intensity)
+            // would drag freely while doing nothing — a silent no-op control misleads the operator, so
+            // they are disabled until the preset grows their ranges (a contract change; Diego's call).
+            root.Query<Slider>().ForEach(s => { if (!wired.Contains(s.name)) s.SetEnabled(false); });
 
             var dropdown = root.Q<DropdownField>("declared-variable");
             if (dropdown != null)

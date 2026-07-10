@@ -72,8 +72,16 @@ namespace RoomGen.UI
         public void CaptureScreenshot(string requestId) => _inner.CaptureScreenshot(requestId);
 
         /// <summary>Parse the canonical example that supplies every field the panel never edits
-        /// (spec_version, room_type, seed, openings, furniture) — the merge base for completion.</summary>
-        public static JObject BuildBase(string baseTemplateJson) => JObject.Parse(baseTemplateJson);
+        /// (spec_version, room_type, seed, openings, furniture) — the merge base for completion.
+        /// The fixture's experiment block is dropped: a plain apply is a draft edit, not a member of
+        /// the fixture's pair, and the session provenance log must not claim otherwise. LoadPair
+        /// stamps a fresh block from the operator's actual declaration (Fable review, 2026-07-10).</summary>
+        public static JObject BuildBase(string baseTemplateJson)
+        {
+            var b = JObject.Parse(baseTemplateJson);
+            b.Remove("experiment");
+            return b;
+        }
 
         /// <summary>
         /// Deep-merge the edited fields over the base: nested objects merge recursively, arrays and

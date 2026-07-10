@@ -61,8 +61,11 @@ namespace RoomGen.Editor
             var theme = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(ThemePath);
             if (theme != null) ps.themeStyleSheet = theme;
             ps.scaleMode = PanelScaleMode.ConstantPhysicalSize;
-            ps.clearColor = true;
-            ps.colorClearValue = new Color(0.98f, 0.98f, 0.98f, 1f); // neutral off-white, not a brand colour
+            // clearColor must stay FALSE on a screen-space panel: clearing wipes the walk camera's
+            // view during the participant's room exploration (the panel clears even with its root
+            // hidden). The .runner-root is opaque + full-bleed, so no clear is needed. Guarded by
+            // ScenePanelSettingsTests.
+            ps.clearColor = false;
             AssetDatabase.CreateAsset(ps, PanelSettingsPath);
             AssetDatabase.SaveAssets();
             return ps;
