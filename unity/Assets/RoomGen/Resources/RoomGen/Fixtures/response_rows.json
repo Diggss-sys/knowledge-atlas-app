@@ -1,0 +1,158 @@
+{
+  "_meta": {
+    "contract": "spec/response_log.schema.json (+ spec/RESPONSE_LOG.md)",
+    "purpose": "Golden response rows. 'valid' rows MUST pass schema validation; 'invalid' rows MUST fail (reason documents why). Used by tests/test_fixtures.py, the Worker's row validation, and the runner's local validation."
+  },
+  "valid": [
+    {
+      "name": "rating_row_control",
+      "row": {
+        "schema_version": "1.0",
+        "study_id": "ceiling_pilot_01",
+        "pair_id": "ceiling_height_study_01",
+        "participant_id": "p_017",
+        "session_id": "3f2c9a4e-1d5b-4f7a-9c0e-8a6d2b1e5c44",
+        "trial_index": 0,
+        "task_type": "rating",
+        "condition": "control",
+        "manipulated_variables": ["shell.ceiling_height_m"],
+        "modality": "desktop_3d",
+        "execution_path": "live",
+        "response": { "scale_min": 1, "scale_max": 7, "value": 5, "prompt": "How pleasant does this room feel?" },
+        "rt_ms": 2350.5,
+        "timestamp_utc": "2026-07-20T18:42:11Z",
+        "presentation_order_seed": 160,
+        "runner_version": "0.1.0",
+        "spec_sha256": "9b1a5c3e7f2d4a6b8c0e1f3a5b7d9c2e4f6a8b0c1d3e5f7a9b1c3d5e7f9a0b2c"
+      }
+    },
+    {
+      "name": "choice_row_pair",
+      "row": {
+        "schema_version": "1.0",
+        "study_id": "ceiling_pilot_01",
+        "pair_id": "ceiling_height_study_01",
+        "participant_id": "p_017",
+        "session_id": "3f2c9a4e-1d5b-4f7a-9c0e-8a6d2b1e5c44",
+        "trial_index": 3,
+        "task_type": "choice",
+        "condition": "both",
+        "manipulated_variables": ["shell.ceiling_height_m"],
+        "modality": "desktop_3d",
+        "execution_path": "live",
+        "response": { "chosen": "right", "left_condition": "control", "right_condition": "treatment", "prompt": "Which room would you rather work in?" },
+        "timestamp_utc": "2026-07-20T18:47:03Z",
+        "presentation_order_seed": 160,
+        "runner_version": "0.1.0"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "missing_participant_id",
+      "reason": "participant_id is required",
+      "row": {
+        "schema_version": "1.0",
+        "study_id": "ceiling_pilot_01",
+        "pair_id": "ceiling_height_study_01",
+        "session_id": "3f2c9a4e-1d5b-4f7a-9c0e-8a6d2b1e5c44",
+        "trial_index": 0,
+        "task_type": "rating",
+        "condition": "control",
+        "manipulated_variables": ["shell.ceiling_height_m"],
+        "modality": "desktop_3d",
+        "execution_path": "live",
+        "response": { "scale_min": 1, "scale_max": 7, "value": 5 },
+        "timestamp_utc": "2026-07-20T18:42:11Z",
+        "presentation_order_seed": 160,
+        "runner_version": "0.1.0"
+      }
+    },
+    {
+      "name": "unknown_task_type",
+      "reason": "task_type 'essay' is not in the v1 registry enum",
+      "row": {
+        "schema_version": "1.0",
+        "study_id": "ceiling_pilot_01",
+        "pair_id": "ceiling_height_study_01",
+        "participant_id": "p_017",
+        "session_id": "3f2c9a4e-1d5b-4f7a-9c0e-8a6d2b1e5c44",
+        "trial_index": 0,
+        "task_type": "essay",
+        "condition": "control",
+        "manipulated_variables": ["shell.ceiling_height_m"],
+        "modality": "desktop_3d",
+        "execution_path": "live",
+        "response": { "scale_min": 1, "scale_max": 7, "value": 5 },
+        "timestamp_utc": "2026-07-20T18:42:11Z",
+        "presentation_order_seed": 160,
+        "runner_version": "0.1.0"
+      }
+    },
+    {
+      "name": "modality_2d_forbidden",
+      "reason": "the project is 3D-only: 'image_2d' is deliberately not a modality",
+      "row": {
+        "schema_version": "1.0",
+        "study_id": "ceiling_pilot_01",
+        "pair_id": "ceiling_height_study_01",
+        "participant_id": "p_018",
+        "session_id": "5a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+        "trial_index": 1,
+        "task_type": "rating",
+        "condition": "treatment",
+        "manipulated_variables": ["shell.ceiling_height_m"],
+        "modality": "image_2d",
+        "execution_path": "live",
+        "response": { "scale_min": 1, "scale_max": 7, "value": 4 },
+        "timestamp_utc": "2026-07-20T18:49:20Z",
+        "presentation_order_seed": 161,
+        "runner_version": "0.1.0"
+      }
+    },
+    {
+      "name": "negative_rt",
+      "reason": "rt_ms must be >= 0",
+      "row": {
+        "schema_version": "1.0",
+        "study_id": "ceiling_pilot_01",
+        "pair_id": "ceiling_height_study_01",
+        "participant_id": "p_019",
+        "session_id": "6b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e",
+        "trial_index": 2,
+        "task_type": "rating",
+        "condition": "control",
+        "manipulated_variables": ["shell.ceiling_height_m"],
+        "modality": "pcvr",
+        "execution_path": "live",
+        "response": { "scale_min": 1, "scale_max": 7, "value": 6 },
+        "rt_ms": -12,
+        "timestamp_utc": "2026-07-20T18:51:44Z",
+        "presentation_order_seed": 162,
+        "runner_version": "0.1.0"
+      }
+    },
+    {
+      "name": "extra_unknown_field",
+      "reason": "additionalProperties: false — unknown top-level fields are rejected",
+      "row": {
+        "schema_version": "1.0",
+        "study_id": "ceiling_pilot_01",
+        "pair_id": "ceiling_height_study_01",
+        "participant_id": "p_020",
+        "session_id": "7c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f",
+        "trial_index": 0,
+        "task_type": "choice",
+        "condition": "both",
+        "manipulated_variables": ["shell.ceiling_height_m"],
+        "modality": "desktop_3d",
+        "execution_path": "live",
+        "response": { "chosen": "left", "left_condition": "treatment", "right_condition": "control" },
+        "timestamp_utc": "2026-07-20T18:53:02Z",
+        "presentation_order_seed": 163,
+        "runner_version": "0.1.0",
+        "mood": "great"
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+L3 matched-luminance report
+  control  ceiling=2.40 m  measured_card_luminance=0.2112  predicted_mean_lux=300.0  scale=5.961
+  treatment ceiling=3.20 m  measured_card_luminance=0.2214  predicted_mean_lux=300.0  scale=6.071
+  target_lux=300.0
+  measured match delta=4.7 %  (tripwire <= 25%)  =>  PASS

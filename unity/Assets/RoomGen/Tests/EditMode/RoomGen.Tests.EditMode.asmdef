@@ -3,7 +3,10 @@
   "rootNamespace": "RoomGen.Tests",
   "references": [
     "RoomGen.Runtime",
-    "Unity.Newtonsoft.Json"
+    "RoomGen.Editor",
+    "Unity.Newtonsoft.Json",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.HighDefinition.Runtime"
   ],
   "includePlatforms": [
     "Editor"

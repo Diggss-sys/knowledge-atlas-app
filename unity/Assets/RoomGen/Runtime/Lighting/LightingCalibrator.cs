@@ -19,7 +19,8 @@ namespace RoomGen.Lighting
                 new ProbeDefinition("table-right", 0.76f, new Vector2(1.1f, 0f))
             };
 
-            var unscaled = probes.Select(probe => EstimateLux(spec, probe)).ToArray();
+            var hasPendant = spec.Furniture.Any(f => f.AssetId == "builtin.pendant-light");
+            var unscaled = probes.Select(probe => EstimateLux(spec, probe, hasPendant)).ToArray();
             var mean = Mathf.Max(0.001f, unscaled.Average());
             var scale = spec.Lighting.TargetLux / mean;
             var result = new LightingResult
@@ -45,11 +46,11 @@ namespace RoomGen.Lighting
             return result;
         }
 
-        static float EstimateLux(RoomSpec spec, ProbeDefinition probe)
+        static float EstimateLux(RoomSpec spec, ProbeDefinition probe, bool hasPendant)
         {
             var area = Mathf.Max(1f, spec.Geometry.WidthM * spec.Geometry.LengthM);
             var flux = Mathf.Max(1f, spec.Lighting.BaseLuminousFluxLm);
-            var uniform = flux * Utilization / area;
+            var uniform = flux * Utilization / area; // bounce term uses the total (conserved) flux
             var fixtureY = spec.Geometry.CeilingHeightM - 0.08f;
             var fixturePositions = new[]
             {
@@ -59,15 +60,33 @@ namespace RoomGen.Lighting
                 new Vector2( spec.Geometry.WidthM * 0.23f,  spec.Geometry.LengthM * 0.23f)
             };
 
+            // Flux is split between the recessed spots and (if present) the pendant, mirroring
+            // LightingSystem exactly — otherwise the calibration target would silently drift when
+            // the pendant carries part of the load.
+            var pendantFraction = hasPendant ? LightingSystem.PendantFluxFraction : 0f;
+            var spotFraction = 1f - pendantFraction;
+
             var direct = 0f;
+            var spotCandela = flux * spotFraction / fixturePositions.Length / (4f * Mathf.PI);
             foreach (var fixture in fixturePositions)
             {
                 var horizontal = Vector2.Distance(fixture, probe.Position);
                 var vertical = Mathf.Max(0.2f, fixtureY - probe.Height);
                 var distanceSquared = horizontal * horizontal + vertical * vertical;
                 var cosine = vertical / Mathf.Sqrt(distanceSquared);
-                var candela = flux / fixturePositions.Length / (4f * Mathf.PI);
-                direct += candela * cosine / distanceSquared;
+                direct += spotCandela * cosine / distanceSquared;
+            }
+
+            if (pendantFraction > 0f)
+            {
+                // Single downward point source hung over the table centre (0,0).
+                var pendantY = spec.Geometry.CeilingHeightM - 0.6f;
+                var horizontal = probe.Position.magnitude;
+                var vertical = Mathf.Max(0.2f, pendantY - probe.Height);
+                var distanceSquared = horizontal * horizontal + vertical * vertical;
+                var cosine = vertical / Mathf.Sqrt(distanceSquared);
+                var pendantCandela = flux * pendantFraction / (4f * Mathf.PI);
+                direct += pendantCandela * cosine / distanceSquared;
             }
 
             return uniform * UniformFraction + direct * (1f - UniformFraction);

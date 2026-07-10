@@ -61,6 +61,9 @@ namespace RoomGen.Generation
             var triangles = new List<int>(count * 12);
             var bottomY = topY - thickness;
 
+            // World-planar UVs (u=x, v=z) so a UV0-mapped texture tiles without pinching.
+            // (CC0 materials use HDRP triplanar world mapping and ignore these UVs; this keeps
+            // the mesh correct for any UV0-mapped material.)
             for (var i = 0; i < count; i++)
             {
                 var p = path[i];

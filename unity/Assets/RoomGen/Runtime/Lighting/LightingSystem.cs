@@ -1,3 +1,4 @@
+using System.Linq;
 using RoomGen.Contracts;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -22,6 +23,13 @@ namespace RoomGen.Lighting
                 new Vector3( spec.Geometry.WidthM * 0.23f, spec.Geometry.CeilingHeightM - 0.08f,  spec.Geometry.LengthM * 0.23f)
             };
 
+            // If the room declares a pendant luminaire it carries part of the flux; the recessed
+            // spots give up that share so total emitted flux stays BaseLuminousFluxLm (the
+            // matched-luminance mechanism). PendantFraction is 0 when there is no pendant.
+            var hasPendant = spec.Furniture.Any(f => f.AssetId == "builtin.pendant-light");
+            var pendantFraction = hasPendant ? PendantFluxFraction : 0f;
+            var spotFraction = 1f - pendantFraction;
+
             foreach (var position in positions)
             {
                 var fixture = new GameObject("Recessed Fixture");
@@ -40,10 +48,14 @@ namespace RoomGen.Lighting
                 light.colorTemperature = spec.Lighting.ColorTemperatureK;
                 light.cullingMask = 1 << layer;
                 light.lightUnit = LightUnit.Lumen;
-                var lumens = spec.Lighting.BaseLuminousFluxLm * result.IntensityScale / positions.Length;
+                var lumens = spec.Lighting.BaseLuminousFluxLm * spotFraction * result.IntensityScale / positions.Length;
                 light.intensity = LightUnitUtils.ConvertIntensity(
                     light, lumens, LightUnit.Lumen, LightUnit.Candela);
             }
+
+            AddSun(root.transform, spec, result, layer);
+            if (hasPendant)
+                AddPendantLuminaire(parent, spec, result, layer);
 
             var volumeObject = new GameObject("Fixed Exposure");
             volumeObject.layer = layer;
@@ -67,6 +79,81 @@ namespace RoomGen.Lighting
             }
 
             return result;
+        }
+
+        // Fraction of the room's luminous flux carried by the pendant (the rest goes to the
+        // recessed spots); total emitted flux is unchanged so the calibration target still holds.
+        // Public so LightingCalibrator models the same split (keeps prediction honest).
+        public const float PendantFluxFraction = 0.4f;
+        // Daylight sun strength as a multiple of the room's target lux — gentle, scales with mood.
+        const float SunTargetLuxFactor = 2.5f;
+        // Absolute emissive brightness (nits) of the pendant shade, independent of exposure.
+        const float PendantEmissiveNits = 12f;
+
+        static void AddSun(Transform root, RoomSpec spec, LightingResult result, int layer)
+        {
+            var sunObject = new GameObject("Sun");
+            sunObject.layer = layer;
+            sunObject.transform.SetParent(root, false);
+            // Angled from high-left so a window/door admits a daylight patch and casts soft shadows.
+            sunObject.transform.localRotation = Quaternion.Euler(52f, 35f, 0f);
+            var sun = sunObject.AddComponent<Light>();
+            sunObject.AddComponent<HDAdditionalLightData>();
+            sun.type = LightType.Directional;
+            sun.shadows = LightShadows.Soft;
+            sun.useColorTemperature = true;
+            // Cooler than the interior lamps: daylight reads distinct from the warm fixtures.
+            // COUPLED-VARIABLE NOTE: derived from lighting.color_temperature_k, so a warmth
+            // manipulation also shifts the sun's tint (same class of coupling as pendant-Y from
+            // ceiling height — deterministic function of the declared variable, both conditions
+            // use the same formula; document in analysis, do not "fix").
+            sun.colorTemperature = Mathf.Lerp(spec.Lighting.ColorTemperatureK, 6500f, 0.5f);
+            sun.cullingMask = 1 << layer;
+            sun.lightUnit = LightUnit.Lux;
+            // Scales with target lux so a dim preset gets a dim sky and a bright one a brighter sky,
+            // without overpowering the calibrated interior.
+            sun.intensity = spec.Lighting.TargetLux * SunTargetLuxFactor;
+        }
+
+        static void AddPendantLuminaire(Transform parent, RoomSpec spec, LightingResult result, int layer)
+        {
+            Transform pendant = null;
+            foreach (var t in parent.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name.Contains("builtin.pendant-light")) { pendant = t; break; }
+            }
+            if (pendant == null) return;
+
+            var warm = Mathf.CorrelatedColorTemperatureToRGB(spec.Lighting.ColorTemperatureK);
+
+            // Emissive shade so the fixture itself visibly glows (and feeds bloom).
+            var shade = pendant.Find("Shade");
+            if (shade != null && shade.TryGetComponent<MeshRenderer>(out var renderer))
+            {
+                var emissive = new Material(Shader.Find("HDRP/Lit")) { name = "Pendant Emissive" };
+                emissive.SetColor("_BaseColor", warm);
+                emissive.SetColor("_EmissiveColor", warm * PendantEmissiveNits);
+                emissive.SetFloat("_EmissiveExposureWeight", 0f);
+                renderer.sharedMaterial = emissive;
+                pendant.gameObject.AddComponent<RuntimeAssetOwner>().Asset = emissive;
+            }
+
+            // Point light just below the shade carrying the pendant's flux share.
+            var lightObject = new GameObject("Pendant Light");
+            lightObject.layer = layer;
+            lightObject.transform.SetParent(pendant, false);
+            lightObject.transform.localPosition = new Vector3(0f, -0.7f, 0f);
+            var light = lightObject.AddComponent<Light>();
+            lightObject.AddComponent<HDAdditionalLightData>();
+            light.type = LightType.Point;
+            light.range = Mathf.Max(spec.Geometry.WidthM, spec.Geometry.LengthM) * 1.5f;
+            light.shadows = LightShadows.Soft;
+            light.useColorTemperature = true;
+            light.colorTemperature = spec.Lighting.ColorTemperatureK;
+            light.cullingMask = 1 << layer;
+            light.lightUnit = LightUnit.Lumen;
+            var lumens = spec.Lighting.BaseLuminousFluxLm * PendantFluxFraction * result.IntensityScale;
+            light.intensity = LightUnitUtils.ConvertIntensity(light, lumens, LightUnit.Lumen, LightUnit.Candela);
         }
     }
 
