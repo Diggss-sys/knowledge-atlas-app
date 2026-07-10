@@ -88,6 +88,17 @@ intensity correctly disabled, publish locked) → **Walk this room** puts you in
 ran on a real display — the headless suite structurally cannot see this class of bug, which is exactly
 where F1 and F5 both lived.
 
+**A2 live verification (full session on a real display, 2026-07-10):** launched via
+`RoomGen ▸ Live Smoke ▸ Play Participant Runner` and driven as a real participant: typed id `P42` →
+instructions → per room (Enter room → walked → Esc → rated) × 4 → "Session complete" with the CSV path
+shown. The scene loaded with a correct PanelSettings straight from the fixed YAML (no self-heal
+warning). Resulting CSV: 4 validated rows, canonical columns, session GUID, seeded order
+control/control/treatment/treatment for seed 584989 (a different order than participant P01 — the
+per-participant seeding demonstrably works), the exact ratings clicked (6/3/7/2), and REAL rt_ms
+values (47 s on the first slow trial, ~2.5 s on the fast ones). No condition label ever visible to
+the participant. The `LiveSmoke` editor menu (RoomGen ▸ Live Smoke) is committed for repeating these
+real-display checks — one click per scene.
+
 **Verified sound (no action):** the stamped experiment block matches `PairGate` exactly (`experiment`/
 `provenance` are non-stimulus prefixes; `IsCovered` is exact-or-prefix); lights are layer-masked
 (`LightingSystem` sets `cullingMask = 1 << layer`) so the overlapping-rooms design has no cross-lighting;
