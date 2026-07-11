@@ -125,6 +125,20 @@
      "x": 0.55,
      "y": 0.55
     }
+   },
+   {
+    "asset_id": "builtin.sideboard",
+    "slot_id": "sideboard-back",
+    "position_m": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": -2.75
+    },
+    "rotation_y_deg": 0.0,
+    "footprint_m": {
+     "x": 1.72,
+     "y": 0.5
+    }
    }
   ],
   "provenance": {
@@ -255,6 +269,20 @@
     "footprint_m": {
      "x": 0.55,
      "y": 0.55
+    }
+   },
+   {
+    "asset_id": "builtin.sideboard",
+    "slot_id": "sideboard-back",
+    "position_m": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": -2.75
+    },
+    "rotation_y_deg": 0.0,
+    "footprint_m": {
+     "x": 1.72,
+     "y": 0.5
     }
    }
   ],

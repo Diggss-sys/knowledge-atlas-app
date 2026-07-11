@@ -478,7 +478,12 @@ namespace RoomGen.Studio
             switch (path)
             {
                 case "geometry.corner_radius_m":
-                    pair.Treatment.Geometry.CornerRadiusM = CalculateMaxSafeRadius(pair.Control);
+                    // Seed a MODEST, visible fillet — not the max safe radius. Max safe for a ~6 m
+                    // room is ~3 m, which pulls the corner anchors to the centre and collapses the
+                    // footprint into a near-circular blob (the "landscape" deformation). A gentle
+                    // default rounds the corners noticeably while the room still reads as a room.
+                    pair.Treatment.Geometry.CornerRadiusM =
+                        Mathf.Min(0.6f, CalculateMaxSafeRadius(pair.Control));
                     break;
                 case "geometry.width_m":
                     pair.Treatment.Geometry.WidthM =
