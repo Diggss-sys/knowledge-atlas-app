@@ -73,7 +73,6 @@ namespace RoomGen.Lighting
             var ssr = profile.Add<ScreenSpaceReflection>(true);
             ssr.enabled.Override(true);
             ssr.usedAlgorithm.Override(ScreenSpaceReflectionAlgorithm.PBRAccumulation);
-            ssr.minSmoothness.Override(0.4f);   // let semi-rough wood/tile reflect, not just mirrors
             ssr.reflectSky.Override(true);      // sky/window light reflects off interior surfaces
 
             // Sky: Physically Based Sky (Diego's pick over gradient/HDRI). Code-only, no .exr asset,
