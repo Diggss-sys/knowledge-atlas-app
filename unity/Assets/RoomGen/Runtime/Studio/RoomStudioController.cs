@@ -186,10 +186,9 @@ namespace RoomGen.Studio
             camera.fieldOfView = 72f;
             camera.nearClipPlane = 0.05f;
             camera.farClipPlane = 25f;
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.055f, 0.06f, 0.065f);
             camera.cullingMask = 1 << layer;
             camera.targetTexture = texture;
+            CameraRealism.Apply(camera); // SSGI bounce + sky visible through openings
             return texture;
         }
 
@@ -366,6 +365,8 @@ namespace RoomGen.Studio
                 GUILayout.Label(seamStatus, labelStyle);
 
             GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Load realism test room (windows)", GUILayout.Height(32f)))
+                LoadRealismPair();
             if (GUILayout.Button("Load KA spec pair (adapter)", GUILayout.Height(32f)))
                 LoadKaPair();
             GUILayout.BeginHorizontal();
@@ -553,6 +554,22 @@ namespace RoomGen.Studio
             activeWalkCondition = "control";
             seamChannel?.LoadPair(canonicalControlJson, canonicalTreatmentJson, NextRequestId());
             status = "KA pair adapted (spec -> adapter -> rooms). " + status;
+        }
+
+        // Realism lab: same dining baseline but glazed on three walls (front/right/left), so the
+        // SunSkySystem arc throws direct light patches at every hour and SSGI bounce + sky
+        // through the openings can be judged at their strongest.
+        void LoadRealismPair()
+        {
+            var source = Resources.Load<TextAsset>("RoomGen/Examples/realism-test-pair");
+            if (source == null)
+            {
+                status = "realism-test-pair not found under Resources/RoomGen/Examples.";
+                return;
+            }
+            pair = RoomJson.Deserialize<ConditionPairSpec>(source.text);
+            Rebuild();
+            status = "Realism test room loaded — try the Sun slider and walk it. " + status;
         }
 
         void ToggleSeamWalk()

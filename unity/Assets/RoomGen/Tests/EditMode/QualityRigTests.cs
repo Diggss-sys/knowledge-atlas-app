@@ -23,6 +23,10 @@ namespace RoomGen.Tests
                 Assert.IsTrue(profile.TryGet<ScreenSpaceAmbientOcclusion>(out _), "SSAO override missing.");
                 Assert.IsTrue(profile.TryGet<Bloom>(out _), "Bloom override missing.");
                 Assert.IsTrue(profile.TryGet<GlobalIllumination>(out _), "GlobalIllumination override missing.");
+
+                Assert.IsTrue(profile.TryGet<VisualEnvironment>(out var env), "VisualEnvironment override missing.");
+                Assert.AreEqual((int)SkyType.Gradient, env.skyType.value, "Sky should be the gradient sky.");
+                Assert.IsTrue(profile.TryGet<GradientSky>(out _), "GradientSky override missing.");
             }
             finally
             {

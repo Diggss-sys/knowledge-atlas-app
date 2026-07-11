@@ -82,6 +82,7 @@ namespace RoomGen.VR
             vrCamera.farClipPlane = 40f;
             vrCamera.cullingMask = 1 << roomLayer;
             vrCamera.stereoTargetEye = StereoTargetEyeMask.Both;
+            RoomGen.Lighting.CameraRealism.Apply(vrCamera); // SSGI bounce + sky through openings
             cameraObject.AddComponent<AudioListener>();
         }
 

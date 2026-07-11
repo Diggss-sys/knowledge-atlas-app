@@ -102,6 +102,7 @@ namespace RoomGen.VR
             walkCamera.farClipPlane = 40f;
             walkCamera.fieldOfView = 70f;
             walkCamera.cullingMask = 1 << layer;   // see only the room we're walking
+            RoomGen.Lighting.CameraRealism.Apply(walkCamera); // SSGI bounce + sky through openings
             cameraObject.AddComponent<AudioListener>();
         }
 

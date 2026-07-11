@@ -60,12 +60,23 @@ namespace RoomGen.Lighting
             bloom.intensity.Override(0.15f);
             bloom.scatter.Override(0.6f);
 
-            // In-room bounce light. supportSSGI is enabled on the asset (L0), but the SSGI
-            // camera frame setting is off by default in HDRP 17.3 (it moved to GraphicsSettings),
-            // so this override stays inert until the SSGI activation follow-up — which is the
-            // right sequencing, since bounce only reads well once real albedos land in L1.
+            // In-room bounce light. supportSSGI is enabled on the asset (L0); the per-camera
+            // SSGI frame setting (off by default in HDRP 17.3) is force-enabled by
+            // CameraRealism.Apply on every camera the app creates, so this override is live.
             var gi = profile.Add<GlobalIllumination>(true);
             gi.enable.Override(true);
+
+            // Sky: windows/door previously opened onto the cameras' solid clear color — a black
+            // void. A gradient sky (code-only, no HDRI asset needed) gives openings a believable
+            // exterior and feeds sky ambient. Exposure compensates for the rooms' fixed interior
+            // exposure so the sky reads bright like a real window, not gray.
+            var env = profile.Add<VisualEnvironment>(true);
+            env.skyType.Override((int)SkyType.Gradient);
+            var sky = profile.Add<GradientSky>(true);
+            sky.top.Override(new Color(0.22f, 0.42f, 0.78f));     // zenith blue
+            sky.middle.Override(new Color(0.72f, 0.82f, 0.92f));  // pale horizon
+            sky.bottom.Override(new Color(0.42f, 0.41f, 0.38f));  // ground haze
+            sky.exposure.Override(13.5f); // tuned against FixedExposureEv100 ~ interior EVs
 
             return profile;
         }
