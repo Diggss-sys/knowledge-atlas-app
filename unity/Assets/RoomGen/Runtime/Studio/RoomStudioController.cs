@@ -199,7 +199,16 @@ namespace RoomGen.Studio
             PositionPreviewCamera(controlCameraRig, pair.Control);
             PositionPreviewCamera(treatmentCameraRig, pair.Treatment);
             report = PairValidator.Validate(pair);
-            if (!control.Lighting.Ok || !treatment.Lighting.Ok)
+            // A refused build (spec validation error) returns Root/Lighting = null — surface the
+            // reason instead of dereferencing it (was an every-frame NRE that froze the panel).
+            if (control.Lighting == null || treatment.Lighting == null)
+            {
+                var refused = control.Lighting == null ? control : treatment;
+                status = refused.Warnings.Count > 0
+                    ? "Room refused: " + refused.Warnings[0]
+                    : "Room refused by spec validation.";
+            }
+            else if (!control.Lighting.Ok || !treatment.Lighting.Ok)
                 status = "Lighting calibration is outside tolerance.";
             else
                 status = report.Ok ? "Pair valid and ready to export." : "Resolve validation errors before export.";
@@ -291,7 +300,8 @@ namespace RoomGen.Studio
                         pair.Control.Geometry.WallBow.Back, pair.Treatment.Geometry.WallBow.Back,
                         (c, t) => { SetAllBow(pair.Control, c); SetAllBow(pair.Treatment, t); });
                     GUILayout.Label(
-                        $"Control: {BowWord(pair.Control.Geometry.WallBow.Back)}  ·  Treatment: {BowWord(pair.Treatment.Geometry.WallBow.Back)}",
+                        $"Control: {BowWord(pair.Control.Geometry.WallBow.Back)}  ·  Treatment: {BowWord(pair.Treatment.Geometry.WallBow.Back)}"
+                        + "   (walls with a door/window stay straight)",
                         labelStyle);
                     break;
                 }
@@ -420,15 +430,22 @@ namespace RoomGen.Studio
 
         static void ResetBow(RoomSpec spec) => SetAllBow(spec, 0f);
 
-        // Apply one bow amount to all four walls -> whole room curves together, corners stay shared.
+        // Apply one bow amount to every wall WITHOUT openings (openings on bowed walls are
+        // unsupported in v1 — the validator refuses the whole room, which froze the studio).
+        // Walls carrying the door/windows stay straight; the rest curve together, and corners
+        // stay shared. Resetting (amount 0) clears all four unconditionally.
         static void SetAllBow(RoomSpec spec, float amount)
         {
             spec.Geometry.WallBow ??= new WallBowSpec();
-            spec.Geometry.WallBow.Front = amount;
-            spec.Geometry.WallBow.Back = amount;
-            spec.Geometry.WallBow.Left = amount;
-            spec.Geometry.WallBow.Right = amount;
+            var bow = spec.Geometry.WallBow;
+            bow.Front = CanBow(spec, "front") ? amount : 0f;
+            bow.Back = CanBow(spec, "back") ? amount : 0f;
+            bow.Left = CanBow(spec, "left") ? amount : 0f;
+            bow.Right = CanBow(spec, "right") ? amount : 0f;
         }
+
+        static bool CanBow(RoomSpec spec, string wall) =>
+            !spec.Openings.Any(o => string.Equals(o.Wall, wall, StringComparison.OrdinalIgnoreCase));
 
         static string BowWord(float bow) =>
             bow < -0.025f ? "concave, bows in" : bow > 0.025f ? "convex, bulges out" : "flat";
