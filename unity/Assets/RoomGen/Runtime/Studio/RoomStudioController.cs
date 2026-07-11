@@ -27,6 +27,8 @@ namespace RoomGen.Studio
         RoomGenerator walkGenerator;
         RenderTexture controlPreview;
         RenderTexture treatmentPreview;
+        Transform controlCameraRig;
+        Transform treatmentCameraRig;
         ValidationReport report;
         VrExplorationMode vrMode;
         DesktopWalkMode desktopWalk;
@@ -137,8 +139,28 @@ namespace RoomGen.Studio
             controlGenerator = CreateGenerator("Control Generator", ControlLayer);
             treatmentGenerator = CreateGenerator("Treatment Generator", TreatmentLayer);
             walkGenerator = CreateGenerator("Walk Generator", WalkLayer);
-            controlPreview = CreatePreviewCamera("Control Camera", ControlLayer);
-            treatmentPreview = CreatePreviewCamera("Treatment Camera", TreatmentLayer);
+            controlPreview = CreatePreviewCamera("Control Camera", ControlLayer, out controlCameraRig);
+            treatmentPreview = CreatePreviewCamera("Treatment Camera", TreatmentLayer, out treatmentCameraRig);
+        }
+
+        /// <summary>
+        /// Keep the preview camera INSIDE the room for the current geometry. The rig was placed
+        /// once at a fixed z tuned for the default 6.2 m room; sliders move the walls: a concave
+        /// front bow pulls the front wall's midpoint (x = 0 — exactly where the camera sits)
+        /// inward by up to bow_max, and the Length slider moves it outright. A camera behind or
+        /// inside a wall renders black. Recomputed on every rebuild instead.
+        /// </summary>
+        static void PositionPreviewCamera(Transform rig, RoomSpec spec)
+        {
+            if (rig == null) return;
+            var g = spec.Geometry;
+            var halfL = g.LengthM * 0.5f;
+            var frontBow = g.WallBow?.Front ?? 0f;
+            var frontInset = frontBow < 0f ? -frontBow * Mathf.Max(0f, g.BowMaxM) : 0f;
+            var z = halfL - frontInset - 0.45f; // 0.45 m clear of the worst-case front wall face
+            var eyeY = Mathf.Min(1.58f, g.CeilingHeightM - 0.25f);
+            rig.position = new Vector3(0f, eyeY, z);
+            rig.LookAt(new Vector3(0f, Mathf.Min(1.32f, g.CeilingHeightM * 0.45f), -halfL * 0.25f));
         }
 
         RoomGenerator CreateGenerator(string objectName, int layer)
@@ -150,7 +172,7 @@ namespace RoomGen.Studio
             return generator;
         }
 
-        RenderTexture CreatePreviewCamera(string objectName, int layer)
+        RenderTexture CreatePreviewCamera(string objectName, int layer, out Transform rig)
         {
             var texture = new RenderTexture(1280, 800, 24, RenderTextureFormat.ARGBHalf)
             {
@@ -159,8 +181,7 @@ namespace RoomGen.Studio
             };
             var root = new GameObject(objectName);
             root.transform.SetParent(transform, false);
-            root.transform.position = new Vector3(0f, 1.58f, 2.48f);
-            root.transform.LookAt(new Vector3(0f, 1.32f, -0.55f));
+            rig = root.transform; // positioned per-geometry by PositionPreviewCamera on rebuild
             var camera = root.AddComponent<Camera>();
             camera.fieldOfView = 72f;
             camera.nearClipPlane = 0.05f;
@@ -176,6 +197,8 @@ namespace RoomGen.Studio
         {
             var control = controlGenerator.Build(pair.Control);
             var treatment = treatmentGenerator.Build(pair.Treatment);
+            PositionPreviewCamera(controlCameraRig, pair.Control);
+            PositionPreviewCamera(treatmentCameraRig, pair.Treatment);
             report = PairValidator.Validate(pair);
             if (!control.Lighting.Ok || !treatment.Lighting.Ok)
                 status = "Lighting calibration is outside tolerance.";
