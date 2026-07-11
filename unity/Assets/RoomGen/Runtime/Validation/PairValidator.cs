@@ -40,11 +40,11 @@ namespace RoomGen.Validation
             else
             {
                 foreach (var path in report.ChangedFields.Where(path =>
-                             !string.Equals(path, pair.ManipulatedVariable, StringComparison.Ordinal)))
+                             !Covers(pair.ManipulatedVariable, path)))
                     report.Issues.Add(new ValidationIssue("error", "UNDECLARED_DIFFERENCE", path,
                         $"Only '{pair.ManipulatedVariable}' may differ between conditions."));
 
-                if (!report.ChangedFields.Contains(pair.ManipulatedVariable))
+                if (!report.ChangedFields.Any(path => Covers(pair.ManipulatedVariable, path)))
                     report.Issues.Add(new ValidationIssue("error", "MANIPULATION_UNCHANGED",
                         pair.ManipulatedVariable, "The declared manipulation does not differ."));
             }
@@ -107,6 +107,13 @@ namespace RoomGen.Validation
             if (!JToken.DeepEquals(left, right))
                 paths.Add(path);
         }
+
+        // A declared manipulation covers an exact field OR a whole sub-object: declaring
+        // "geometry.wall_bow" allows geometry.wall_bow.front/back/left/right to differ together
+        // (one conceptual variable applied to all four walls) while still blocking everything else.
+        static bool Covers(string declared, string path) =>
+            string.Equals(path, declared, StringComparison.Ordinal) ||
+            path.StartsWith(declared + ".", StringComparison.Ordinal);
 
         static ValidationIssue Prefix(ValidationIssue issue, string prefix) =>
             new ValidationIssue(issue.Severity, issue.Code,

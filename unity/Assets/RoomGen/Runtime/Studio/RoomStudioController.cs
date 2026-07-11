@@ -56,9 +56,9 @@ namespace RoomGen.Studio
         // The demo-able manipulations. Cycling equalises everything first so the pair always has
         // exactly ONE declared difference (the gate re-checks on every rebuild regardless).
         static readonly string[] VariablePaths =
-            { "geometry.ceiling_height_m", "geometry.corner_radius_m", "geometry.width_m", "geometry.wall_bow.back" };
+            { "geometry.ceiling_height_m", "geometry.corner_radius_m", "geometry.width_m", "geometry.wall_bow" };
         static readonly string[] VariableLabels =
-            { "Ceiling Height", "Corner Radius", "Room Width", "Wall Bow (back)" };
+            { "Ceiling Height", "Corner Radius", "Room Width", "Wall Bow (all walls)" };
 
         const float MinRoomWidth = 5.0f;   // keeps the bundled front-door opening in bounds
         const float MaxRoomWidth = 7.0f;
@@ -256,15 +256,18 @@ namespace RoomGen.Studio
                         pair.Control.Geometry.WidthM, pair.Treatment.Geometry.WidthM,
                         (c, t) => { pair.Control.Geometry.WidthM = c; pair.Treatment.Geometry.WidthM = t; });
                     break;
-                case "geometry.wall_bow.back":
+                case "geometry.wall_bow":
                 {
-                    // Curved-wall manipulation: -1 bows the back wall into the room (concave),
-                    // +1 bulges it outward (convex). Rendered by WallBand as one smooth arc mesh.
+                    // Curved-wall manipulation applied to ALL FOUR walls together: -1 bows every
+                    // wall into the room (concave), +1 bulges every wall outward (convex). One
+                    // slider drives front/back/left/right so the room stays symmetric and every
+                    // wall still meets its neighbours at the shared corner points (WallBand seals
+                    // each band's ends, so joins never gap).
                     pair.Control.Geometry.WallBow ??= new WallBowSpec();
                     pair.Treatment.Geometry.WallBow ??= new WallBowSpec();
                     DrawConditionSliders("bow", "0.00", "", -1f, 1f, 20f,
                         pair.Control.Geometry.WallBow.Back, pair.Treatment.Geometry.WallBow.Back,
-                        (c, t) => { pair.Control.Geometry.WallBow.Back = c; pair.Treatment.Geometry.WallBow.Back = t; });
+                        (c, t) => { SetAllBow(pair.Control, c); SetAllBow(pair.Treatment, t); });
                     GUILayout.Label(
                         $"Control: {BowWord(pair.Control.Geometry.WallBow.Back)}  ·  Treatment: {BowWord(pair.Treatment.Geometry.WallBow.Back)}",
                         labelStyle);
@@ -377,7 +380,7 @@ namespace RoomGen.Studio
             {
                 case "geometry.corner_radius_m": varText = $"{g.CornerRadiusM:0.00} m radius"; break;
                 case "geometry.width_m": varText = $"{g.WidthM:0.0} m wide"; break;
-                case "geometry.wall_bow.back":
+                case "geometry.wall_bow":
                     var bow = g.WallBow?.Back ?? 0f;
                     varText = $"bow {bow:0.00} ({BowWord(bow)})";
                     break;
@@ -391,13 +394,16 @@ namespace RoomGen.Studio
             GUI.DrawTexture(imageRect, texture, ScaleMode.ScaleAndCrop, false);
         }
 
-        static void ResetBow(RoomSpec spec)
+        static void ResetBow(RoomSpec spec) => SetAllBow(spec, 0f);
+
+        // Apply one bow amount to all four walls -> whole room curves together, corners stay shared.
+        static void SetAllBow(RoomSpec spec, float amount)
         {
             spec.Geometry.WallBow ??= new WallBowSpec();
-            spec.Geometry.WallBow.Front = 0f;
-            spec.Geometry.WallBow.Back = 0f;
-            spec.Geometry.WallBow.Left = 0f;
-            spec.Geometry.WallBow.Right = 0f;
+            spec.Geometry.WallBow.Front = amount;
+            spec.Geometry.WallBow.Back = amount;
+            spec.Geometry.WallBow.Left = amount;
+            spec.Geometry.WallBow.Right = amount;
         }
 
         static string BowWord(float bow) =>
@@ -435,8 +441,8 @@ namespace RoomGen.Studio
                     pair.Treatment.Geometry.WidthM =
                         Mathf.Min(pair.Control.Geometry.WidthM + 1f, MaxRoomWidth);
                     break;
-                case "geometry.wall_bow.back":
-                    pair.Treatment.Geometry.WallBow.Back = 1f; // start with a visible full convex bow
+                case "geometry.wall_bow":
+                    SetAllBow(pair.Treatment, 1f); // start with a visible full convex bow on all walls
                     break;
                 default:
                     pair.Treatment.Geometry.CeilingHeightM =

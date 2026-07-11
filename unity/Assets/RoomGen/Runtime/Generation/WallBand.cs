@@ -125,6 +125,13 @@ namespace RoomGen.Generation
                     Vector3.up);
             }
 
+            // End caps: seal both open ends of the band. A neighbour that meets this band at a
+            // different angle (bowed edge against a straight wall or a corner arc) does not cover
+            // the hollow between the inner and outer skins — without caps you can see straight
+            // into the wall (the "crevice"). Caps make every band watertight on its own.
+            AddEndCap(span, 0, -1f, thickness, bottomY, topY, vertices, normals, tangents, uv, triangles);
+            AddEndCap(span, count - 1, 1f, thickness, bottomY, topY, vertices, normals, tangents, uv, triangles);
+
             mesh.SetVertices(vertices);
             mesh.SetNormals(normals);
             mesh.SetTangents(tangents);
@@ -132,6 +139,45 @@ namespace RoomGen.Generation
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateBounds();
             return mesh;
+        }
+
+        /// <summary>One rectangular cap across the band's end (inner skin -> outer skin, floor -> top).</summary>
+        static void AddEndCap(
+            IReadOnlyList<FootprintSample> span,
+            int index,
+            float sign,
+            float thickness,
+            float bottomY,
+            float topY,
+            List<Vector3> vertices,
+            List<Vector3> normals,
+            List<Vector4> tangents,
+            List<Vector2> uv,
+            List<int> triangles)
+        {
+            var sample = span[index];
+            var inner = new Vector3(sample.Position.x, 0f, sample.Position.y);
+            var outward3 = new Vector3(sample.OutwardNormal.x, 0f, sample.OutwardNormal.y);
+            var outer = inner + outward3 * thickness;
+            var capNormal = PathDirection(span, index) * sign;
+            var capTangent = TangentFor(capNormal, outward3);
+
+            var start = vertices.Count;
+            vertices.Add(new Vector3(inner.x, bottomY, inner.z)); // 0 inner bottom
+            vertices.Add(new Vector3(inner.x, topY, inner.z));    // 1 inner top
+            vertices.Add(new Vector3(outer.x, topY, outer.z));    // 2 outer top
+            vertices.Add(new Vector3(outer.x, bottomY, outer.z)); // 3 outer bottom
+            for (var i = 0; i < 4; i++)
+            {
+                normals.Add(capNormal);
+                tangents.Add(capTangent);
+            }
+            uv.Add(new Vector2(0f, bottomY));
+            uv.Add(new Vector2(0f, topY));
+            uv.Add(new Vector2(thickness, topY));
+            uv.Add(new Vector2(thickness, bottomY));
+
+            EmitQuad(vertices, triangles, start, start + 1, start + 2, start + 3, capNormal);
         }
 
         /// <summary>Horizontal path direction at sample i (central difference where possible).</summary>

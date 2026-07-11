@@ -125,6 +125,29 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void WallBandIsSealedWithEndCaps()
+        {
+            // A bowed band must be watertight: the two open ends (inner skin -> outer skin) are
+            // capped so a neighbour meeting it at an angle never reveals the hollow ("crevice").
+            var geometry = new GeometrySpec
+            {
+                WidthM = 5f, LengthM = 6f,
+                WallBow = new WallBowSpec { Back = 1f }, BowMaxM = 0.6f
+            };
+            var span = FootprintPath.BuildWallSpan(geometry, "back");
+            var capped = WallBand.BuildMesh(span, 0f, 2.6f, 0.15f, "Capped");
+            cleanupMeshes.Add(capped);
+
+            // Each end cap adds 4 verts + 6 indices over the uncapped inner/outer/top band.
+            var bandVerts = span.Count * 6;          // inner(2) + outer(2) + top-cap(2) per sample
+            Assert.That(capped.vertexCount, Is.EqualTo(bandVerts + 8), "two 4-vert end caps expected");
+            // Both end-cap normals must be horizontal (point along the wall, not up/outward).
+            var normals = capped.normals;
+            for (var i = bandVerts; i < capped.vertexCount; i++)
+                Assert.That(Mathf.Abs(normals[i].y), Is.LessThan(0.001f), "end-cap normal must be horizontal");
+        }
+
+        [Test]
         public void OpeningOnBowedWallIsRejected()
         {
             var pair = LoadExamplePair();
