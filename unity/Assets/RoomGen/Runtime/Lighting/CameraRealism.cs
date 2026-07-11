@@ -18,7 +18,14 @@ namespace RoomGen.Lighting
     /// </summary>
     public static class CameraRealism
     {
-        public static void Apply(Camera camera)
+        /// <param name="enableSsgi">
+        /// SSGI is temporal — it needs several stable frames to denoise. The full-screen walk/VR
+        /// cameras hold still, so it looks great there. The two studio PREVIEW thumbnails rebuild
+        /// the whole room on every slider frame, so their SSGI history never converges → a
+        /// permanent smear ("blurry"), made worse by their MSAA RenderTexture. Previews therefore
+        /// get sky-clear only (windows show the exterior, not a black void) and skip SSGI.
+        /// </param>
+        public static void Apply(Camera camera, bool enableSsgi = true)
         {
             if (camera == null) return;
             if (!camera.TryGetComponent<HDAdditionalCameraData>(out var hd))
@@ -26,6 +33,7 @@ namespace RoomGen.Lighting
 
             hd.clearColorMode = HDAdditionalCameraData.ClearColorMode.Sky;
 
+            if (!enableSsgi) return;
             hd.customRenderingSettings = true;
             var mask = hd.renderingPathCustomFrameSettingsOverrideMask;
             mask.mask[(uint)FrameSettingsField.SSGI] = true;

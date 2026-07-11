@@ -188,7 +188,9 @@ namespace RoomGen.Studio
             camera.farClipPlane = 25f;
             camera.cullingMask = 1 << layer;
             camera.targetTexture = texture;
-            CameraRealism.Apply(camera); // SSGI bounce + sky visible through openings
+            // Sky through openings, but NO SSGI on previews: they rebuild every slider frame, so
+            // temporal SSGI would smear (the "blurry preview"). Walk/VR cameras get full SSGI.
+            CameraRealism.Apply(camera, enableSsgi: false);
             return texture;
         }
 
