@@ -10,7 +10,7 @@ namespace RoomGen.Tests
     public class QualityRigTests
     {
         [Test]
-        public void BuildProfile_has_aces_tonemapping_ssao_bloom_and_gi()
+        public void BuildProfile_has_aces_tonemapping_ssao_bloom_gi_ssr_and_pbr_sky()
         {
             var profile = QualityRig.BuildProfile();
             try
@@ -24,9 +24,13 @@ namespace RoomGen.Tests
                 Assert.IsTrue(profile.TryGet<Bloom>(out _), "Bloom override missing.");
                 Assert.IsTrue(profile.TryGet<GlobalIllumination>(out _), "GlobalIllumination override missing.");
 
+                Assert.IsTrue(profile.TryGet<ScreenSpaceReflection>(out var ssr), "SSR override missing.");
+                Assert.AreEqual(ScreenSpaceReflectionAlgorithm.PBRAccumulation, ssr.usedAlgorithm.value,
+                    "SSR should use PBR accumulation.");
+
                 Assert.IsTrue(profile.TryGet<VisualEnvironment>(out var env), "VisualEnvironment override missing.");
-                Assert.AreEqual((int)SkyType.Gradient, env.skyType.value, "Sky should be the gradient sky.");
-                Assert.IsTrue(profile.TryGet<GradientSky>(out _), "GradientSky override missing.");
+                Assert.AreEqual((int)SkyType.PhysicallyBased, env.skyType.value, "Sky should be the physically based sky.");
+                Assert.IsTrue(profile.TryGet<PhysicallyBasedSky>(out _), "PhysicallyBasedSky override missing.");
             }
             finally
             {

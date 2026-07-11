@@ -66,17 +66,28 @@ namespace RoomGen.Lighting
             var gi = profile.Add<GlobalIllumination>(true);
             gi.enable.Override(true);
 
-            // Sky: windows/door previously opened onto the cameras' solid clear color — a black
-            // void. A gradient sky (code-only, no HDRI asset needed) gives openings a believable
-            // exterior and feeds sky ambient. Exposure compensates for the rooms' fixed interior
-            // exposure so the sky reads bright like a real window, not gray.
+            // Screen-space reflections — real reflections on the floor, table tops and glass panes
+            // instead of a flat matte surface. PBR-accumulation algorithm (best quality, max-desktop
+            // target). The SSR + TransparentSSR frame settings are force-enabled per camera in
+            // CameraRealism (walk/VR only), same wiring pattern as SSGI, so this override is live.
+            var ssr = profile.Add<ScreenSpaceReflection>(true);
+            ssr.enabled.Override(true);
+            ssr.usedAlgorithm.Override(ScreenSpaceReflectionAlgorithm.PBRAccumulation);
+            ssr.minSmoothness.Override(0.4f);   // let semi-rough wood/tile reflect, not just mirrors
+            ssr.reflectSky.Override(true);      // sky/window light reflects off interior surfaces
+
+            // Sky: Physically Based Sky (Diego's pick over gradient/HDRI). Code-only, no .exr asset,
+            // VR-safe. Renders a real atmosphere + sun disk driven by the scene's directional light
+            // (LightingSystem flags it interactsWithSky), so windows admit real daylight and the sun
+            // reads as an actual disk — the foundation for light shafts through the openings.
             var env = profile.Add<VisualEnvironment>(true);
-            env.skyType.Override((int)SkyType.Gradient);
-            var sky = profile.Add<GradientSky>(true);
-            sky.top.Override(new Color(0.22f, 0.42f, 0.78f));     // zenith blue
-            sky.middle.Override(new Color(0.72f, 0.82f, 0.92f));  // pale horizon
-            sky.bottom.Override(new Color(0.42f, 0.41f, 0.38f));  // ground haze
-            sky.exposure.Override(13.5f); // tuned against FixedExposureEv100 ~ interior EVs
+            env.skyType.Override((int)SkyType.PhysicallyBased);
+            var sky = profile.Add<PhysicallyBasedSky>(true);
+            sky.type.Override(PhysicallyBasedSkyModel.EarthSimple); // Earth atmosphere, sensible defaults
+            // Interior exposure is FIXED (LightingSystem, per room). If the calibrated recessed spots
+            // still wash out, nudge this sky exposure DOWN (was the gradient's job at 13.5) — physical
+            // luminance means the sky is already bright without a large compensation.
+            sky.exposure.Override(0f);
 
             return profile;
         }

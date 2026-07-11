@@ -37,9 +37,16 @@ namespace RoomGen.Lighting
             hd.customRenderingSettings = true;
             var mask = hd.renderingPathCustomFrameSettingsOverrideMask;
             mask.mask[(uint)FrameSettingsField.SSGI] = true;
+            // SSR gives floors/tables/glass real screen-space reflections. Like SSGI it is temporal
+            // (needs a stable history to denoise), so it rides the same walk/VR-only gate and is
+            // skipped on the rebuilt-every-frame preview thumbnails to avoid a permanent smear.
+            mask.mask[(uint)FrameSettingsField.SSR] = true;
+            mask.mask[(uint)FrameSettingsField.TransparentSSR] = true; // reflections on the glass panes
             hd.renderingPathCustomFrameSettingsOverrideMask = mask;
             var settings = hd.renderingPathCustomFrameSettings;
             settings.SetEnabled(FrameSettingsField.SSGI, true);
+            settings.SetEnabled(FrameSettingsField.SSR, true);
+            settings.SetEnabled(FrameSettingsField.TransparentSSR, true);
             hd.renderingPathCustomFrameSettings = settings;
         }
     }

@@ -98,9 +98,14 @@ namespace RoomGen.Lighting
             // Angled from high-left so a window/door admits a daylight patch and casts soft shadows.
             sunObject.transform.localRotation = Quaternion.Euler(52f, 35f, 0f);
             var sun = sunObject.AddComponent<Light>();
-            sunObject.AddComponent<HDAdditionalLightData>();
+            var sunHd = sunObject.AddComponent<HDAdditionalLightData>();
             sun.type = LightType.Directional;
             sun.shadows = LightShadows.Soft;
+            // Drive the Physically Based Sky: this directional light becomes the atmosphere's sun,
+            // rendering a real sun disk (~0.5° like the real sun) and scattering daylight through the
+            // windows. Without interactsWithSky the PBR sky has no sun and openings read dead.
+            sunHd.interactsWithSky = true;
+            sunHd.angularDiameter = 0.5f;
             sun.useColorTemperature = true;
             // Cooler than the interior lamps: daylight reads distinct from the warm fixtures.
             // COUPLED-VARIABLE NOTE: derived from lighting.color_temperature_k, so a warmth

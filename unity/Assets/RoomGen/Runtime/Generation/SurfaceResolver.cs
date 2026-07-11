@@ -15,6 +15,19 @@ namespace RoomGen.Generation
             var material = Resources.Load<Material>("RoomGen/Materials/" + resourceName);
             if (material == null)
                 material = CreateFallback(stableId);
+            else if (stableId.Contains("glass"))
+            {
+                // The committed builtin-glass.mat is authored OPAQUE (SurfaceType 0, alpha 1), so
+                // window panes render as flat blue boxes. Clone it (never dirty the shared asset) and
+                // flip the clone to a transparent refractive pane so sky + sun read through.
+                material = new Material(material) { name = material.name + " (transparent)" };
+                if (material.HasProperty("_BaseColor"))
+                {
+                    var c = material.GetColor("_BaseColor"); c.a = 0.15f;
+                    material.SetColor("_BaseColor", c);
+                }
+                ConfigureTransparentGlass(material);
+            }
             Cache[stableId] = material;
             return material;
         }
@@ -33,7 +46,46 @@ namespace RoomGen.Generation
             // near-mirror. Values feed HDRP/Lit (and Standard, which shares the property names).
             if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", pbr.smoothness);
             if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", pbr.metallic);
+
+            // Glass must be a real transparent dielectric so sky + sun read through the window
+            // panes instead of rendering as an opaque blue box. HDRP/Lit needs the full transparent
+            // surface state set explicitly — SurfaceType alone is inert without blend + queue + keyword.
+            if (stableId.Contains("glass")) ConfigureTransparentGlass(material);
             return material;
+        }
+
+        // Flip an HDRP/Lit material into a thin refractive glass pane. All the state HDRP samples at
+        // shader-select time: SurfaceType=Transparent, premultiplied alpha blend, ZWrite off,
+        // transparent render queue, thin refraction (IOR ~1.5) so the sky bends slightly through it.
+        static void ConfigureTransparentGlass(Material material)
+        {
+            if (!material.HasProperty("_SurfaceType")) return; // Standard fallback: alpha color is enough
+
+            material.SetFloat("_SurfaceType", 1f);          // 0 Opaque, 1 Transparent
+            material.SetFloat("_BlendMode", 0f);            // Alpha
+            material.SetFloat("_SrcBlend", 1f);             // One (HDRP premultiplies alpha in-shader)
+            material.SetFloat("_DstBlend", 10f);            // OneMinusSrcAlpha
+            material.SetFloat("_AlphaDstBlend", 10f);
+            material.SetFloat("_ZWrite", 0f);
+            material.SetFloat("_TransparentZWrite", 0f);
+            material.SetFloat("_ZTestDepthEqualForOpaque", 4f);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.EnableKeyword("_BLENDMODE_PRESERVE_SPECULAR_LIGHTING");
+            material.DisableKeyword("_ENABLE_FOG_ON_TRANSPARENT");
+
+            // Let SSR reflect off the glass (the committed .mat ships with transparent SSR disabled).
+            if (material.HasProperty("_ReceivesSSRTransparent")) material.SetFloat("_ReceivesSSRTransparent", 1f);
+            material.DisableKeyword("_DISABLE_SSR_TRANSPARENT");
+
+            // Thin refraction: single-interface bend, right model for a flat window pane.
+            if (material.HasProperty("_RefractionModel"))
+            {
+                material.SetFloat("_RefractionModel", 3f);  // 0 None, 1 Box, 2 Sphere, 3 Thin
+                material.EnableKeyword("_REFRACTION_THIN");
+                if (material.HasProperty("_Ior")) material.SetFloat("_Ior", 1.5f);
+            }
+
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent; // 3000
         }
 
         // (smoothness 0..1, metallic 0..1) grouped by material family.
@@ -52,7 +104,7 @@ namespace RoomGen.Generation
         {
             if (stableId.Contains("oak")) return new Color(0.43f, 0.25f, 0.11f);
             if (stableId.Contains("walnut")) return new Color(0.2f, 0.09f, 0.045f);
-            if (stableId.Contains("glass")) return new Color(0.52f, 0.72f, 0.78f, 0.28f);
+            if (stableId.Contains("glass")) return new Color(0.6f, 0.78f, 0.82f, 0.15f);
             if (stableId.Contains("metal")) return new Color(0.13f, 0.14f, 0.15f);
             if (stableId.Contains("green")) return new Color(0.16f, 0.29f, 0.18f);
             if (stableId.Contains("fabric")) return new Color(0.29f, 0.34f, 0.36f);
