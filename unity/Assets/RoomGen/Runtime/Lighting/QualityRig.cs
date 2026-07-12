@@ -49,11 +49,13 @@ namespace RoomGen.Lighting
             var tone = profile.Add<Tonemapping>(true);
             tone.mode.Override(TonemappingMode.ACES);
 
-            // Screen-space ambient occlusion — contact shadows / grounding in corners and
-            // under furniture. SSAO frame setting is on by default, so this renders now.
+            // Ambient occlusion — contact shadows / grounding in corners and under furniture.
+            // Ray traced on DXR-capable hardware (real geometry queries, no screen-space halo);
+            // cameras without the RayTracing frame setting fall back to the screen-space path.
             var ao = profile.Add<ScreenSpaceAmbientOcclusion>(true);
             ao.intensity.Override(0.6f);
             ao.radius.Override(0.5f);
+            ao.rayTracing.Override(true);
 
             // Subtle bloom on the luminaires; kept low so it reads as real light, not glow.
             var bloom = profile.Add<Bloom>(true);
@@ -65,6 +67,11 @@ namespace RoomGen.Lighting
             // CameraRealism.Apply on every camera the app creates, so this override is live.
             var gi = profile.Add<GlobalIllumination>(true);
             gi.enable.Override(true);
+            // Ray-traced GI (DX12 + supportRayTracing are on): real multi-bounce light transport
+            // instead of the screen-space approximation — off-screen surfaces contribute bounce,
+            // sunlight through the windows actually lights the room. Cameras without the
+            // RayTracing frame setting (preview thumbnails) fall back to raster/SSGI path.
+            gi.tracing.Override(RayCastingMode.RayTracing);
 
             // Screen-space reflections — real reflections on the floor, table tops and glass panes
             // instead of a flat matte surface. PBR-accumulation algorithm (best quality, max-desktop
@@ -74,6 +81,25 @@ namespace RoomGen.Lighting
             ssr.enabled.Override(true);
             ssr.usedAlgorithm.Override(ScreenSpaceReflectionAlgorithm.PBRAccumulation);
             ssr.reflectSky.Override(true);      // sky/window light reflects off interior surfaces
+            // Ray-traced reflections: mirror off-screen geometry too (screen-space can only
+            // reflect what the camera already sees — the big "fake reflections" tell).
+            ssr.tracing.Override(RayCastingMode.RayTracing);
+
+            // Shared ray-tracing behaviour. Extended culling matters in a room this small:
+            // geometry just outside the camera frustum (behind the walker, the wall behind a
+            // preview camera) must still exist for RT reflections/shadows/GI to be correct.
+            var rt = profile.Add<RayTracingSettings>(true);
+            rt.extendCameraCulling.Override(true);
+            rt.extendShadowCulling.Override(true);
+
+            // Volumetric fog: thin indoor participating medium so the sun through the windows
+            // draws visible shafts (god-rays) and the recessed spots get gentle halos. Mean free
+            // path is short enough to read indoors, long enough not to haze the whole room.
+            var fog = profile.Add<Fog>(true);
+            fog.enabled.Override(true);
+            fog.enableVolumetricFog.Override(true);
+            fog.meanFreePath.Override(35f);
+            fog.anisotropy.Override(0.4f);      // forward scattering — shafts brighten toward the sun
 
             // Sky: Physically Based Sky (Diego's pick over gradient/HDRI). Code-only, no .exr asset,
             // VR-safe. Renders a real atmosphere + sun disk driven by the scene's directional light

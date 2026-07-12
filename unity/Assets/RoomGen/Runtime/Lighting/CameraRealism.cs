@@ -42,11 +42,17 @@ namespace RoomGen.Lighting
             // skipped on the rebuilt-every-frame preview thumbnails to avoid a permanent smear.
             mask.mask[(uint)FrameSettingsField.SSR] = true;
             mask.mask[(uint)FrameSettingsField.TransparentSSR] = true; // reflections on the glass panes
+            // Ray tracing per camera: with DX12 + supportRayTracing on the asset, this flips the
+            // volume's RayCastingMode.RayTracing overrides (GI, reflections, AO) from their raster
+            // fallbacks to real DXR light transport. Walk/VR only — previews stay raster (cheap,
+            // and they skip SSGI/SSR anyway via the early return above).
+            mask.mask[(uint)FrameSettingsField.RayTracing] = true;
             hd.renderingPathCustomFrameSettingsOverrideMask = mask;
             var settings = hd.renderingPathCustomFrameSettings;
             settings.SetEnabled(FrameSettingsField.SSGI, true);
             settings.SetEnabled(FrameSettingsField.SSR, true);
             settings.SetEnabled(FrameSettingsField.TransparentSSR, true);
+            settings.SetEnabled(FrameSettingsField.RayTracing, true);
             hd.renderingPathCustomFrameSettings = settings;
         }
     }

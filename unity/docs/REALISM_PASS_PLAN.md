@@ -59,6 +59,14 @@ A broken studio blocks testing any realism, so these come first.
       interior + exterior shadows through the windows. Builds on SunSkySystem.cs.
 - [ ] Verify shadow crispness/softness reads real; soft shadows already on.
 
+## Round 2c — Real-time ray tracing (DONE code-side; DX12 + supportRayTracing verified on)
+- [x] Ray-traced GI + reflections + AO: QualityRig overrides tracing to RayCastingMode.RayTracing;
+      RayTracingSettings with extended camera/shadow culling (off-frustum geometry stays real).
+- [x] RayTracing frame setting per walk/VR camera (CameraRealism); previews stay raster.
+- [x] Ray-traced sun shadows (LightingSystem: useRayTracedShadows; 0.5° disk → real penumbra).
+- [x] Volumetric fog (QualityRig): sun shafts through windows, spot halos (mfp 35 m, aniso 0.4).
+- Machine state verified: Graphics API = DX12 first, RoomGenHDRP.asset supportRayTracing: 1, RTX 5070.
+
 ## Round 3 — Realism polish (real-life light reference)
 - [ ] Exposure balance: PBR sky vs fixed interior exposure (sky.exposure at 0f now).
 - [ ] Volumetric fog + light shafts (god-rays) through the windows for max fidelity.

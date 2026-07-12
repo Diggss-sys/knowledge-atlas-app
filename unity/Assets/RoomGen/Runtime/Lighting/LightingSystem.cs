@@ -106,6 +106,10 @@ namespace RoomGen.Lighting
             // windows. Without interactsWithSky the PBR sky has no sun and openings read dead.
             sunHd.interactsWithSky = true;
             sunHd.angularDiameter = 0.5f;
+            // Ray-traced sun shadows (cameras with the RayTracing frame setting): the 0.5°
+            // angular diameter becomes a real penumbra — crisp at contact, softer with distance,
+            // the single strongest "this light is real" cue on the window patches.
+            sunHd.useRayTracedShadows = true;
             sun.useColorTemperature = true;
             // Cooler than the interior lamps: daylight reads distinct from the warm fixtures.
             // COUPLED-VARIABLE NOTE: derived from lighting.color_temperature_k, so a warmth
