@@ -38,7 +38,11 @@ namespace RoomGen.Lighting
                 fixture.transform.localPosition = position;
                 fixture.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
                 var light = fixture.AddComponent<Light>();
-                fixture.AddComponent<HDAdditionalLightData>();
+                var lightHd = fixture.AddComponent<HDAdditionalLightData>();
+                // Contact shadows (per-light opt-in for the QualityRig volume): grounds furniture
+                // exactly where legs meet the floor — shadowmaps blur out at that scale.
+                lightHd.useContactShadow.useOverride = true;
+                lightHd.useContactShadow.@override = true;
                 light.type = LightType.Spot;
                 light.range = Mathf.Max(spec.Geometry.WidthM, spec.Geometry.LengthM) * 1.25f;
                 light.spotAngle = 80f;
@@ -110,6 +114,10 @@ namespace RoomGen.Lighting
             // angular diameter becomes a real penumbra — crisp at contact, softer with distance,
             // the single strongest "this light is real" cue on the window patches.
             sunHd.useRayTracedShadows = true;
+            // Sun contact shadows: crisp grounding at the base of furniture inside the window
+            // light patches, where the eye checks realism hardest.
+            sunHd.useContactShadow.useOverride = true;
+            sunHd.useContactShadow.@override = true;
             sun.useColorTemperature = true;
             // Cooler than the interior lamps: daylight reads distinct from the warm fixtures.
             // COUPLED-VARIABLE NOTE: derived from lighting.color_temperature_k, so a warmth
@@ -153,7 +161,11 @@ namespace RoomGen.Lighting
             lightObject.transform.SetParent(pendant, false);
             lightObject.transform.localPosition = new Vector3(0f, -0.7f, 0f);
             var light = lightObject.AddComponent<Light>();
-            lightObject.AddComponent<HDAdditionalLightData>();
+            var pendantHd = lightObject.AddComponent<HDAdditionalLightData>();
+            // Pendant hangs directly over the table: contact shadows ground the tabletop clutter
+            // and the table's own base under its strongest light.
+            pendantHd.useContactShadow.useOverride = true;
+            pendantHd.useContactShadow.@override = true;
             light.type = LightType.Point;
             light.range = Mathf.Max(spec.Geometry.WidthM, spec.Geometry.LengthM) * 1.5f;
             light.shadows = LightShadows.Soft;

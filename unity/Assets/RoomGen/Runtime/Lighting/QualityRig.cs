@@ -101,6 +101,22 @@ namespace RoomGen.Lighting
             fog.meanFreePath.Override(35f);
             fog.anisotropy.Override(0.4f);      // forward scattering — shafts brighten toward the sun
 
+            // Contact shadows: short-range screen-space occlusion exactly where geometry meets —
+            // chair/table legs on the floor, furniture against walls. Shadowmaps blur out at this
+            // scale, so without contact shadows furniture reads as floating (toy look). Length is
+            // furniture-leg scale. Lights opt in per-light (LightingSystem).
+            var contact = profile.Add<ContactShadows>(true);
+            contact.enable.Override(true);
+            contact.length.Override(0.6f);
+            contact.opacity.Override(0.7f);
+
+            // Micro-shadowing: the sun's direction + the fetched normal/mask maps produce tiny
+            // self-shadows inside wood grain, plaster and fabric weave — surface detail that flat
+            // lighting cannot fake. Only meaningful now that AssetFetcher materials carry maps.
+            var micro = profile.Add<MicroShadowing>(true);
+            micro.enable.Override(true);
+            micro.opacity.Override(0.85f);
+
             // Sky: Physically Based Sky (Diego's pick over gradient/HDRI). Code-only, no .exr asset,
             // VR-safe. Renders a real atmosphere + sun disk driven by the scene's directional light
             // (LightingSystem flags it interactsWithSky), so windows admit real daylight and the sun
