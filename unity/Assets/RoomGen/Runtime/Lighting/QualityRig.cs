@@ -56,6 +56,9 @@ namespace RoomGen.Lighting
             ao.intensity.Override(0.6f);
             ao.radius.Override(0.5f);
             ao.rayTracing.Override(true);
+            // Quality preset drives the RT denoiser (VolumeComponentWithQuality defaults to
+            // Medium). High = widest RTAO denoiser radius — no speckle in the corners.
+            ao.quality.Override((int)ScalableSettingLevelParameter.Level.High);
 
             // Subtle bloom on the luminaires; kept low so it reads as real light, not glow.
             var bloom = profile.Add<Bloom>(true);
@@ -72,6 +75,10 @@ namespace RoomGen.Lighting
             // sunlight through the windows actually lights the room. Cameras without the
             // RayTracing frame setting (preview thumbnails) fall back to raster/SSGI path.
             gi.tracing.Override(RayCastingMode.RayTracing);
+            // Default quality (Medium) runs RTGI at HALF RESOLUTION (RTGIFullResolution:
+            // Low/Med=false, High=true) — the upscale is the dark blotchy "warping" patches on
+            // curved walls. High = full-resolution RTGI + full-res denoise: clean bounce light.
+            gi.quality.Override((int)ScalableSettingLevelParameter.Level.High);
 
             // Screen-space reflections — real reflections on the floor, table tops and glass panes
             // instead of a flat matte surface. PBR-accumulation algorithm (best quality, max-desktop
@@ -84,6 +91,9 @@ namespace RoomGen.Lighting
             // Ray-traced reflections: mirror off-screen geometry too (screen-space can only
             // reflect what the camera already sees — the big "fake reflections" tell).
             ssr.tracing.Override(RayCastingMode.RayTracing);
+            // High quality tier: full-resolution ray-traced reflections + best denoiser preset
+            // (Medium is the default tier and denoises at reduced resolution).
+            ssr.quality.Override((int)ScalableSettingLevelParameter.Level.High);
 
             // Shared ray-tracing behaviour. Extended culling matters in a room this small:
             // geometry just outside the camera frustum (behind the walker, the wall behind a
