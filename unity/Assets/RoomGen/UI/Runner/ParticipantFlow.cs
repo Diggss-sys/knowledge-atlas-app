@@ -108,6 +108,7 @@ namespace RoomGen.UI
             Button("begin-button", () => Begin(_root.Q<TextField>("participant-id")?.value));
             Button("start-button", BeginTrials);
             Button("enter-walk-button", EnterRoom);
+            Button("open-results-button", OpenResultsFolder);
 
             ShowOnly("screen-id");
             _booted = true;
@@ -132,8 +133,9 @@ namespace RoomGen.UI
                 if (err != null) err.text = "Cannot start this session: " + _session.Reason;
                 return false;
             }
-            // Frame-rate sidecar next to the response CSV (joins on session_id + trial_index).
-            _perfLog = new PerfLog(Path.Combine(_outputDir, $"response-{safe}-{stamp}.perf.csv"));
+            // Frame-rate sidecar next to the response CSV (joins on session_id + trial_index),
+            // stamped with this machine so the cross-machine team run is attributable.
+            _perfLog = new PerfLog(Path.Combine(_outputDir, $"response-{safe}-{stamp}.perf.csv"), MachineInfo.Current());
             ShowOnly("screen-instructions");
             return true;
         }
@@ -194,8 +196,17 @@ namespace RoomGen.UI
 
         void ShowDone()
         {
-            SetText("done-path", "Saved to " + _session.CsvPath);
+            SetText("done-path", Path.GetDirectoryName(_session.CsvPath));
             ShowOnly("screen-done");
+        }
+
+        // Open the results folder in the OS file browser so a non-technical teammate can find their
+        // three files (response CSV, JSONL, perf sidecar) without hunting through AppData/Library.
+        void OpenResultsFolder()
+        {
+            if (_session == null) return;
+            var folder = Path.GetDirectoryName(_session.CsvPath);
+            if (!string.IsNullOrEmpty(folder)) Application.OpenURL("file://" + folder);
         }
 
         void Update()

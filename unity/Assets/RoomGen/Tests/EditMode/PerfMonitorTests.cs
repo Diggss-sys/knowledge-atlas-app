@@ -80,7 +80,7 @@ namespace RoomGen.Tests
             var path = Path.Combine(Application.temporaryCachePath, "perf-test.perf.csv");
             if (File.Exists(path)) File.Delete(path);
 
-            var log = new PerfLog(path);
+            var log = new PerfLog(path, new MachineInfo("Test GPU, Rev 2", "Windows 11", "TestPC1,1"));
             log.Write("sess-1", "P07", "ceiling_pilot_01", 0, "control",
                 new PerfSample { FrameCount = 600, DurationSeconds = 10f, AvgFps = 59.7f, MinFps = 42.3f, HitchCount = 2 });
             log.Write("sess-1", "P07", "ceiling_pilot_01", 1, "treatment",
@@ -89,8 +89,10 @@ namespace RoomGen.Tests
             var lines = File.ReadAllLines(path);
             Assert.AreEqual(3, lines.Length, "header + 2 rows");
             StringAssert.StartsWith("session_id,participant_id,study_id,trial_index,condition,avg_fps", lines[0]);
+            StringAssert.EndsWith("gpu,os,device", lines[0], "machine columns for the cross-machine sweep");
             StringAssert.Contains("0,control,59.7,42.3,2,600", lines[1], "invariant decimals (point, not comma) + joined key");
             StringAssert.Contains("1,treatment,48.1,31.0,5,590", lines[2]);
+            StringAssert.Contains("\"Test GPU, Rev 2\",Windows 11,\"TestPC1,1\"", lines[1], "comma-bearing machine fields are quoted");
         }
     }
 }
