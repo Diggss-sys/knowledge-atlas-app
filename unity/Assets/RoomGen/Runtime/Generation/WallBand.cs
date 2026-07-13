@@ -18,7 +18,8 @@ namespace RoomGen.Generation
             float bottomY,
             float topY,
             float thickness,
-            string name)
+            string name,
+            bool capBottom = false)
         {
             var count = span.Count;
             var mesh = new Mesh { name = name };
@@ -131,6 +132,35 @@ namespace RoomGen.Generation
             // into the wall (the "crevice"). Caps make every band watertight on its own.
             AddEndCap(span, 0, -1f, thickness, bottomY, topY, vertices, normals, tangents, uv, triangles);
             AddEndCap(span, count - 1, 1f, thickness, bottomY, topY, vertices, normals, tangents, uv, triangles);
+
+            // Bottom cap (opt-in): a band suspended above the floor — a window HEADER or a trim
+            // piece — shows its underside; without this ring you would look up into the hollow.
+            if (capBottom)
+            {
+                var bottomCapStart = vertices.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var sample = span[i];
+                    var inner = new Vector3(sample.Position.x, bottomY, sample.Position.y);
+                    var outward3 = new Vector3(sample.OutwardNormal.x, 0f, sample.OutwardNormal.y);
+                    var outer = inner + outward3 * thickness;
+                    var downTangent = TangentFor(Vector3.down, PathDirection(span, i));
+
+                    vertices.Add(inner);
+                    vertices.Add(outer);
+                    normals.Add(Vector3.down);
+                    normals.Add(Vector3.down);
+                    tangents.Add(downTangent);
+                    tangents.Add(downTangent);
+                    uv.Add(new Vector2(sample.ArcLength, 0f));
+                    uv.Add(new Vector2(sample.ArcLength, thickness));
+                }
+                for (var i = 0; i < count - 1; i++)
+                    EmitQuad(vertices, triangles,
+                        bottomCapStart + i * 2, bottomCapStart + i * 2 + 1,
+                        bottomCapStart + (i + 1) * 2 + 1, bottomCapStart + (i + 1) * 2,
+                        Vector3.down);
+            }
 
             mesh.SetVertices(vertices);
             mesh.SetNormals(normals);

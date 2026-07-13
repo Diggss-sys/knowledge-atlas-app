@@ -38,12 +38,7 @@ namespace RoomGen.Generation
 
                 if (Mathf.Abs(bowAmount) * geometry.BowMaxM > 0.001f)
                 {
-                    // Bowed wall = one smooth curved band (openings are illegal on bowed walls —
-                    // the validator reports opening_on_bowed_wall; we build honestly without them).
-                    if (openings.Count > 0)
-                        Debug.LogWarning($"RoomGen: wall '{wall}' is bowed but has {openings.Count} opening(s); " +
-                                         "openings on bowed walls are not supported (v1) and were skipped.");
-                    BuildBowedWall(spec, wall, walls.transform, wallMaterial, layer);
+                    BuildBowedWall(spec, wall, openings, walls.transform, wallMaterial, layer);
                 }
                 else
                 {
@@ -139,18 +134,86 @@ namespace RoomGen.Generation
         }
 
         /// <summary>
-        /// A bowed wall (wall_bow != 0): one smooth curved band mesh — sagitta arc through the
+        /// A bowed wall (wall_bow != 0): smooth curved band mesh(es) — sagitta arc through the
         /// wall's corner points, analytic normals, arc-length UVs (WallBand). Concave (-) bows into
-        /// the room, convex (+) bulges outward.
+        /// the room, convex (+) bulges outward. Openings are cut the same way BuildStraightWall
+        /// cuts them — full-height segments between openings plus a sill band below and a header
+        /// band above each — but every piece is an arc SUB-SPAN of the wall's curve, so windows
+        /// and doors ride the bow instead of forcing the wall straight.
         /// </summary>
-        static void BuildBowedWall(RoomSpec spec, string wall, Transform parent, Material material, int layer)
+        static void BuildBowedWall(
+            RoomSpec spec,
+            string wall,
+            IReadOnlyList<OpeningSpec> openings,
+            Transform parent,
+            Material material,
+            int layer)
         {
-            var span = FootprintPath.BuildWallSpan(spec.Geometry, wall);
-            var mesh = WallBand.BuildMesh(span, 0f, spec.Geometry.CeilingHeightM,
-                spec.Geometry.WallThicknessM, char.ToUpperInvariant(wall[0]) + wall.Substring(1) + " Bowed Wall Mesh");
-            GenerationUtil.CreateMeshObject(
-                char.ToUpperInvariant(wall[0]) + wall.Substring(1) + " Wall (Bowed)",
-                parent, mesh, material, layer);
+            var geometry = spec.Geometry;
+            var span = FootprintPath.BuildWallSpan(geometry, wall);
+            var title = char.ToUpperInvariant(wall[0]) + wall.Substring(1);
+
+            if (openings.Count == 0)
+            {
+                var mesh = WallBand.BuildMesh(span, 0f, geometry.CeilingHeightM,
+                    geometry.WallThicknessM, title + " Bowed Wall Mesh");
+                GenerationUtil.CreateMeshObject(title + " Wall (Bowed)", parent, mesh, material, layer);
+                return;
+            }
+
+            var root = new GameObject(title + " Wall (Bowed)");
+            root.layer = layer;
+            root.transform.SetParent(parent, false);
+            var side = wall == "left" || wall == "right";
+
+            // The span may walk its wall coordinate ascending or descending; segment cuts are
+            // easiest in ascending coordinate space (same space openings' CenterM lives in).
+            var cStart = FootprintPath.WallCoord(span[0], side);
+            var cEnd = FootprintPath.WallCoord(span[span.Count - 1], side);
+            var cursor = Mathf.Min(cStart, cEnd);
+            var wallHi = Mathf.Max(cStart, cEnd);
+
+            foreach (var opening in openings) // ForWall pre-sorts by CenterM ascending
+            {
+                var left = opening.CenterM - opening.WidthM * 0.5f;
+                var right = opening.CenterM + opening.WidthM * 0.5f;
+
+                AddBowedSegment(root.transform, span, side, cursor, left,
+                    0f, geometry.CeilingHeightM, geometry, material, layer, "Segment");
+                if (opening.BottomM > 0.001f)
+                    AddBowedSegment(root.transform, span, side, left, right,
+                        0f, opening.BottomM, geometry, material, layer, "Sill Band");
+                if (opening.TopM < geometry.CeilingHeightM - 0.001f)
+                    AddBowedSegment(root.transform, span, side, left, right,
+                        opening.TopM, geometry.CeilingHeightM, geometry, material, layer, "Header Band");
+                cursor = right;
+            }
+
+            AddBowedSegment(root.transform, span, side, cursor, wallHi,
+                0f, geometry.CeilingHeightM, geometry, material, layer, "Segment");
+        }
+
+        static void AddBowedSegment(
+            Transform parent,
+            IReadOnlyList<FootprintSample> span,
+            bool side,
+            float lo,
+            float hi,
+            float bottom,
+            float top,
+            GeometrySpec geometry,
+            Material material,
+            int layer,
+            string kind)
+        {
+            if (hi - lo < 0.005f || top - bottom < 0.005f) return;
+            var sub = FootprintPath.SubSpan(span, side, lo, hi);
+            if (sub.Count < 2) return;
+            var name = $"{kind} {lo:0.00} to {hi:0.00}";
+            // A band whose bottom floats above the floor (header) shows its underside — cap it.
+            var mesh = WallBand.BuildMesh(sub, bottom, top, geometry.WallThicknessM,
+                name + " Mesh", capBottom: bottom > 0.001f);
+            GenerationUtil.CreateMeshObject(name, parent, mesh, material, layer);
         }
 
         /// <summary>

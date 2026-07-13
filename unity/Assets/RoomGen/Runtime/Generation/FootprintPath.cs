@@ -167,6 +167,86 @@ namespace RoomGen.Generation
             return points;
         }
 
+        /// <summary>
+        /// Wall-local coordinate used for opening placement: openings store CenterM as world x on
+        /// front/back walls and world z (footprint y) on side walls — same convention as
+        /// OpeningGenerator.OpeningPosition and the validator's bounds check.
+        /// </summary>
+        public static float WallCoord(FootprintSample sample, bool sideWall) =>
+            sideWall ? sample.Position.y : sample.Position.x;
+
+        /// <summary>
+        /// Extract the part of a wall span between wall-local coordinates [lo, hi] (opening cuts on
+        /// a bowed wall). Boundary samples are interpolated onto the arc (position lerp, normal
+        /// renormalised, arc length lerped so UVs stay continuous across the segments of one wall).
+        /// Works whether the span walks its coordinate ascending or descending; result keeps span
+        /// order. Interpolated cut points are hard edges — they become band ends with end caps.
+        /// </summary>
+        public static List<FootprintSample> SubSpan(
+            IReadOnlyList<FootprintSample> span, bool sideWall, float lo, float hi)
+        {
+            var result = new List<FootprintSample>();
+            if (span.Count < 2 || hi <= lo) return result;
+
+            for (var i = 0; i < span.Count - 1; i++)
+            {
+                var a = span[i];
+                var b = span[i + 1];
+                var ca = WallCoord(a, sideWall);
+                var cb = WallCoord(b, sideWall);
+
+                if (ca >= lo && ca <= hi) AddSubSpanSample(result, a);
+
+                // Boundary crossings strictly inside this segment, ordered along the walk.
+                if (Mathf.Abs(cb - ca) > 1e-6f)
+                {
+                    var tLo = (lo - ca) / (cb - ca);
+                    var tHi = (hi - ca) / (cb - ca);
+                    var first = Mathf.Min(tLo, tHi);
+                    var second = Mathf.Max(tLo, tHi);
+                    if (first > 0f && first < 1f) AddSubSpanSample(result, Interpolate(a, b, first));
+                    if (second > 0f && second < 1f) AddSubSpanSample(result, Interpolate(a, b, second));
+                }
+            }
+
+            var last = span[span.Count - 1];
+            var cl = WallCoord(last, sideWall);
+            if (cl >= lo && cl <= hi) AddSubSpanSample(result, last);
+            return result;
+        }
+
+        /// <summary>
+        /// Same samples pushed INTO the room by <paramref name="inward"/> meters (along -outward).
+        /// Curved trim/glass bands are built from these so they hug the bowed inner face.
+        /// </summary>
+        public static List<FootprintSample> OffsetInward(IReadOnlyList<FootprintSample> span, float inward)
+        {
+            var list = new List<FootprintSample>(span.Count);
+            foreach (var s in span)
+                list.Add(new FootprintSample(
+                    s.Position - s.OutwardNormal * inward, s.OutwardNormal, s.ArcLength, s.HardEdge));
+            return list;
+        }
+
+        static void AddSubSpanSample(List<FootprintSample> list, FootprintSample sample)
+        {
+            if (list.Count > 0 &&
+                Vector2.Distance(list[list.Count - 1].Position, sample.Position) < 0.0005f)
+                return;
+            list.Add(sample);
+        }
+
+        static FootprintSample Interpolate(FootprintSample a, FootprintSample b, float t)
+        {
+            var normal = Vector2.Lerp(a.OutwardNormal, b.OutwardNormal, t);
+            if (normal.sqrMagnitude < 1e-10f) normal = a.OutwardNormal;
+            return new FootprintSample(
+                Vector2.Lerp(a.Position, b.Position, t),
+                normal.normalized,
+                Mathf.Lerp(a.ArcLength, b.ArcLength, t),
+                true);
+        }
+
         // ---- edge / corner emission -------------------------------------------------------------
 
         static void AddEdge(

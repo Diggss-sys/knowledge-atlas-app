@@ -28,6 +28,15 @@ namespace RoomGen.Generation
                 root.layer = layer;
                 root.transform.SetParent(parent, false);
                 var side = IsSideWall(opening.Wall);
+
+                // Bowed wall: glass + trim must ride the arc, not sit on the flat wall plane.
+                var bowAmount = spec.Geometry.WallBow?.For(opening.Wall.ToLowerInvariant()) ?? 0f;
+                if (Mathf.Abs(bowAmount) * spec.Geometry.BowMaxM > 0.001f)
+                {
+                    BuildCurvedInsert(spec, opening, root.transform, trimMaterial, glassMaterial, layer);
+                    continue;
+                }
+
                 var center = OpeningPosition(spec, opening, -0.01f);
                 var verticalCenter = (opening.BottomM + opening.TopM) * 0.5f;
                 center.y = verticalCenter;
@@ -85,6 +94,78 @@ namespace RoomGen.Generation
                     GenerationUtil.CreateBox("Trim Bottom", parent, new Vector3(opening.WidthM + trim, trim, depth),
                         center + new Vector3(0f, opening.BottomM, 0f), material, layer);
             }
+        }
+
+        /// <summary>
+        /// Insert for an opening on a BOWED wall: every piece is a thin curved band (WallBand over
+        /// an arc sub-span) instead of an axis-aligned box, so glass and trim hug the curve.
+        /// Bands are offset INTO the room from the footprint line: OffsetInward(d) + thickness t
+        /// occupies [-d, -d+t] relative to the inner wall face.
+        /// </summary>
+        static void BuildCurvedInsert(
+            RoomSpec spec,
+            OpeningSpec opening,
+            Transform parent,
+            Material trimMaterial,
+            Material glassMaterial,
+            int layer)
+        {
+            const float trim = 0.07f;
+            const float depth = 0.06f;
+            const float trimInset = 0.075f; // band spans [-0.075, -0.015] — matches the flat inserts
+
+            var side = IsSideWall(opening.Wall);
+            var span = FootprintPath.BuildWallSpan(spec.Geometry, opening.Wall.ToLowerInvariant());
+            var left = opening.CenterM - opening.WidthM * 0.5f;
+            var right = opening.CenterM + opening.WidthM * 0.5f;
+            var isWindow = string.Equals(opening.Kind, "window", StringComparison.OrdinalIgnoreCase);
+
+            if (isWindow)
+            {
+                var pane = FootprintPath.SubSpan(span, side, left, right);
+                if (pane.Count >= 2)
+                {
+                    var mesh = WallBand.BuildMesh(FootprintPath.OffsetInward(pane, 0.005f),
+                        opening.BottomM, opening.TopM, 0.025f, "Glass Mesh", capBottom: true);
+                    GenerationUtil.CreateMeshObject("Glass", parent, mesh, glassMaterial, layer);
+                }
+            }
+
+            // Side trims (vertical), then top trim; sill only on windows (doors run to the floor).
+            var trimBottom = isWindow ? opening.BottomM - trim * 0.5f : 0f;
+            AddCurvedTrimBand(parent, span, side, left - trim * 0.5f, left + trim * 0.5f,
+                trimBottom, opening.TopM + trim * 0.5f, trimInset, depth, trimMaterial, layer, "Trim A");
+            AddCurvedTrimBand(parent, span, side, right - trim * 0.5f, right + trim * 0.5f,
+                trimBottom, opening.TopM + trim * 0.5f, trimInset, depth, trimMaterial, layer, "Trim B");
+            AddCurvedTrimBand(parent, span, side, left - trim * 0.5f, right + trim * 0.5f,
+                opening.TopM - trim * 0.5f, opening.TopM + trim * 0.5f, trimInset, depth,
+                trimMaterial, layer, "Trim Top");
+            if (isWindow)
+                AddCurvedTrimBand(parent, span, side, left - trim * 0.5f, right + trim * 0.5f,
+                    opening.BottomM - trim * 0.5f, opening.BottomM + trim * 0.5f, trimInset, depth,
+                    trimMaterial, layer, "Trim Bottom");
+        }
+
+        static void AddCurvedTrimBand(
+            Transform parent,
+            IReadOnlyList<FootprintSample> span,
+            bool side,
+            float lo,
+            float hi,
+            float bottom,
+            float top,
+            float inset,
+            float thickness,
+            Material material,
+            int layer,
+            string name)
+        {
+            if (hi - lo < 0.005f || top - bottom < 0.005f) return;
+            var sub = FootprintPath.SubSpan(span, side, lo, hi);
+            if (sub.Count < 2) return;
+            var mesh = WallBand.BuildMesh(FootprintPath.OffsetInward(sub, inset),
+                bottom, top, thickness, name + " Mesh", capBottom: bottom > 0.001f);
+            GenerationUtil.CreateMeshObject(name, parent, mesh, material, layer);
         }
 
         static Vector3 OpeningPosition(RoomSpec spec, OpeningSpec opening, float inwardOffset)

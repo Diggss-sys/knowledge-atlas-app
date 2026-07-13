@@ -303,7 +303,7 @@ namespace RoomGen.Studio
                         (c, t) => { SetAllBow(pair.Control, c); SetAllBow(pair.Treatment, t); });
                     GUILayout.Label(
                         $"Control: {BowWord(pair.Control.Geometry.WallBow.Back)}  ·  Treatment: {BowWord(pair.Treatment.Geometry.WallBow.Back)}"
-                        + "   (walls with a door/window stay straight)",
+                        + "   (all four walls curve; windows and doors follow the arc)",
                         labelStyle);
                     break;
                 }
@@ -432,22 +432,18 @@ namespace RoomGen.Studio
 
         static void ResetBow(RoomSpec spec) => SetAllBow(spec, 0f);
 
-        // Apply one bow amount to every wall WITHOUT openings (openings on bowed walls are
-        // unsupported in v1 — the validator refuses the whole room, which froze the studio).
-        // Walls carrying the door/windows stay straight; the rest curve together, and corners
-        // stay shared. Resetting (amount 0) clears all four unconditionally.
+        // Apply one bow amount to ALL FOUR walls. Openings on bowed walls are supported now
+        // (arc-cut sill/header bands + curved glass/trim), so walls with a door or window curve
+        // exactly like the rest — no per-wall gate.
         static void SetAllBow(RoomSpec spec, float amount)
         {
             spec.Geometry.WallBow ??= new WallBowSpec();
             var bow = spec.Geometry.WallBow;
-            bow.Front = CanBow(spec, "front") ? amount : 0f;
-            bow.Back = CanBow(spec, "back") ? amount : 0f;
-            bow.Left = CanBow(spec, "left") ? amount : 0f;
-            bow.Right = CanBow(spec, "right") ? amount : 0f;
+            bow.Front = amount;
+            bow.Back = amount;
+            bow.Left = amount;
+            bow.Right = amount;
         }
-
-        static bool CanBow(RoomSpec spec, string wall) =>
-            !spec.Openings.Any(o => string.Equals(o.Wall, wall, StringComparison.OrdinalIgnoreCase));
 
         static string BowWord(float bow) =>
             bow < -0.025f ? "concave, bows in" : bow > 0.025f ? "convex, bulges out" : "flat";

@@ -148,8 +148,10 @@ namespace RoomGen.Tests
         }
 
         [Test]
-        public void OpeningOnBowedWallIsRejected()
+        public void OpeningOnBowedWallIsAccepted()
         {
+            // v1.1: openings on bowed walls are supported (arc-cut sill/header bands + curved
+            // glass/trim), so the validator must NOT refuse them any more.
             var pair = LoadExamplePair();
             var spec = pair.Control;
             spec.Geometry.WallBow = new WallBowSpec { Left = -0.8f };
@@ -160,8 +162,32 @@ namespace RoomGen.Tests
                 spec.Openings.Add(new OpeningSpec { OpeningId = "test-window", Kind = "window", Wall = "left", CenterM = 0f, WidthM = 1.2f, BottomM = 0.9f, TopM = 2f });
 
             var issues = Validation.RoomSpecValidator.Validate(spec);
-            Assert.That(issues.Exists(issue => issue.Code == "OPENING_ON_BOWED_WALL"), Is.True,
+            Assert.That(issues.Exists(issue => issue.Code == "OPENING_ON_BOWED_WALL"), Is.False,
                 string.Join("\n", issues.ConvertAll(i => i.Code + " " + i.Path)));
+        }
+
+        [Test]
+        public void SubSpanCutsOpeningRangeFromBowedWall()
+        {
+            var geometry = new GeometrySpec
+            {
+                WidthM = 5f, LengthM = 6f, CeilingHeightM = 2.6f, WallThicknessM = 0.15f,
+                WallBow = new WallBowSpec { Left = -0.8f }, BowMaxM = 0.5f
+            };
+            var span = FootprintPath.BuildWallSpan(geometry, "left");
+            // Window 1.2 m wide centred at z = 0.5 on the left wall (side wall coord = z).
+            var sub = FootprintPath.SubSpan(span, true, -0.1f, 1.1f);
+
+            Assert.That(sub.Count, Is.GreaterThanOrEqualTo(2), "sub-span must keep arc tessellation");
+            // Interpolated cut points must sit exactly on the requested boundaries.
+            var coords = sub.ConvertAll(s => s.Position.y);
+            Assert.That(Mathf.Min(coords.ToArray()), Is.EqualTo(-0.1f).Within(0.002f));
+            Assert.That(Mathf.Max(coords.ToArray()), Is.EqualTo(1.1f).Within(0.002f));
+            // And the sub-span mesh must build watertight.
+            var mesh = WallBand.BuildMesh(sub, 0.9f, 2f, 0.15f, "SubSpan Band", capBottom: true);
+            cleanupMeshes.Add(mesh);
+            Assert.That(mesh.vertexCount, Is.GreaterThan(0));
+            Assert.That(mesh.triangles.Length, Is.GreaterThan(0));
         }
 
         readonly List<Mesh> cleanupMeshes = new List<Mesh>();

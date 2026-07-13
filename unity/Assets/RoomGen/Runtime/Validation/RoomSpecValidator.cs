@@ -97,12 +97,8 @@ namespace RoomGen.Validation
             if (Mathf.Abs(opening.CenterM) + opening.WidthM * 0.5f > straightLength * 0.5f - 0.05f)
                 issues.Add(Error("OPENING_BOUNDS", path, "Opening must remain inside a straight wall section."));
 
-            // Openings on a bowed wall are unsupported in v1 (the curved band carries no gaps yet);
-            // honesty rule: refuse rather than silently render a wall without its window.
-            var bow = room.Geometry.WallBow?.For(opening.Wall.ToLowerInvariant()) ?? 0f;
-            if (Mathf.Abs(bow) * room.Geometry.BowMaxM > 0.001f)
-                issues.Add(Error("OPENING_ON_BOWED_WALL", path,
-                    $"Wall '{opening.Wall}' is bowed (wall_bow={bow:0.##}); openings on bowed walls are not supported."));
+            // Openings on bowed walls are supported: ShellGenerator cuts sill/header/segment
+            // bands along the arc and OpeningGenerator builds curved glass + trim (v1.1).
         }
 
         static void ValidateOpeningOverlap(RoomSpec room, List<ValidationIssue> issues)

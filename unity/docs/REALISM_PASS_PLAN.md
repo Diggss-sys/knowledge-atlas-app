@@ -49,10 +49,16 @@ A broken studio blocks testing any realism, so these come first.
       leaving only the back wall bowable. True "all walls bow" needs arc-aligned opening
       cuts in WallBand + OpeningGenerator. Its own round — see Round 2b below.
 
-## Round 2b — Wall-bow rework (openings on curved walls)
-- [ ] Cut door/window openings along a bowed wall's arc so glazed walls can also bow.
-      Touches WallBand (band mesh around an arc hole), OpeningGenerator (insert on arc),
-      validator (stop refusing opening-on-bow). Medium-large; gate on Diego's go.
+## Round 2b — Wall-bow rework (openings on curved walls) — DONE
+- [x] All four walls bow, openings ride the arc. FootprintPath.SubSpan cuts arc sub-spans
+      at opening edges (interpolated boundary samples, continuous arc-length UVs);
+      ShellGenerator builds bowed walls as segment/sill/header bands (same split as straight
+      walls, in wall-coord space); WallBand gained an opt-in bottom cap (header undersides);
+      OpeningGenerator builds curved glass + trim as inward-offset thin bands; validator no
+      longer refuses OPENING_ON_BOWED_WALL; studio CanBow gate removed — the "all walls"
+      slider finally means all walls. Tests updated (acceptance + SubSpan cut test).
+- Also fixed: dark blotchy "warping" GI on curved walls — RT GI/SSR/AO quality tier forced
+      to High (Medium ran RTGI at half resolution; the upscale was the blotching).
 
 ## Round 2 — Sun-angle slider + light physics (Diego's stressed priority)
 - [ ] New studio slider: sun azimuth/elevation → moves the PBR-sky sun disk → real
