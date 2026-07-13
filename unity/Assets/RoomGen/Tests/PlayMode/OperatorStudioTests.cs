@@ -65,6 +65,7 @@ namespace RoomGen.Tests.PlayMode
             // renders to the display and the UI overlay never composites — the built scene showed
             // "No cameras rendering" over black (found live, 2026-07-10). Gate it.
             Assert.IsTrue(AnyDisplayCamera(), "no enabled camera renders to the display — the panel cannot composite");
+            Assert.IsNotNull(studioGo.GetComponent<PerfHud>(), "the operator studio should carry the always-on fps HUD");
 
             // 1) Slider -> real seam apply is ACCEPTED. This is the integration gap A1 closes: the
             //    view-model's partial spec (shell/surfaces/lighting only, no spec_version/room_type)

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using RoomGen.Generation;
+using RoomGen.Metrics;
 using RoomGen.Runner;
 using RoomGen.VR;
 using UnityEngine;
@@ -33,6 +34,12 @@ namespace RoomGen.UI
         RoomGenerator _roomGen;
         DesktopWalkMode _walk;
         Camera _backdrop;
+
+        // Frame-rate is measured PER WALK (the render-heavy part) and logged per trial to a sidecar,
+        // never shown to the participant. Warmup 3 drops the one-time room-build hitch on entry.
+        readonly PerfAccumulator _trialPerf = new PerfAccumulator(warmupFrames: 3);
+        PerfLog _perfLog;
+        PerfSample _lastWalkPerf;
 
         bool _booted;
         bool _walking;
@@ -125,6 +132,8 @@ namespace RoomGen.UI
                 if (err != null) err.text = "Cannot start this session: " + _session.Reason;
                 return false;
             }
+            // Frame-rate sidecar next to the response CSV (joins on session_id + trial_index).
+            _perfLog = new PerfLog(Path.Combine(_outputDir, $"response-{safe}-{stamp}.perf.csv"));
             ShowOnly("screen-instructions");
             return true;
         }
@@ -144,6 +153,7 @@ namespace RoomGen.UI
             if (_session == null || _session.IsComplete) return;
             _roomGen.Build(_session.CurrentSpec);
             ShowPanel(false);
+            _trialPerf.Reset();   // start measuring this room's frame rate fresh
             _walk.Toggle(RoomLayer, _roomGen.LastResult?.Root, _session.CurrentSpec);
             _walking = _walk.IsRunning;
             if (_walking && _backdrop != null) _backdrop.enabled = false; // walk camera owns the display
@@ -168,7 +178,16 @@ namespace RoomGen.UI
         {
             if (_session == null || _session.IsComplete) return;
             var rtMs = Mathf.Max(0f, (Time.time - _ratingShownAt) * 1000f);
+
+            // Capture the trial identity BEFORE submitting (SubmitRating advances the cursor), so the
+            // perf sidecar row keys to the same trial + condition as the response row just written.
+            var trialIndex = _session.Index;
+            var condition = _session.CurrentCondition;
             _session.SubmitRating(value, rtMs);
+            _perfLog?.Write(_session.SessionId, _session.ParticipantId, _session.StudyId,
+                trialIndex, condition, _lastWalkPerf);
+            _lastWalkPerf = default;
+
             if (_session.IsComplete) ShowDone();
             else ShowWalk();
         }
@@ -182,9 +201,13 @@ namespace RoomGen.UI
         void Update()
         {
             if (!_booted) return;
+            if (_walk != null && _walk.IsRunning)
+                _trialPerf.Add(Time.unscaledDeltaTime);   // measure real frame time while walking
+
             if (_walking && (_walk == null || !_walk.IsRunning))   // participant pressed Esc
             {
                 _walking = false;
+                _lastWalkPerf = _trialPerf.Snapshot();   // freeze this room's fps for the perf sidecar
                 if (_backdrop != null) _backdrop.enabled = true;
                 ShowPanel(true);
                 ShowRating();

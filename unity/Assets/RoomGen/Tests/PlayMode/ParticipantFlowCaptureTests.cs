@@ -98,6 +98,13 @@ namespace RoomGen.Tests.PlayMode
             Assert.IsTrue(flow.Session.AllValid, "every UI-written row must validate");
             Assert.IsTrue(File.Exists(flow.Session.CsvPath), "a CSV must exist on disk");
 
+            // The frame-rate sidecar lands beside the CSV with one row per trial (header + 4). This
+            // run skips the actual walks, so the fps figures are zero — but the plumbing must be there.
+            var perfPath = flow.Session.CsvPath.Replace(".csv", ".perf.csv");
+            Assert.IsTrue(File.Exists(perfPath), "a per-trial perf sidecar must be written next to the CSV");
+            Assert.AreEqual(5, File.ReadAllLines(perfPath).Length, "perf header + 4 trial rows");
+            StringAssert.Contains("control", File.ReadAllText(perfPath), "perf rows carry the condition for the delta check");
+
             Object.Destroy(tex);
             Object.Destroy(flowGo);
             Object.Destroy(docGo);

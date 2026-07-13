@@ -141,6 +141,7 @@ namespace RoomGen.UI
             OperatorPanelController.SetPreviews(_root, _previewControl.Texture, _previewTreatment.Texture);
 
             _walk = gameObject.AddComponent<DesktopWalkMode>();
+            gameObject.AddComponent<PerfHud>();   // always-on fps readout (survives the panel hiding during a walk)
             WireButtons();
 
             _booted = true;

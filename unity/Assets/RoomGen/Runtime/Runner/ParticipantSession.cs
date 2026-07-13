@@ -34,6 +34,12 @@ namespace RoomGen.Runner
         public bool AllValid { get; private set; } = true;
         public string CsvPath { get; }
 
+        // Identity of this session — exposed so the perf sidecar log can key its rows to the same
+        // session/participant/study as the response CSV (see PerfLog).
+        public string SessionId => _sessionId;
+        public string ParticipantId => _participantId;
+        public string StudyId => _studyId;
+
         /// <summary>The condition being presented (control/treatment) — used to pick the room to build.
         /// NEVER shown to the participant: a visible condition label would be a demand cue.</summary>
         public string CurrentCondition => IsComplete ? null : _plans[Index].Condition;
