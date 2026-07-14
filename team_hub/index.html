@@ -33,6 +33,7 @@
       <ul>
         <li><a href="#install" class="active">Installation Guide</a></li>
         <li><a href="#progress">Current Progress</a></li>
+        <li><a href="#team-run">Team Run</a></li>
         <li><a href="#roster">Team Roster & To-Do</a></li>
       </ul>
     </aside>
@@ -40,16 +41,15 @@
     <main class="content">
 
       <header class="hero gsap-reveal-immediate">
-        <div class="hero-track">Internal Dashboard</div>
+        <div class="hero-track">Track 3 &middot; Room Studio</div>
         <h1>Knowledge Atlas Team Hub</h1>
         <p class="hero-sub">
-          Central coordination for the parametric room generation engine (COGS 160).
-          This hub tracks our milestones, installation guides, and what each workstream is currently owning.
+          Replanned: finish the instrument, then run the study
         </p>
         <div class="hero-meta">
-          <span class="hero-pill">7 Members</span>
+          <span class="hero-pill">Milestone: M2</span>
           <span class="hero-pill">Target: V1 Demo (Aug 1)</span>
-          <span class="hero-pill">Updated: July 8, 2026</span>
+          <span class="hero-pill">Updated: 2026-07-10</span>
         </div>
       </header>
 
@@ -57,167 +57,181 @@
         <h2>1. Installation Guide</h2>
         <p>Because the core engine is built in Unity HDRP, the installation process differs significantly depending on your operating system.</p>
         
-        <div class="callout callout-amber">
-          <strong>Branch note.</strong> Until PR #2 merges, <code>Diggss-sys-branch</code> and <code>main</code> do NOT contain the current work.
-          Check out <code>paco/ui-foundation</code> to get everything. This note disappears after the merge.
-        </div>
-
-        <h3>For Mac Users (M1/M2 — yes, your MacBook runs it)</h3>
-        <div class="callout callout-blue">
-          <strong>Run the Unity project from source.</strong>
-          The scene is light enough for Apple Silicon. ~30 minutes the first time, almost all of it Unity importing.
+        <h3>Mac — from source</h3>
+        <div class="callout callout-teal">
+          <strong>Status: works now</strong>
         </div>
         <ol>
-          <li>Get collaborator access (ask Diego), then:
-            <pre><code>git clone https://github.com/Diggss-sys/knowledge-atlas-app.git
-git checkout paco/ui-foundation</code></pre>
-          </li>
-          <li>Install <strong>Unity Hub</strong> (Apple Silicon version), free Personal license.</li>
-          <li>Install exactly <strong>Unity 6000.3.16f1</strong> (use the download archive if the Hub doesn't list it).</li>
-          <li>Open the <code>unity/</code> folder; wait out the first import (10&ndash;20 min).</li>
-          <li>Run <code>RoomGen ▸ Fetch CC0 Materials</code> once (real textures; needs internet).</li>
-          <li>Open <code>Assets/RoomGen/Scenes/RoomStudio.unity</code> and press <strong>Play</strong>.</li>
+          <li>Clone, git checkout paco/ui-foundation</li>
+          <li>Unity Hub → install 6000.3.16f1 exactly</li>
+          <li>Open unity/, wait out first import (10–20 min)</li>
+          <li>RoomGen ▸ Fetch CC0 Materials, open RoomStudio scene, Play</li>
         </ol>
-        <p><em>Contracts-only contributors (schemas, fixtures, validators) can skip Unity: Python 3.10+, then <code>pytest tests -q</code>.</em></p>
+        <p>Full guide: <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md">docs/GETTING_STARTED.md</a></p>
 
-        <h3>For Windows Users</h3>
+        <h3>Windows — the exe</h3>
         <div class="callout callout-teal">
-          <strong>Fastest path: the built app.</strong>
-          Ask Paco for the current <code>RoomStudio.exe</code> folder — double-click, "Load KA spec pair", "Walk control".
-          WASD + mouse, Tab switches condition, Esc exits.
+          <strong>Status: works now</strong>
         </div>
-        <p>To run from source instead, follow the Mac steps above (skip the Apple Silicon notes).</p>
+        <ol>
+          <li>Ask Paco for the RoomStudio.exe folder</li>
+          <li>Double-click → Load KA spec pair → Walk control (WASD/mouse, Tab switches, Esc exits)</li>
+        </ol>
 
-        <h3>Mac .app — one volunteer needed</h3>
-        <p>The macOS build target exists (<code>RoomGen ▸ Build macOS Application</code>) but nobody has smoke-tested a .app on
-        real hardware. First M2 owner to build it and report unlocks a no-Unity install for every Mac on the team.</p>
-        <p>Full guide with troubleshooting: <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md">docs/GETTING_STARTED.md</a></p>
+        <h3>Mac — the .app</h3>
+        <div class="callout callout-amber">
+          <strong>Status: needs one volunteer</strong>
+        </div>
+        <ol>
+          <li>Build on an M2 (RoomGen ▸ Build macOS Application)</li>
+          <li>Right-click → Open (unsigned), report back</li>
+        </ol>
       </section>
 
       <section id="progress" class="gsap-section">
         <h2>2. Current Progress</h2>
-        <p>This board tracks the integration status of the six core workstreams towards our M5 target.</p>
+        <p>Top metrics tracking our delivery:</p>
         
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Workstream</th>
-              <th>Owner</th>
-              <th>M0 Boot</th>
-              <th>M1 Tracer</th>
-              <th>M2 Instrument</th>
-              <th>M3 Demo</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Generator (E1)</td>
-              <td>Diego (from Paco)</td>
-              <td><span class="status-indicator status-done">Done</span></td>
-              <td><span class="status-indicator status-done">Done (engine side)</span></td>
-              <td><span class="status-indicator status-pending">—</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Fidelity / VR (E2)</td>
-              <td>E2 teammate (VR half)</td>
-              <td><span class="status-indicator status-done">Done</span></td>
-              <td><span class="status-indicator status-done">Done</span></td>
-              <td><span class="status-indicator status-progress">Gate verdict pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Runtime (E3)</td>
-              <td>E3 teammate</td>
-              <td><span class="status-indicator status-done">Done (R0/R1 built)</span></td>
-              <td><span class="status-indicator status-progress">Needs a human session (R2)</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Operator UI (P1)</td>
-              <td>Paco (unclaimed — open)</td>
-              <td><span class="status-indicator status-done">Done (foundation, 92/92)</span></td>
-              <td><span class="status-indicator status-progress">Studio scene queued</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Contracts (P2)</td>
-              <td>Diego</td>
-              <td><span class="status-indicator status-done">Done (PR #1)</span></td>
-              <td><span class="status-indicator status-progress">2 contract calls waiting</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-            <tr>
-              <td>Data Layer (P3)</td>
-              <td>P3 teammate</td>
-              <td><span class="status-indicator status-pending">Not started (scope settled)</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-              <td><span class="status-indicator status-pending">Pending</span></td>
-            </tr>
-          </tbody>
-        </table>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">108</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">automated checks green (PR #3 branch)</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;"><a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" style="color: #cc7700">PR #3</a></div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">open — A1+A2 instrument, needs Diego's review (PR #2 merged ✅)</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">3</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">validated experiment pairs</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">4.7%</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">ceiling-pair luminance match (goal ≤ 25%)</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #cc7700;">M2 gate</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">evidence in, verdict pending</div>
+          </div>
+        </div>
 
+        <h3>Milestones</h3>
+        <ul style="margin-bottom: 2rem;">
+          <li><strong>M0 Boot</strong> ✅ &mdash; <em>builds, walks, gated</em></li>
+          <li><strong>M1 Tracer</strong> ✅ &mdash; <em>closed end-to-end: author &rarr; validate &rarr; publish &rarr; run &rarr; data (A1+A2, live-verified)</em></li>
+          <li><strong>M2 Instrument</strong> ▶️ &mdash; <em>instrument side done; fidelity verdict pending</em></li>
+          <li><strong>M3 Kirsh demo</strong> ⏳ &mdash; <em>≈ Aug 1</em></li>
+          <li><strong>M4 Library</strong> ⏳ &mdash; <em>August</em></li>
+          <li><strong>M5 VR arm</strong> ⏳ &mdash; <em>≤ Sep 15</em></li>
+        </ul>
+        
+        <h3>Recently Shipped</h3>
+        <ul>
+          <li><strong>A1 + A2 — the interactive instrument:</strong> Operator Studio (live previews, real single-variable gate, publish lock, walk) + Participant Runner (neutral screens &rarr; validated CSV). M1 closed; both scenes verified live <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[PR #3]</a></li>
+          <li><strong>Performance gate:</strong> fps targets defined (60 demo PC / 45&ndash;30 M2 Macs / conditions within 10%); operator fps readout; participant sessions silently log per-room frame rate + machine <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/PERFORMANCE.md" target="_blank">[Link]</a></li>
+          <li><strong>July replan:</strong> two tracks — Track A finishes the instrument (2 build items left), Track B runs the pilot study; no Unity needed for Track B roles <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md" target="_blank">[Link]</a></li>
+          <li><strong>Fidelity gate package:</strong> real materials + furniture models, pendant luminaire, measured luminance match <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FIDELITY_GATE.md" target="_blank">[Link]</a></li>
+          <li><strong>Experiment runtime core:</strong> schema-valid response rows → CSV, seeded ordering, study honesty-gate (E3's R0+R1) <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/EXPERIMENT_RUNTIME.md" target="_blank">[Link]</a></li>
+          <li><strong>Experiment library:</strong> ceiling height · curved walls · lighting warmth — each provably single-variable</li>
+          <li><strong>Operator UI foundation:</strong> panel + live control/treatment previews in the lab palette <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/fidelity/ui-operator.jpg" target="_blank">[Link]</a></li>
+          <li><strong>Fixes that matter:</strong> walk-mode input bug fixed (rebuild needed on old exes); adversarial review: 7 defects found & fixed <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FABLE_REVIEW.md" target="_blank">[Link]</a></li>
+        </ul>
+      </section>
+
+      <section id="team-run" class="gsap-section">
+        <h2>3. Team Run (Dry Run Study)</h2>
+        <p>We're testing whether the room study runs well on everyone's machine before we go further. You don't need Unity, git, or any setup &mdash; just download an app, do one short session as a participant, and send back the files it saves. (~5 minutes)</p>
+        
         <div class="callout callout-amber">
-          <strong>Top ask right now:</strong> Diego — merge
-          <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/2">PR #2</a> with
-          <em>"Create a merge commit"</em> (not squash). It carries the fidelity gate, the runtime core,
-          three experiment pairs, and the walk-mode fix; every other lane builds on it.
+          <strong>Status: waiting on the verified build &mdash; you'll get a ping when it's ready</strong>
         </div>
-        <div class="callout callout-teal">
-          <strong>Latest results:</strong> 92/92 automated checks green. The L0&ndash;L4 lighting sprint delivered the
-          M2 fidelity gate with a <em>measured</em> matched-luminance result — 2.4 m vs 3.2 m ceilings read within
-          4.7% at eye height (<a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FIDELITY_GATE.md">evidence</a>).
-          Team verdict on the gate is pending — proposed: conditional pass.
+
+        <h3>1. Get the app</h3>
+        <ul>
+          <li><strong>Windows:</strong> <button disabled style="margin-left: 0.5rem; padding: 0.2rem 0.5rem; font-size: 0.9em; cursor: not-allowed; opacity: 0.7;">Download &mdash; coming soon, pending build verification</button>
+            <br><small style="color: var(--color-text-light);"><em>Note: Windows may warn "Windows protected your PC". Click <strong>More info &rarr; Run anyway</strong>.</em></small>
+          </li>
+          <li style="margin-top: 1rem;"><strong>Mac:</strong> get <code>KnowledgeAtlasStudy.app</code> from <strong>Michael</strong>. First launch: <strong>right-click the app &rarr; Open &rarr; Open</strong> (needed once because it's unsigned).</li>
+        </ul>
+
+        <h3>2. Do one session (about 3&ndash;4 minutes)</h3>
+        <ol>
+          <li><strong>Participant ID:</strong> type anything memorable &mdash; your initials + a number is perfect (e.g. <code>MJ7</code>). Click <strong>Begin</strong>.</li>
+          <li><strong>Instructions &rarr; Start.</strong></li>
+          <li>For each of the 4 rooms:
+            <ul>
+              <li>Click <strong>Enter room</strong>.</li>
+              <li><strong>Walk around</strong> with <strong>W A S D</strong>, look with the <strong>mouse</strong>. Take 15&ndash;30 seconds, don't rush.</li>
+              <li>Press <strong>Esc</strong> to leave.</li>
+              <li>Answer the one question (<strong>1&ndash;7</strong>).</li>
+            </ul>
+          </li>
+          <li><strong>Session complete.</strong></li>
+        </ol>
+
+        <h3>3. Send us your files</h3>
+        <p>On the final screen, click <strong>Open results folder</strong>. You'll see three files that start with <code>response-</code> (a <code>.csv</code>, a <code>.jsonl</code>, and a <code>.perf.csv</code>). <strong>Send all three</strong> in the team chat, and tell us:</p>
+        <ul>
+          <li>which machine you used (e.g. "M2 MacBook Air", "gaming PC with RTX 3070").</li>
+        </ul>
+
+        <div class="callout callout-blue" style="margin-top: 2rem;">
+          <h4>What we're actually checking</h4>
+          <p style="margin-bottom: 0;">The <code>.perf.csv</code> quietly recorded the frame rate while you walked each room &mdash; this tells us whether the app runs smoothly on your hardware and whether it runs equally smoothly in every room.</p>
         </div>
+
+        <h4 style="margin-top: 2rem;">If something goes wrong</h4>
+        <ul style="font-size: 0.95em;">
+          <li><strong>Black screen / nothing renders:</strong> note your machine and tell us. Don't force it.</li>
+          <li><strong>Can't move in a room:</strong> click inside the window first so it has focus, then W A S D.</li>
+          <li><strong>Stuck in a room:</strong> press <strong>Esc</strong>.</li>
+          <li><strong>"Where are my files?":</strong> the <strong>Open results folder</strong> button on the last screen opens them for you.<br>
+          <span style="color: var(--color-text-light); font-size: 0.9em;">(Windows: <code>%USERPROFILE%\AppData\LocalLow\COGS 160 Research Lab\Room Studio\</code>, Mac: <code>~/Library/Application Support/COGS 160 Research Lab/Room Studio/</code>)</span></li>
+        </ul>
       </section>
 
       <section id="roster" class="gsap-section">
-        <h2>3. Team Roster & To-Do</h2>
-        <p>The project is divided into two Trios (Engine and Platform) and one Integrator. Remember: <strong>Nobody waits on the generator.</strong> Use the MockSpecChannel to develop your interfaces.</p>
+        <h2>4. Team Roster & To-Do</h2>
 
-        <h3>Diego (Engine + Contracts)</h3>
+        <h3>Diego <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(ENGINE · CONTRACTS)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #ffebee; color: #b71c1c;">unblocks everyone</span></h3>
         <ul>
-          <li><strong>Do first:</strong> Merge <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/2">PR #2</a> ("Create a merge commit", not squash; skip re-merging <code>hdrp-master-plan</code> — it's already in), then tell the team the integration-branch plan.</li>
-          <li><strong>Contract calls waiting:</strong> the <code>lighting.warmth</code> label/formula inversion, and coupled-vars notes (pendant&harr;ceiling height, sun-tint&harr;color temperature).</li>
-          <li><strong>Then:</strong> the engine lane is yours — generator, gate, HDRP rig are all green and handed over.</li>
+          <li>PR #2 merged — thank you! Next: review PR #3 (the A1+A2 instrument; zero file overlap with your realism branch, either merge order works). <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[Link]</a></li>
+          <li>Preset ranges call: add ranges for warmth/contour/wall-bow to dining_room.preset and the new studio's disabled sliders unlock automatically — cheapest way to make it THE demo studio.</li>
+          <li>Two contract calls still open: lighting.warmth label/formula inversion; coupled-vars notes.</li>
         </ul>
 
-        <h3>Paco (Software / UI)</h3>
+        <h3>Michael <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(INTEGRATOR → RELEASE MANAGER)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #ffebee; color: #b71c1c;">this week</span></h3>
         <ul>
-          <li><strong>Operator UI foundation shipped</strong> (panel, live control/treatment previews, publish gate, 92/92 checks). Waiting on Diego's merge to open PR #3.</li>
-          <li><strong>Queued:</strong> interactive studio scene (after syncing with Diego), diff panel vs golden fixtures, publish form.</li>
+          <li>M2 Mac smoke test: build RoomGen ▸ Build macOS Application on a lab MacBook, launch (right-click → Open), walk the pair, report. Unlocks Macs for everyone. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md" target="_blank">[Link]</a></li>
+          <li>Fresh-clone check per GETTING_STARTED.md; expect all tests green.</li>
         </ul>
 
-        <h3>Michael (Integrator)</h3>
+        <h3>Study design <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK B · 2 TEAMMATES · NO CODE)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #e0f7fa; color: #006064;">claim at meeting</span></h3>
         <ul>
-          <li>After Diego's merge: cut the integration branch, refresh COORDINATION.md's branch rules + status board.</li>
-          <li>Fresh-clone check on any machine (clone &rarr; open in Unity &rarr; Fetch CC0 Materials &rarr; run tests; expect green).</li>
+          <li>Pick the demo experiment (ceiling pair is flagship), write the rating prompt + trials config + hypothesis. A1 has shipped — the operator studio is ready to author through. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md" target="_blank">[Link]</a></li>
         </ul>
 
-        <h3>Fidelity / VR (E2)</h3>
+        <h3>Piloting <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK B · EVERYONE)</span></h3>
         <ul>
-          <li>Cast your M2 gate verdict on <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/lighting-l0-l4/docs/fidelity">the evidence renders</a>. Your fidelity half was absorbed and shipped — your lane is now the VR half (V0/V1; Quest 3 + Link recommended).</li>
+          <li>Run one session as operator, sit as participant in another's. Target 5+ clean CSVs. Report anything confusing — that's the feedback we can't generate.</li>
         </ul>
 
-        <h3>Runtime (E3)</h3>
+        <h3>Evidence & verdicts <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK B · 1 TEAMMATE)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #e0f7fa; color: #006064;">claim at meeting</span></h3>
         <ul>
-          <li>R0/R1 (rows, seeded ordering, study gate) are <strong>built and tested for you</strong> — status note atop <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/EXPERIMENT_RUNTIME.md">EXPERIMENT_RUNTIME.md</a>. Claim R2 (the neutral participant screens + real rooms), or say so if we should keep carrying it.</li>
+          <li>Call the M2 fidelity-gate verdict on the renders (proposed: conditional pass); then own the demo-day evidence pack. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/lighting-l0-l4/docs/fidelity" target="_blank">[Link]</a></li>
         </ul>
 
-        <h3>Data Layer (P3)</h3>
+        <h3>Paco + Claude <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK A · BUILDERS)</span></h3>
         <ul>
-          <li><strong>Decision settled:</strong> Cloudflare is a save/load store only — never the live path. Scope: a thin Worker storing RoomSpec/study JSON + <code>POST /responses</code> (hooks in at R3). Spec: handoffs/CLOUDFLARE_DATA.md.</li>
+          <li>A1 + A2 SHIPPED (PR #3) and live-verified — including a full participant session producing a clean CSV. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[Link]</a></li>
+          <li>Now: verify the built participant app renders → publish the download for the Team Run; wire the operator's Publish button to the study JSON the participant app loads. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md" target="_blank">[Link]</a></li>
         </ul>
 
-        <div class="callout callout-blue">
+        <div class="callout callout-blue" style="margin-top: 3rem;">
           <strong>Source of truth is the repo.</strong> Plans live in
-          <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/ui-foundation/handoffs">handoffs/</a>,
+          <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/main/handoffs">handoffs/</a>,
           the machine-readable state behind this page in <code>team_hub/data/status.json</code>. If this page and the
-          repo disagree, the repo wins — tell Paco so the page gets regenerated.
+          repo disagree, the repo wins.
         </div>
       </section>
 

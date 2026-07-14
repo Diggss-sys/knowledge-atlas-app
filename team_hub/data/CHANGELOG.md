@@ -4,6 +4,24 @@
 "what happened lately" narrative; `status.json` carries the structured state. Neither is ever
 rewritten retroactively — append only.*
 
+## 2026-07-10 — PR #2 merged · the instrument shipped (A1+A2, PR #3) · Team Run prep
+- **Diego merged PR #2** (merge commit `284a152`) — the engine/fidelity/runtime package is on `main`.
+  He's now building an engine realism pass (curved walls, time-of-day sun, SSGI) on his branch.
+- **A1 + A2 shipped and PR #3 opened**: the interactive Operator Studio (live previews, real
+  single-variable gate, publish lock, walk button) + the Participant Runner (neutral screens →
+  walk each room → rate → validated CSV). M1 tracer closed end-to-end; both scenes verified on a
+  real display; a Fable review found and fixed 5 defects (verdict table in handoffs/A1_A2_REVIEW.md);
+  108 automated checks green. Operator UI restyled to the team-hub design system.
+- **Performance gate defined** (docs/PERFORMANCE.md): 60 fps demo PC / 45–30 M2 Macs / conditions
+  within 10% of each other. Operator studio shows a live fps readout; participant sessions silently
+  log per-room frame rate + machine to a `.perf.csv` sidecar next to the response CSV.
+- **Team Run staged** (docs/TEAM_RUN.md + hub section): everyone runs one participant session on
+  their own machine and sends back 3 files — our cross-machine baseline BEFORE Diego's rendering
+  changes land. Windows participant app is built but download stays blocked until it's verified to
+  render (lesson of the week: builds that pass tests can still show a black screen).
+- Serviced Anti's REQUESTS.md (status.json/CHANGELOG were stale on the PR #2 merge — Anti caught it
+  and correctly filed a request instead of inventing content: the sync contract working).
+
 ## 2026-07-09 — the July replan: two tracks
 - Honest reset (handoffs/REPLAN_JULY.md): the 6-lane structure assumed seven engineers; reality is
   one build lane + a reviewer. Track A (Paco+Claude) finishes the instrument — two build items left

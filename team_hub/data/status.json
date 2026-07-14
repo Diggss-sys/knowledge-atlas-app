@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "_contract": "This file is the ONLY content source for the team-hub page. Written by Claude (Fable/Opus sessions) at every work checkpoint; read by Antigravity, which renders it and NEVER invents or edits status. If it isn't in this file, it doesn't go on the hub.",
-  "updated_at": "2026-07-09",
+  "updated_at": "2026-07-10",
   "project": {
     "name": "Knowledge Atlas",
     "track": "Track 3 · Room Studio",
@@ -11,15 +11,15 @@
   },
   "metrics": [
     {
-      "value": "92 / 92",
-      "label": "automated checks green",
+      "value": "108",
+      "label": "automated checks green (105 EditMode + 3 PlayMode, PR #3 branch)",
       "tone": "ok"
     },
     {
-      "value": "PR #2",
-      "label": "open — needs Diego's merge",
+      "value": "PR #3",
+      "label": "open — A1+A2 instrument; needs Diego's review (PR #2 merged ✅)",
       "tone": "warn",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/2"
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
     },
     {
       "value": "3",
@@ -48,13 +48,13 @@
       "id": "M1",
       "label": "Tracer",
       "state": "done",
-      "note": "engine side done; needs a human session + operator UI"
+      "note": "closed end-to-end: author → validate → publish → run → data (A1+A2, live-verified)"
     },
     {
       "id": "M2",
       "label": "Instrument",
       "state": "now",
-      "note": "gate verdict + UI"
+      "note": "instrument side done (operator studio drives the gate + publish lock); fidelity verdict pending"
     },
     {
       "id": "M3",
@@ -76,6 +76,16 @@
     }
   ],
   "shipped": [
+    {
+      "title": "A1 + A2 — the interactive instrument (PR #3)",
+      "blurb": "Operator Studio (live previews, real single-variable gate, publish lock, walk button) + Participant Runner (neutral screens → walk each room → rate → validated CSV). M1 tracer closed end-to-end; both scenes verified live; 5 review defects found & fixed",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
+    },
+    {
+      "title": "Performance gate — what 'runnable' means",
+      "blurb": "fps targets defined (60 demo PC / 45–30 M2 Macs / conditions within 10%); live fps readout in the operator studio; participant sessions silently log per-room frame rate + machine to a perf sidecar next to the CSV",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/PERFORMANCE.md"
+    },
     {
       "title": "July replan",
       "blurb": "two tracks — Track A finishes the instrument (2 build items left), Track B runs the pilot study; no Unity needed for Track B roles",
@@ -117,11 +127,15 @@
       },
       "actions": [
         {
-          "text": "Merge PR #2 with 'Create a merge commit' (not squash). Team fallback: if idle 5 more days, Michael/Paco merges — demo deadline outranks ceremony.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/2"
+          "text": "PR #2 merged — thank you! Next: review PR #3 (the A1+A2 instrument; zero file overlap with your realism branch, either merge order works).",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
         },
         {
-          "text": "Two contract calls: lighting.warmth label/formula inversion; coupled-vars notes.",
+          "text": "Preset ranges call: add ranges for warmth/contour/wall-bow to dining_room.preset and the new studio's disabled sliders unlock automatically — cheapest way to make it THE demo studio.",
+          "link": null
+        },
+        {
+          "text": "Two contract calls still open: lighting.warmth label/formula inversion; coupled-vars notes.",
           "link": null
         }
       ]
@@ -153,7 +167,7 @@
       },
       "actions": [
         {
-          "text": "Pick the demo experiment (ceiling pair is flagship), write the rating prompt + trials config + hypothesis; author the study through the operator UI when A1 ships.",
+          "text": "Pick the demo experiment (ceiling pair is flagship), write the rating prompt + trials config + hypothesis. A1 has shipped — the operator studio is ready to author through.",
           "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md"
         }
       ]
@@ -189,12 +203,12 @@
       "pill": null,
       "actions": [
         {
-          "text": "A1: interactive Operator Studio scene (panel ↔ real engine, live previews, walk button).",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md"
+          "text": "A1 + A2 SHIPPED (PR #3) and live-verified — including a full participant session producing a clean CSV.",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
         },
         {
-          "text": "A2: minimal participant flow — four neutral screens driving StudyRunner to a CSV. Closes the M1 tracer.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md"
+          "text": "Now: verify the built participant app renders → publish the download for the team run; wire the operator's Publish button to the study JSON the participant app loads.",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
         }
       ]
     }
@@ -239,8 +253,8 @@
       "link": "https://github.com/Diggss-sys/knowledge-atlas-app"
     },
     {
-      "text": "PR #2",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/2"
+      "text": "PR #3",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
     }
   ]
 }
