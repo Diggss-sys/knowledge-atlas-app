@@ -213,6 +213,14 @@
       ]
     }
   ],
+  "team_run": {
+    "status": "live",
+    "headline": "Windows build is live — download, do one session, send 3 files",
+    "windows_download": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-Windows.zip",
+    "release_page": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10",
+    "mac_note": "Mac users get the .app from Michael (not in this release).",
+    "guide": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
+  },
   "run_paths": [
     {
       "title": "Mac — from source",

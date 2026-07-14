@@ -6,8 +6,9 @@ back the files it saves. This is also our first study dry-run, so do it honestly
 
 ## 1. Get the app
 
-- **Windows:** download `KnowledgeAtlasStudy-Windows.zip` from the repo's **Releases** page, then
-  right-click → **Extract All**. Open the folder and double-click **KnowledgeAtlasStudy.exe**.
+- **Windows:** download **[KnowledgeAtlasStudy-Windows.zip](https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-Windows.zip)**
+  (from the [team-run-2026-07-10 release](https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10)),
+  then right-click → **Extract All**. Open the folder and double-click **KnowledgeAtlasStudy.exe**.
   - Windows may warn "Windows protected your PC" (unsigned app). Click **More info → Run anyway**.
 - **Mac:** get `KnowledgeAtlasStudy.app` from **Michael** (Apple won't let us hand out an unsigned Mac
   app over the web cleanly). First launch: **right-click the app → Open → Open** (needed once because
