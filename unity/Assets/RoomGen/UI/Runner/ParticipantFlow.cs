@@ -69,11 +69,27 @@ namespace RoomGen.UI
                                "nowhere. Re-run RoomGen ▸ Setup Participant Runner Scene.");
                 return;
             }
-            var study = Resources.Load<TextAsset>("RoomGen/Examples/ceiling-study");
-            if (doc != null && doc.rootVisualElement != null && study != null)
-                Boot(doc.rootVisualElement, study.text, null, Application.persistentDataPath);
+            // Prefer an operator-authored study (from A1's Publish) if one is present; otherwise the
+            // bundled fixture. The released team-run build ships without a published study, so every
+            // teammate runs the identical fixture — comparable frame-rate numbers across machines.
+            string studyJson = null, source;
+            if (StudyHandoff.HasPublishedStudy)
+            {
+                studyJson = File.ReadAllText(StudyHandoff.PublishedStudyPath);
+                source = "operator-published study";
+            }
             else
-                Debug.LogWarning("ParticipantFlow: missing UIDocument root or ceiling-study resource — not booting.");
+            {
+                studyJson = Resources.Load<TextAsset>("RoomGen/Examples/ceiling-study")?.text;
+                source = "bundled fixture study";
+            }
+            if (doc != null && doc.rootVisualElement != null && studyJson != null)
+            {
+                Debug.Log("ParticipantFlow: running the " + source + ".");
+                Boot(doc.rootVisualElement, studyJson, null, Application.persistentDataPath);
+            }
+            else
+                Debug.LogWarning("ParticipantFlow: missing UIDocument root or a study to run — not booting.");
         }
 
         /// <summary>Wire the screens. <paramref name="nowUtc"/> null ⇒ real UtcNow (injectable for tests).</summary>
