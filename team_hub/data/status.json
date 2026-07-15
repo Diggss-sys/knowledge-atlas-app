@@ -11,8 +11,8 @@
   },
   "metrics": [
     {
-      "value": "108",
-      "label": "automated checks green (105 EditMode + 3 PlayMode, PR #3 branch)",
+      "value": "109",
+      "label": "automated checks green (106 EditMode + 3 PlayMode, PR #3 branch)",
       "tone": "ok"
     },
     {
@@ -76,6 +76,16 @@
     }
   ],
   "shipped": [
+    {
+      "title": "Team Run app released (Windows live, Mac attached)",
+      "blurb": "double-clickable participant study app — no Unity or git needed. Windows build verified rendering + released; Mac build is universal (Apple Silicon + Intel), attached and pending a first-launch check. Each session silently logs per-machine frame rate. This is our cross-machine baseline before the rendering changes",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10"
+    },
+    {
+      "title": "Author → run loop closed (publish → consume)",
+      "blurb": "the operator's Publish button now emits a real study document (re-gated — a confounded pair is refused) that the participant app then runs, instead of a bundled fixture. Full loop: author → validate → publish → participate → data",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
+    },
     {
       "title": "A1 + A2 — the interactive instrument (PR #3)",
       "blurb": "Operator Studio (live previews, real single-variable gate, publish lock, walk button) + Participant Runner (neutral screens → walk each room → rate → validated CSV). M1 tracer closed end-to-end; both scenes verified live; 5 review defects found & fixed",

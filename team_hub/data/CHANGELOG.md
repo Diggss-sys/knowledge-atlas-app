@@ -4,6 +4,20 @@
 "what happened lately" narrative; `status.json` carries the structured state. Neither is ever
 rewritten retroactively — append only.*
 
+## 2026-07-10 (later) — Team Run app RELEASED · author→run loop closed · Mac build
+- **Team Run app is downloadable.** Published a private prerelease (`team-run-2026-07-10`) with the
+  double-clickable participant study app. **Windows** build verified rendering (RTX 5070 Ti) and
+  released; **Mac** build added — universal (Apple Silicon + Intel), packaged Mac-launchable, attached
+  and *pending a first-launch check on a real Mac* before we tell the team. Download links + unsigned
+  first-launch steps are in docs/TEAM_RUN.md; the hub's Team Run section can now show real downloads
+  (see `data/status.json` → `team_run`).
+- **Author → run loop closed.** The operator's Publish button now emits a real study document (gated —
+  a confounded pair is refused) that the participant app runs, instead of only the bundled fixture.
+- **Perf sidecar now stamps the machine** (GPU/OS/model) so the cross-machine team-run numbers are
+  attributable; the participant done-screen gained an "Open results folder" button.
+- 109 automated checks green (106 EditMode + 3 PlayMode). A render-path note for Diego was drafted
+  (RT stays an optional demo-PC tier; the Macs and the study run on raster).
+
 ## 2026-07-10 — PR #2 merged · the instrument shipped (A1+A2, PR #3) · Team Run prep
 - **Diego merged PR #2** (merge commit `284a152`) — the engine/fidelity/runtime package is on `main`.
   He's now building an engine realism pass (curved walls, time-of-day sun, SSGI) on his branch.
