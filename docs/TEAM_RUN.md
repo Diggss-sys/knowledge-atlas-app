@@ -10,9 +10,11 @@ back the files it saves. This is also our first study dry-run, so do it honestly
   (from the [team-run-2026-07-10 release](https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10)),
   then right-click → **Extract All**. Open the folder and double-click **KnowledgeAtlasStudy.exe**.
   - Windows may warn "Windows protected your PC" (unsigned app). Click **More info → Run anyway**.
-- **Mac:** get `KnowledgeAtlasStudy.app` from **Michael** (Apple won't let us hand out an unsigned Mac
-  app over the web cleanly). First launch: **right-click the app → Open → Open** (needed once because
-  it's unsigned).
+- **Mac (Apple Silicon + Intel):** download **[KnowledgeAtlasStudy-macOS.zip](https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-macOS.zip)**
+  from the same release, double-click to unzip, then **right-click `KnowledgeAtlasStudy.app` → Open →
+  Open**. It's unsigned (internal tool), so that right-click is required the first time — a normal
+  double-click will be blocked. If macOS still refuses: **System Settings → Privacy & Security →
+  scroll down → "Open Anyway"**.
 
 The app opens in a window. If it opens fullscreen and you want a window, that's fine either way.
 
