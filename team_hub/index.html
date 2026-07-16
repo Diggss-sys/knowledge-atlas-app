@@ -94,8 +94,8 @@
         
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
           <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
-            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">108</div>
-            <div style="font-size: 0.9rem; color: var(--color-text-light);">automated checks green (PR #3 branch)</div>
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">109</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">automated checks green (106 EditMode + 3 PlayMode, PR #3 branch)</div>
           </div>
           <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
             <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;"><a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" style="color: #cc7700">PR #3</a></div>
@@ -127,6 +127,8 @@
         
         <h3>Recently Shipped</h3>
         <ul>
+          <li><strong>Team Run app released (Windows live, Mac attached):</strong> double-clickable participant study app &mdash; no Unity or git needed. Windows build verified rendering + released; Mac build is universal (Apple Silicon + Intel), attached and pending a first-launch check. Each session silently logs per-machine frame rate. This is our cross-machine baseline before the rendering changes <a href="https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10" target="_blank">[Link]</a></li>
+          <li><strong>Author &rarr; run loop closed (publish &rarr; consume):</strong> the operator's Publish button now emits a real study document (re-gated &mdash; a confounded pair is refused) that the participant app then runs, instead of a bundled fixture. Full loop: author &rarr; validate &rarr; publish &rarr; participate &rarr; data <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[Link]</a></li>
           <li><strong>A1 + A2 — the interactive instrument:</strong> Operator Studio (live previews, real single-variable gate, publish lock, walk) + Participant Runner (neutral screens &rarr; validated CSV). M1 closed; both scenes verified live <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[PR #3]</a></li>
           <li><strong>Performance gate:</strong> fps targets defined (60 demo PC / 45&ndash;30 M2 Macs / conditions within 10%); operator fps readout; participant sessions silently log per-room frame rate + machine <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/PERFORMANCE.md" target="_blank">[Link]</a></li>
           <li><strong>July replan:</strong> two tracks — Track A finishes the instrument (2 build items left), Track B runs the pilot study; no Unity needed for Track B roles <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md" target="_blank">[Link]</a></li>
@@ -151,7 +153,9 @@
           <li><strong>Windows:</strong> <a href="https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-Windows.zip" style="display: inline-block; margin-left: 0.5rem; padding: 0.35rem 0.8rem; font-size: 0.9em; background: #228B22; color: #fff; border-radius: 6px; text-decoration: none;">Download for Windows (.zip, 132 MB)</a>
             <br><small style="color: var(--color-text-light);"><em>Extract, double-click <code>KnowledgeAtlasStudy.exe</code>. Windows may warn "Windows protected your PC" &mdash; click <strong>More info &rarr; Run anyway</strong>.</em></small>
           </li>
-          <li style="margin-top: 1rem;"><strong>Mac:</strong> get <code>KnowledgeAtlasStudy.app</code> from <strong>Michael</strong>. First launch: <strong>right-click the app &rarr; Open &rarr; Open</strong> (needed once because it's unsigned).</li>
+          <li style="margin-top: 1rem;"><strong>Mac (universal &mdash; Apple Silicon + Intel):</strong> <a href="https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-macOS.zip" style="color: var(--color-text-light); text-decoration: underline;">Download macOS build (.zip, 141 MB)</a>
+            <br><small style="color: var(--color-text-light);"><em>Unzip, then <strong>right-click <code>KnowledgeAtlasStudy.app</code> &rarr; Open &rarr; Open</strong> (required once &mdash; it's unsigned; a plain double-click gets blocked). If macOS still refuses: System Settings &rarr; Privacy &amp; Security &rarr; "Open Anyway". <strong>Fresh build &mdash; Mac runs are exactly what we need:</strong> if it won't open or shows a black screen, that report IS a useful result. Include your macOS version.</em></small>
+          </li>
         </ul>
 
         <h3>2. Do one session (about 3&ndash;4 minutes)</h3>
