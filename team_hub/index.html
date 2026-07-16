@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Atlas &middot; Team Hub</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    /* Ensure elements are visible by default if JS fails */
+    .gsap-reveal { opacity: 1; }
+  </style>
+</head>
+<body>
+  
+  <div class="loader-overlay">
+    <div class="loader-circle-container">
+      <svg class="loader-svg" width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="54" fill="none" stroke="var(--color-border)" stroke-width="8" />
+        <circle class="loader-progress" cx="60" cy="60" r="54" fill="none" stroke="#228B22" stroke-width="8" stroke-linecap="round" stroke-dasharray="339.29" stroke-dashoffset="339.29" transform="rotate(-90 60 60)" />
+      </svg>
+      <div class="loader-count" style="color: #228B22;">0%</div>
+    </div>
+  </div>
+
+  <div class="breadcrumb gsap-reveal-immediate">
+    <a href="#">Knowledge Atlas</a> /
+    <span>Team Hub</span>
+  </div>
+
+  <div class="page-grid">
+    <aside class="side-nav gsap-reveal-immediate">
+      <ul>
+        <li><a href="#install" class="active">Installation Guide</a></li>
+        <li><a href="#progress">Current Progress</a></li>
+        <li><a href="#team-run">Team Run</a></li>
+        <li><a href="#roster">Team Roster & To-Do</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+
+      <header class="hero gsap-reveal-immediate">
+        <div class="hero-track">Track 3 &middot; Room Studio</div>
+        <h1>Knowledge Atlas Team Hub</h1>
+        <p class="hero-sub">
+          Replanned: finish the instrument, then run the study
+        </p>
+        <div class="hero-meta">
+          <span class="hero-pill">Milestone: M2</span>
+          <span class="hero-pill">Target: V1 Demo (Aug 1)</span>
+          <span class="hero-pill">Updated: 2026-07-10</span>
+        </div>
+      </header>
+
+      <section id="install" class="gsap-section">
+        <h2>1. Installation Guide</h2>
+        <p>Because the core engine is built in Unity HDRP, the installation process differs significantly depending on your operating system.</p>
+        
+        <h3>Mac — from source</h3>
+        <div class="callout callout-teal">
+          <strong>Status: works now</strong>
+        </div>
+        <ol>
+          <li>Clone, git checkout paco/ui-foundation</li>
+          <li>Unity Hub → install 6000.3.16f1 exactly</li>
+          <li>Open unity/, wait out first import (10–20 min)</li>
+          <li>RoomGen ▸ Fetch CC0 Materials, open RoomStudio scene, Play</li>
+        </ol>
+        <p>Full guide: <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md">docs/GETTING_STARTED.md</a></p>
+
+        <h3>Windows — the exe</h3>
+        <div class="callout callout-teal">
+          <strong>Status: works now</strong>
+        </div>
+        <ol>
+          <li>Ask Paco for the RoomStudio.exe folder</li>
+          <li>Double-click → Load KA spec pair → Walk control (WASD/mouse, Tab switches, Esc exits)</li>
+        </ol>
+
+        <h3>Mac — the .app</h3>
+        <div class="callout callout-amber">
+          <strong>Status: needs one volunteer</strong>
+        </div>
+        <ol>
+          <li>Build on an M2 (RoomGen ▸ Build macOS Application)</li>
+          <li>Right-click → Open (unsigned), report back</li>
+        </ol>
+      </section>
+
+      <section id="progress" class="gsap-section">
+        <h2>2. Current Progress</h2>
+        <p>Top metrics tracking our delivery:</p>
+        
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">108</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">automated checks green (PR #3 branch)</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;"><a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" style="color: #cc7700">PR #3</a></div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">open — A1+A2 instrument, needs Diego's review (PR #2 merged ✅)</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">3</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">validated experiment pairs</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">4.7%</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">ceiling-pair luminance match (goal ≤ 25%)</div>
+          </div>
+          <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #cc7700;">M2 gate</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">evidence in, verdict pending</div>
+          </div>
+        </div>
+
+        <h3>Milestones</h3>
+        <ul style="margin-bottom: 2rem;">
+          <li><strong>M0 Boot</strong> ✅ &mdash; <em>builds, walks, gated</em></li>
+          <li><strong>M1 Tracer</strong> ✅ &mdash; <em>closed end-to-end: author &rarr; validate &rarr; publish &rarr; run &rarr; data (A1+A2, live-verified)</em></li>
+          <li><strong>M2 Instrument</strong> ▶️ &mdash; <em>instrument side done; fidelity verdict pending</em></li>
+          <li><strong>M3 Kirsh demo</strong> ⏳ &mdash; <em>≈ Aug 1</em></li>
+          <li><strong>M4 Library</strong> ⏳ &mdash; <em>August</em></li>
+          <li><strong>M5 VR arm</strong> ⏳ &mdash; <em>≤ Sep 15</em></li>
+        </ul>
+        
+        <h3>Recently Shipped</h3>
+        <ul>
+          <li><strong>A1 + A2 — the interactive instrument:</strong> Operator Studio (live previews, real single-variable gate, publish lock, walk) + Participant Runner (neutral screens &rarr; validated CSV). M1 closed; both scenes verified live <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[PR #3]</a></li>
+          <li><strong>Performance gate:</strong> fps targets defined (60 demo PC / 45&ndash;30 M2 Macs / conditions within 10%); operator fps readout; participant sessions silently log per-room frame rate + machine <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/PERFORMANCE.md" target="_blank">[Link]</a></li>
+          <li><strong>July replan:</strong> two tracks — Track A finishes the instrument (2 build items left), Track B runs the pilot study; no Unity needed for Track B roles <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md" target="_blank">[Link]</a></li>
+          <li><strong>Fidelity gate package:</strong> real materials + furniture models, pendant luminaire, measured luminance match <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FIDELITY_GATE.md" target="_blank">[Link]</a></li>
+          <li><strong>Experiment runtime core:</strong> schema-valid response rows → CSV, seeded ordering, study honesty-gate (E3's R0+R1) <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/EXPERIMENT_RUNTIME.md" target="_blank">[Link]</a></li>
+          <li><strong>Experiment library:</strong> ceiling height · curved walls · lighting warmth — each provably single-variable</li>
+          <li><strong>Operator UI foundation:</strong> panel + live control/treatment previews in the lab palette <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/fidelity/ui-operator.jpg" target="_blank">[Link]</a></li>
+          <li><strong>Fixes that matter:</strong> walk-mode input bug fixed (rebuild needed on old exes); adversarial review: 7 defects found & fixed <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FABLE_REVIEW.md" target="_blank">[Link]</a></li>
+        </ul>
+      </section>
+
+      <section id="team-run" class="gsap-section">
+        <h2>3. Team Run (Dry Run Study)</h2>
+        <p>We're testing whether the room study runs well on everyone's machine before we go further. You don't need Unity, git, or any setup &mdash; just download an app, do one short session as a participant, and send back the files it saves. (~5 minutes)</p>
+        
+        <div class="callout callout-amber">
+          <strong>Status: waiting on the verified build &mdash; you'll get a ping when it's ready</strong>
+        </div>
+
+        <h3>1. Get the app</h3>
+        <ul>
+          <li><strong>Windows:</strong> <button disabled style="margin-left: 0.5rem; padding: 0.2rem 0.5rem; font-size: 0.9em; cursor: not-allowed; opacity: 0.7;">Download &mdash; coming soon, pending build verification</button>
+            <br><small style="color: var(--color-text-light);"><em>Note: Windows may warn "Windows protected your PC". Click <strong>More info &rarr; Run anyway</strong>.</em></small>
+          </li>
+          <li style="margin-top: 1rem;"><strong>Mac:</strong> get <code>KnowledgeAtlasStudy.app</code> from <strong>Michael</strong>. First launch: <strong>right-click the app &rarr; Open &rarr; Open</strong> (needed once because it's unsigned).</li>
+        </ul>
+
+        <h3>2. Do one session (about 3&ndash;4 minutes)</h3>
+        <ol>
+          <li><strong>Participant ID:</strong> type anything memorable &mdash; your initials + a number is perfect (e.g. <code>MJ7</code>). Click <strong>Begin</strong>.</li>
+          <li><strong>Instructions &rarr; Start.</strong></li>
+          <li>For each of the 4 rooms:
+            <ul>
+              <li>Click <strong>Enter room</strong>.</li>
+              <li><strong>Walk around</strong> with <strong>W A S D</strong>, look with the <strong>mouse</strong>. Take 15&ndash;30 seconds, don't rush.</li>
+              <li>Press <strong>Esc</strong> to leave.</li>
+              <li>Answer the one question (<strong>1&ndash;7</strong>).</li>
+            </ul>
+          </li>
+          <li><strong>Session complete.</strong></li>
+        </ol>
+
+        <h3>3. Send us your files</h3>
+        <p>On the final screen, click <strong>Open results folder</strong>. You'll see three files that start with <code>response-</code> (a <code>.csv</code>, a <code>.jsonl</code>, and a <code>.perf.csv</code>). <strong>Send all three</strong> in the team chat, and tell us:</p>
+        <ul>
+          <li>which machine you used (e.g. "M2 MacBook Air", "gaming PC with RTX 3070").</li>
+        </ul>
+
+        <div class="callout callout-blue" style="margin-top: 2rem;">
+          <h4>What we're actually checking</h4>
+          <p style="margin-bottom: 0;">The <code>.perf.csv</code> quietly recorded the frame rate while you walked each room &mdash; this tells us whether the app runs smoothly on your hardware and whether it runs equally smoothly in every room.</p>
+        </div>
+
+        <h4 style="margin-top: 2rem;">If something goes wrong</h4>
+        <ul style="font-size: 0.95em;">
+          <li><strong>Black screen / nothing renders:</strong> note your machine and tell us. Don't force it.</li>
+          <li><strong>Can't move in a room:</strong> click inside the window first so it has focus, then W A S D.</li>
+          <li><strong>Stuck in a room:</strong> press <strong>Esc</strong>.</li>
+          <li><strong>"Where are my files?":</strong> the <strong>Open results folder</strong> button on the last screen opens them for you.<br>
+          <span style="color: var(--color-text-light); font-size: 0.9em;">(Windows: <code>%USERPROFILE%\AppData\LocalLow\COGS 160 Research Lab\Room Studio\</code>, Mac: <code>~/Library/Application Support/COGS 160 Research Lab/Room Studio/</code>)</span></li>
+        </ul>
+      </section>
+
+      <section id="roster" class="gsap-section">
+        <h2>4. Team Roster & To-Do</h2>
+
+        <h3>Diego <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(ENGINE · CONTRACTS)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #ffebee; color: #b71c1c;">unblocks everyone</span></h3>
+        <ul>
+          <li>PR #2 merged — thank you! Next: review PR #3 (the A1+A2 instrument; zero file overlap with your realism branch, either merge order works). <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[Link]</a></li>
+          <li>Preset ranges call: add ranges for warmth/contour/wall-bow to dining_room.preset and the new studio's disabled sliders unlock automatically — cheapest way to make it THE demo studio.</li>
+          <li>Two contract calls still open: lighting.warmth label/formula inversion; coupled-vars notes.</li>
+        </ul>
+
+        <h3>Michael <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(INTEGRATOR → RELEASE MANAGER)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #ffebee; color: #b71c1c;">this week</span></h3>
+        <ul>
+          <li>M2 Mac smoke test: build RoomGen ▸ Build macOS Application on a lab MacBook, launch (right-click → Open), walk the pair, report. Unlocks Macs for everyone. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md" target="_blank">[Link]</a></li>
+          <li>Fresh-clone check per GETTING_STARTED.md; expect all tests green.</li>
+        </ul>
+
+        <h3>Study design <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK B · 2 TEAMMATES · NO CODE)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #e0f7fa; color: #006064;">claim at meeting</span></h3>
+        <ul>
+          <li>Pick the demo experiment (ceiling pair is flagship), write the rating prompt + trials config + hypothesis. A1 has shipped — the operator studio is ready to author through. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md" target="_blank">[Link]</a></li>
+        </ul>
+
+        <h3>Piloting <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK B · EVERYONE)</span></h3>
+        <ul>
+          <li>Run one session as operator, sit as participant in another's. Target 5+ clean CSVs. Report anything confusing — that's the feedback we can't generate.</li>
+        </ul>
+
+        <h3>Evidence & verdicts <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK B · 1 TEAMMATE)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #e0f7fa; color: #006064;">claim at meeting</span></h3>
+        <ul>
+          <li>Call the M2 fidelity-gate verdict on the renders (proposed: conditional pass); then own the demo-day evidence pack. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/lighting-l0-l4/docs/fidelity" target="_blank">[Link]</a></li>
+        </ul>
+
+        <h3>Paco + Claude <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK A · BUILDERS)</span></h3>
+        <ul>
+          <li>A1 + A2 SHIPPED (PR #3) and live-verified — including a full participant session producing a clean CSV. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[Link]</a></li>
+          <li>Now: verify the built participant app renders → publish the download for the Team Run; wire the operator's Publish button to the study JSON the participant app loads. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md" target="_blank">[Link]</a></li>
+        </ul>
+
+        <div class="callout callout-blue" style="margin-top: 3rem;">
+          <strong>Source of truth is the repo.</strong> Plans live in
+          <a href="https://github.com/Diggss-sys/knowledge-atlas-app/tree/main/handoffs">handoffs/</a>,
+          the machine-readable state behind this page in <code>team_hub/data/status.json</code>. If this page and the
+          repo disagree, the repo wins.
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+</body>
+  <script>
+    // Constants for uniform motion as dictated by the design system
+    const EASE = "power3.inOut";
+    const DURATION = { fast: 0.3, base: 0.8, slow: 1.2 };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Accessibility: honor prefers-reduced-motion — skip the loader and all tweens entirely.
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const overlay = document.querySelector(".loader-overlay");
+        if (overlay) overlay.remove();
+        return;
+      }
+
+      // 1. Set up the animations immediately so they hide instantly (no flash)
+      // We will cascade the entire page in one smooth motion after the loader finishes.
+      const allElements = document.querySelectorAll(".hero-track, h1, .hero-sub, .hero-meta, .side-nav li, h2, p, .callout, table, ul, ol, pre, h3");
+      
+      let pageTween;
+      if (allElements.length > 0) {
+        pageTween = gsap.from(allElements, {
+          y: 30,
+          opacity: 0,
+          duration: DURATION.base,
+          stagger: 0.05, // Fast cascade
+          ease: EASE,
+          paused: true // Wait for loader
+        });
+      }
+
+      // Subtle hover effects on nav
+      const navLinks = document.querySelectorAll(".side-nav a");
+      navLinks.forEach(link => {
+        link.addEventListener("mouseenter", () => {
+          if(!link.classList.contains("active")) {
+            gsap.to(link, { x: 5, duration: DURATION.fast, ease: EASE });
+          }
+        });
+        link.addEventListener("mouseleave", () => {
+          if(!link.classList.contains("active")) {
+            gsap.to(link, { x: 0, duration: DURATION.fast, ease: EASE });
+          }
+        });
+      });
+
+      // 2. Cinematic Intro Loader
+      const counter = document.querySelector('.loader-count');
+      const overlay = document.querySelector('.loader-overlay');
+      let progress = 0;
+      
+      const progressCircle = document.querySelector('.loader-progress');
+      const circumference = 339.29;
+      
+      const interval = setInterval(() => {
+        progress += Math.random() * 8;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          
+          // Wipe the overlay away
+          gsap.to(overlay, {
+            yPercent: -100, 
+            duration: DURATION.slow, 
+            ease: EASE,
+            delay: 0.2,
+            onComplete: () => {
+              // Play the full page cascade now that the overlay is gone
+              if (pageTween) pageTween.play();
+            }
+          });
+        }
+        if (counter) counter.textContent = Math.floor(progress) + '%';
+        
+        // Animate the SVG stroke
+        if (progressCircle) {
+          const offset = circumference - (progress / 100) * circumference;
+          gsap.to(progressCircle, { strokeDashoffset: offset, duration: 0.1, ease: "none" });
+        }
+      }, 80);
+    });
+  </script>
+</html>

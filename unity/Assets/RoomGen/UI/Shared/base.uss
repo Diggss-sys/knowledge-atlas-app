@@ -1,0 +1,396 @@
+/*
+ * base.uss — the shared foundation styles for the Knowledge Atlas operator UI (UNITY_UI.md:
+ * "you own the shared base styles in UI/Shared/"). E3's participant screens use UI/Runner/runner.uss
+ * instead (neutral by scientific requirement) — this file styles the OPERATOR surface only.
+ *
+ * Design language = the TEAM HUB system (team_hub/DESIGN_SYSTEM.md + css/style.css, Anti's
+ * derivative of the lab site, adopted at Paco's request 2026-07-10): warm cream background,
+ * white cards with sand borders and 8px radii, deep-forest text, burnt-orange actions, hub-teal
+ * validation chips, callouts with a left accent bar. Reference typography is Georgia headings /
+ * system sans body — Unity needs font assets for those, so headings use weight+forest for now.
+ */
+
+/* ---- design tokens (spacing + type scale + team-hub palette) ---- */
+:root {
+    --ka-space-1: 4px;
+    --ka-space-2: 8px;
+    --ka-space-3: 12px;
+    --ka-space-4: 16px;
+    --ka-space-5: 24px;
+
+    --ka-font-sm: 11px;
+    --ka-font-md: 13px;
+    --ka-font-lg: 16px;
+    --ka-font-xl: 20px;
+
+    /* corner radii (hub: 8px cards, 4px small elements) */
+    --ka-radius:    8px;
+    --ka-radius-sm: 6px;
+    --ka-radius-xs: 4px;
+
+    /* hub tokens (names kept from the lab palette so components don't churn; VALUES are the
+       team hub's — see team_hub/css/style.css :root) */
+    --ka-navy:      #1A3630;   /* hub --color-line: deep forest, the structural dark */
+    --ka-teal:      #006669;   /* hub teal text/accent */
+    --ka-teal-lt:   #B2E2E4;   /* hub teal border */
+    --ka-teal-bg:   #E6F7F8;   /* hub teal callout bg */
+    --ka-amber:     #B35900;   /* hub primary/action: burnt orange */
+    --ka-amber-lt:  #FFF8E6;   /* hub amber callout bg */
+    --ka-amber-dk:  #8F4700;   /* pressed/hover orange */
+    --ka-amber-bd:  #FFE0B2;   /* hub amber border */
+    --ka-cream:     #F4F0E6;   /* hub warm cream background */
+    --ka-ink:       #2C3E38;   /* hub deep forest text */
+    --ka-muted:     #536961;   /* hub slate grey */
+    --ka-line:      #E2DDD0;   /* hub sand borders */
+    --ka-white:     #FFFFFF;
+    --ka-rose:      #A84F6B;   /* blocked/error (kept from the lab set; hub defines none) */
+    --ka-rose-lt:   #F8EBF0;
+    --ka-gold:      #F5A623;
+    /* reserved for the AI copilot's affordances (U5) — do not use elsewhere */
+    --ka-ai-bg:     #F0EBF8;
+    --ka-ai-border: #C8B4E8;
+    --ka-ai-fg:     #3D2E6B;
+    --ka-ai-label:  #6B4FA8;
+
+    /* semantic aliases the components consume */
+    --ka-bg:        var(--ka-cream);
+    --ka-panel:     var(--ka-white);
+    --ka-border:    var(--ka-line);
+    --ka-text:      var(--ka-ink);
+    --ka-text-dim:  var(--ka-muted);
+    --ka-accent:    var(--ka-amber);
+    --ka-ok:        var(--ka-teal);
+    --ka-error:     var(--ka-rose);
+}
+
+/* ---- structural primitives ---- */
+.ka-root {
+    flex-grow: 1;
+    background-color: var(--ka-bg);
+    color: var(--ka-text);
+    font-size: var(--ka-font-md);
+    padding: var(--ka-space-4);
+}
+
+.ka-panel {
+    background-color: var(--ka-panel);
+    border-color: var(--ka-border);
+    border-width: 1px;
+    border-radius: var(--ka-radius);
+    padding: var(--ka-space-4);
+    margin-bottom: var(--ka-space-4);
+    flex-shrink: 0; /* never compress a panel to fit the viewport — the rail scrolls instead */
+}
+
+/* App chrome as a hub header card: white, sand hairline, forest wordmark (the hub's site-header). */
+.ka-topbar {
+    flex-direction: row;
+    align-items: center;
+    background-color: var(--ka-white);
+    border-color: var(--ka-border);
+    border-width: 1px;
+    border-radius: var(--ka-radius);
+    padding: var(--ka-space-3) var(--ka-space-4);
+    margin-bottom: var(--ka-space-4);
+}
+
+.ka-wordmark {
+    color: var(--ka-ink);
+    font-size: var(--ka-font-lg);
+    -unity-font-style: bold;
+    margin-right: var(--ka-space-3);
+}
+
+.ka-wordmark-sub {
+    color: var(--ka-muted);
+    font-size: var(--ka-font-sm);
+    letter-spacing: 2px;
+    -unity-text-align: middle-left;
+}
+
+/* ---- two-column body ---- */
+.ka-body {
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+/* left rail: fixed-width control column */
+.ka-rail {
+    width: 384px;
+    flex-shrink: 0;
+    margin-right: var(--ka-space-4);
+}
+
+/* right: the live preview fills the remaining space */
+.ka-preview-col {
+    flex-grow: 1;
+}
+
+.ka-preview-row {
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.ka-preview-pane {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: var(--ka-space-3);
+}
+
+.ka-preview-caption {
+    font-size: var(--ka-font-md);
+    -unity-font-style: bold;
+    color: var(--ka-ink);
+    margin-bottom: var(--ka-space-1);
+}
+
+.ka-preview {
+    flex-grow: 1;
+    min-height: 360px;
+    background-color: rgb(14, 15, 17);
+    border-width: 1px;
+    border-color: var(--ka-border);
+    border-radius: var(--ka-radius);
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+/* the pair card carries the science: a hub CALLOUT — left accent bar, radius 0 8px 8px 0 */
+.ka-panel--accent {
+    border-left-width: 4px;
+    border-left-color: var(--ka-teal);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* small caps section marker (e.g. VALIDATION) — hub breadcrumb voice */
+.ka-eyebrow {
+    color: var(--ka-muted);
+    font-size: var(--ka-font-sm);
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+    margin-top: var(--ka-space-3);
+    margin-bottom: var(--ka-space-1);
+}
+
+/* ---- sliders: sand track, orange value fill to the thumb (hub action colour), round thumb ---- */
+.ka-slider {
+    margin-top: var(--ka-space-3);
+    margin-bottom: var(--ka-space-2);
+}
+
+.ka-slider .unity-base-field__label {
+    color: var(--ka-text);
+    font-size: var(--ka-font-md);
+    min-width: 110px;
+}
+
+.ka-slider .unity-base-slider__tracker {
+    height: 5px;
+    margin-top: -2.5px;          /* recenter the thicker track on the drag line */
+    border-radius: 3px;
+    border-width: 0;
+    background-color: var(--ka-line);
+    overflow: hidden;            /* clips the fill to the rounded track */
+}
+
+.ka-slider-fill {
+    background-color: var(--ka-amber);
+}
+
+.ka-slider .unity-base-slider__dragger {
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    border-radius: 8px;
+    background-color: var(--ka-white);
+    border-width: 2px;
+    border-color: var(--ka-amber);
+}
+
+.ka-slider .unity-base-slider__dragger:hover {
+    background-color: var(--ka-amber-lt);
+    border-color: var(--ka-amber-dk);
+}
+
+/* quieter numeric read-out: small, right-aligned, hairline underline instead of a boxed field */
+.ka-slider .unity-base-slider__text-field {
+    width: 44px;
+    margin-left: var(--ka-space-2);
+}
+
+.ka-slider .unity-base-slider__text-field .unity-text-field__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--ka-line);
+    border-radius: 0;
+    padding: 0;
+    font-size: var(--ka-font-md);
+    color: var(--ka-text);
+    -unity-text-align: middle-right;
+}
+
+.ka-slider .unity-text-element {
+    color: var(--ka-text);
+}
+
+.ka-dropdown {
+    margin-top: var(--ka-space-3);
+    margin-bottom: var(--ka-space-2);
+}
+
+.ka-dropdown .unity-base-field__label {
+    color: var(--ka-text);
+    min-width: 140px;
+}
+
+.ka-heading {
+    font-size: var(--ka-font-xl);
+    -unity-font-style: bold;
+    color: var(--ka-ink);
+    margin-bottom: var(--ka-space-3);
+}
+
+.ka-subheading {
+    font-size: var(--ka-font-lg);
+    -unity-font-style: bold;
+    color: var(--ka-ink);
+    margin-bottom: var(--ka-space-2);
+}
+
+.ka-label {
+    font-size: var(--ka-font-md);
+    color: var(--ka-text);
+}
+
+.ka-label--dim {
+    color: var(--ka-text-dim);
+    font-size: var(--ka-font-sm);
+}
+
+/* ---- status / validation states as hub callout chips (light bg + family border + deep text) ---- */
+.ka-status {
+    font-size: var(--ka-font-md);
+    color: var(--ka-text-dim);
+    margin-top: var(--ka-space-2);
+    padding: var(--ka-space-1) var(--ka-space-2);
+    border-radius: var(--ka-radius-xs);
+    white-space: normal;
+}
+
+.ka-status--ok {
+    color: var(--ka-teal);
+    background-color: var(--ka-teal-bg);
+    border-width: 1px;
+    border-color: var(--ka-teal-lt);
+}
+
+.ka-status--error {
+    color: var(--ka-error);
+    background-color: var(--ka-rose-lt);
+    border-width: 1px;
+    border-color: var(--ka-rose);
+}
+
+.ka-status--warn {
+    color: var(--ka-amber-dk);
+    background-color: var(--ka-amber-lt);
+    border-width: 1px;
+    border-color: var(--ka-amber-bd);
+}
+
+.ka-diff-list {
+    min-height: 40px;
+    margin-top: var(--ka-space-2);
+    border-color: var(--ka-border);
+    border-width: 1px;
+    border-radius: var(--ka-radius-sm);
+    padding: var(--ka-space-2);
+}
+
+.ka-diff-row {
+    font-size: var(--ka-font-sm);
+    margin-bottom: var(--ka-space-1);
+}
+
+/* buttons: forest for workaday actions; burnt orange (hub primary) is reserved for the CTA */
+.ka-button {
+    height: 32px;
+    margin-top: var(--ka-space-3);
+    background-color: var(--ka-ink);
+    color: var(--ka-white);
+    border-width: 0;
+    border-radius: var(--ka-radius-sm);
+}
+
+.ka-button:hover {
+    background-color: var(--ka-navy);
+}
+
+.ka-button:disabled {
+    opacity: 0.4;
+}
+
+/* the publish CTA: the hub's burnt-orange action colour, so it draws the eye when unlocked */
+.ka-button--primary {
+    background-color: var(--ka-amber);
+    height: 38px;
+    -unity-font-style: bold;
+}
+
+.ka-button--primary:hover {
+    background-color: var(--ka-amber-dk);
+}
+
+/* AI copilot affordances (U5) — a reserved purple so AI-driven edits are always visually
+   attributed, never disguised as the operator's own input. */
+.ka-ai-panel {
+    background-color: var(--ka-ai-bg);
+    border-color: var(--ka-ai-border);
+    border-width: 1px;
+    border-radius: var(--ka-radius-sm);
+    padding: var(--ka-space-3);
+}
+
+.ka-ai-label {
+    color: var(--ka-ai-label);
+    font-size: var(--ka-font-sm);
+    -unity-font-style: bold;
+}
+
+/* A1 pair-workflow: two matched-width buttons side by side (Set as control / Validate pair). */
+.ka-button-row {
+    flex-direction: row;
+}
+
+.ka-button-row > .ka-button {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: var(--ka-space-1);
+    margin-right: var(--ka-space-1);
+}
+
+/* small muted helper text (walk controls hint). */
+.ka-hint {
+    color: var(--ka-text-dim);
+    font-size: var(--ka-font-sm);
+    margin-top: var(--ka-space-2);
+    white-space: normal;
+}
+
+/* which-room-am-I-editing banner at the top of the rail: forest while shaping the control,
+   hub-teal once the control is frozen and edits flow to the treatment. */
+.ka-banner {
+    background-color: var(--ka-ink);
+    color: var(--ka-white);
+    font-size: var(--ka-font-sm);
+    -unity-font-style: bold;
+    padding: var(--ka-space-2) var(--ka-space-3);
+    border-radius: var(--ka-radius);
+    margin-bottom: var(--ka-space-3);
+    white-space: normal;
+}
+
+.ka-banner--treatment {
+    background-color: var(--ka-teal);
+}
