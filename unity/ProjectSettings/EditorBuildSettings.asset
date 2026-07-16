@@ -4,7 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/RoomGen/Scenes/RoomStudio.unity
+    guid: 0a71f0ec66b67984d81c6df56ad65d82
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: 6d6357ebed3bcc44a9347069f1fcc9d3, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: ea5ede76a3f707243a5b663b73a616f9, type: 2}
   m_UseUCBPForAssetBundles: 0

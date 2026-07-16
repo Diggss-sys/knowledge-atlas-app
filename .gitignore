@@ -39,3 +39,6 @@ unity/Assets/RoomGen/Resources/RoomGen/Furniture/src/
 # team hub: local GSAP copies are unused (page loads CDN); keep the repo lean
 team_hub/gsap/
 team_hub/gsap-public.zip
+
+# stray Obsidian vault in repo dir
+OB(knowledge atlas app)/
