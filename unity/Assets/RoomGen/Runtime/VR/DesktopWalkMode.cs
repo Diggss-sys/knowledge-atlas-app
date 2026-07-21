@@ -52,7 +52,7 @@ namespace RoomGen.VR
 
             EnsureColliders(roomRoot);             // belt-and-braces: colliders on any furniture mesh missing one
             SuppressOtherLayers(layer);            // disable the overlapping other room's colliders for this session
-            RenderQualityProfiles.ApplyDesktop();
+            RenderQualityProfiles.ApplyAuto();   // keep the portable tier during the walk (don't reset to full-desktop on Mac)
             CreateRig(layer, spec);
 
             running = true;

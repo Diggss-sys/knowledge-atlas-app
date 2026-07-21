@@ -106,7 +106,7 @@ namespace RoomGen.UI
                 return false;
             }
 
-            RenderQualityProfiles.ApplyDesktop();
+            RenderQualityProfiles.ApplyAuto();   // Mac → portable tier
             _root = root;
             _baseTemplate = StudioSpecChannel.BuildBase(template.text);
 

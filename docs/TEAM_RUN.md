@@ -11,10 +11,11 @@ back the files it saves. This is also our first study dry-run, so do it honestly
   then right-click → **Extract All**. Open the folder and double-click **KnowledgeAtlasStudy.exe**.
   - Windows may warn "Windows protected your PC" (unsigned app). Click **More info → Run anyway**.
 - **Mac (Apple Silicon + Intel):** download **[KnowledgeAtlasStudy-macOS.zip](https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-macOS.zip)**
-  from the same release, double-click to unzip, then **right-click `KnowledgeAtlasStudy.app` → Open →
-  Open**. It's unsigned (internal tool), so that right-click is required the first time — a normal
-  double-click will be blocked. If macOS still refuses: **System Settings → Privacy & Security →
-  scroll down → "Open Anyway"**.
+  from the same release and double-click to unzip. It's unsigned (internal tool), so macOS blocks the
+  first launch — that's expected. Reliable way in:
+  1. **Double-click** `KnowledgeAtlasStudy.app` once → you'll get a "cannot be opened" warning → click **OK/Cancel** to dismiss it.
+  2. Open **System Settings → Privacy & Security**, scroll down to the message about *KnowledgeAtlasStudy*, and click **"Open Anyway"** → confirm. It opens normally from then on.
+  - **If that still won't do it** (older right-click → Open often fails on macOS 14+): open **Terminal**, type `xattr -cr ` (with a trailing space), **drag the `.app` onto the Terminal window**, press **Enter**, then open the app. That clears the download-quarantine flag.
 
 The app opens in a window. If it opens fullscreen and you want a window, that's fine either way.
 

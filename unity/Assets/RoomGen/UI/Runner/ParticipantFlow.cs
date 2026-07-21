@@ -102,7 +102,7 @@ namespace RoomGen.UI
             _nowUtc = nowUtc;
             _outputDir = outputDir;
 
-            RenderQualityProfiles.ApplyDesktop();
+            RenderQualityProfiles.ApplyAuto();   // Mac → portable tier (Raven's M3 Air ran full-desktop at 5.7 fps)
 
             // Backdrop camera: the screens have no other camera rendering to the display, and the UI
             // overlay never composites onto a camera-less display ("No cameras rendering" + black).
@@ -222,7 +222,23 @@ namespace RoomGen.UI
         {
             if (_session == null) return;
             var folder = Path.GetDirectoryName(_session.CsvPath);
-            if (!string.IsNullOrEmpty(folder)) Application.OpenURL("file://" + folder);
+            if (!string.IsNullOrEmpty(folder)) Application.OpenURL(FolderUri(folder));
+        }
+
+        /// <summary>
+        /// A file:// URI with spaces (and friends) percent-escaped. Raven's Mac save folder is
+        /// ".../COGS 160 Research Lab/Room Studio" — the raw "file://" + path we sent had unescaped
+        /// spaces, which macOS's opener silently rejects (Windows tolerated it, so it passed there).
+        /// Public + static so an EditMode test pins the escaping on both path shapes.
+        /// </summary>
+        public static string FolderUri(string folder)
+        {
+            // A POSIX path ("/Users/...") isn't a valid absolute URI on its own — spell out the scheme
+            // so Uri treats it as a file path; a Windows drive path ("C:\...") Uri handles directly.
+            var uri = folder.Length > 0 && folder[0] == '/'
+                ? new Uri("file://" + folder)
+                : new Uri(folder);
+            return uri.AbsoluteUri;   // escapes spaces -> %20 on both platforms
         }
 
         void Update()
