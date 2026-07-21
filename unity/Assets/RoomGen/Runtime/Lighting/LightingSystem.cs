@@ -90,7 +90,15 @@ namespace RoomGen.Lighting
         // Public so LightingCalibrator models the same split (keeps prediction honest).
         public const float PendantFluxFraction = 0.4f;
         // Daylight sun strength as a multiple of the room's target lux — gentle, scales with mood.
-        const float SunTargetLuxFactor = 2.5f;
+        // Public: SunSkySystem's time-of-day arc reproduces this exact calibrated baseline at its
+        // peak, so both must read the same constant (one source of truth for the sun's look).
+        public const float SunTargetLuxFactor = 2.5f;
+        // The calibrated static sun: high-left angle for a daylight patch + soft shadows, and the
+        // daylight-blend that tints it cooler than the interior lamps. SunSkySystem.Reset restores
+        // exactly these, so they live here (change once, both agree) rather than being hand-copied.
+        public static readonly Vector3 CalibratedSunEuler = new Vector3(52f, 35f, 0f);
+        public const float SunDaylightKelvin = 6500f;
+        public const float SunDaylightBlend = 0.5f;
         // Absolute emissive brightness (nits) of the pendant shade, independent of exposure.
         const float PendantEmissiveNits = 12f;
 
@@ -100,7 +108,7 @@ namespace RoomGen.Lighting
             sunObject.layer = layer;
             sunObject.transform.SetParent(root, false);
             // Angled from high-left so a window/door admits a daylight patch and casts soft shadows.
-            sunObject.transform.localRotation = Quaternion.Euler(52f, 35f, 0f);
+            sunObject.transform.localRotation = Quaternion.Euler(CalibratedSunEuler);
             var sun = sunObject.AddComponent<Light>();
             var sunHd = sunObject.AddComponent<HDAdditionalLightData>();
             sun.type = LightType.Directional;
@@ -124,7 +132,7 @@ namespace RoomGen.Lighting
             // manipulation also shifts the sun's tint (same class of coupling as pendant-Y from
             // ceiling height — deterministic function of the declared variable, both conditions
             // use the same formula; document in analysis, do not "fix").
-            sun.colorTemperature = Mathf.Lerp(spec.Lighting.ColorTemperatureK, 6500f, 0.5f);
+            sun.colorTemperature = Mathf.Lerp(spec.Lighting.ColorTemperatureK, SunDaylightKelvin, SunDaylightBlend);
             sun.cullingMask = 1 << layer;
             sun.lightUnit = LightUnit.Lux;
             // Scales with target lux so a dim preset gets a dim sky and a bright one a brighter sky,

@@ -29,7 +29,9 @@ namespace RoomGen.Contracts
         [JsonProperty("wall_thickness_m")] public float WallThicknessM = 0.15f;
         [JsonProperty("corner_radius_m")] public float CornerRadiusM;
         // Per-wall bow: -1 = concave (bows INTO the room) .. 0 = flat .. +1 = convex (bows outward).
-        // Sagitta at mid-wall = bow * bow_max_m. Openings are not allowed on a bowed wall (v1).
+        // Sagitta at mid-wall = bow * bow_max_m. Openings ARE supported on bowed walls (v1.1):
+        // ShellGenerator cuts sill/header/segment bands along the arc and OpeningGenerator builds
+        // curved glass/trim to match.
         [JsonProperty("wall_bow")] public WallBowSpec WallBow = new WallBowSpec();
         [JsonProperty("bow_max_m")] public float BowMaxM = 0.6f;
     }

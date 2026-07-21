@@ -126,7 +126,7 @@ namespace RoomGen.Generation
                 if (pane.Count >= 2)
                 {
                     var mesh = WallBand.BuildMesh(FootprintPath.OffsetInward(pane, 0.005f),
-                        opening.BottomM, opening.TopM, 0.025f, "Glass Mesh", capBottom: true);
+                        opening.BottomM, opening.TopM, 0.025f, "Glass Mesh");
                     GenerationUtil.CreateMeshObject("Glass", parent, mesh, glassMaterial, layer);
                 }
             }
@@ -164,7 +164,7 @@ namespace RoomGen.Generation
             var sub = FootprintPath.SubSpan(span, side, lo, hi);
             if (sub.Count < 2) return;
             var mesh = WallBand.BuildMesh(FootprintPath.OffsetInward(sub, inset),
-                bottom, top, thickness, name + " Mesh", capBottom: bottom > 0.001f);
+                bottom, top, thickness, name + " Mesh");
             GenerationUtil.CreateMeshObject(name, parent, mesh, material, layer);
         }
 

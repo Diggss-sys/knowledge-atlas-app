@@ -184,7 +184,7 @@ namespace RoomGen.Tests
             Assert.That(Mathf.Min(coords.ToArray()), Is.EqualTo(-0.1f).Within(0.002f));
             Assert.That(Mathf.Max(coords.ToArray()), Is.EqualTo(1.1f).Within(0.002f));
             // And the sub-span mesh must build watertight.
-            var mesh = WallBand.BuildMesh(sub, 0.9f, 2f, 0.15f, "SubSpan Band", capBottom: true);
+            var mesh = WallBand.BuildMesh(sub, 0.9f, 2f, 0.15f, "SubSpan Band");
             cleanupMeshes.Add(mesh);
             Assert.That(mesh.vertexCount, Is.GreaterThan(0));
             Assert.That(mesh.triangles.Length, Is.GreaterThan(0));

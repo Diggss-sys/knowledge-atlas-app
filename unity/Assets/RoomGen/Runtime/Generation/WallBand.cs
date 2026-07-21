@@ -18,8 +18,7 @@ namespace RoomGen.Generation
             float bottomY,
             float topY,
             float thickness,
-            string name,
-            bool capBottom = false)
+            string name)
         {
             var count = span.Count;
             var mesh = new Mesh { name = name };
@@ -133,9 +132,11 @@ namespace RoomGen.Generation
             AddEndCap(span, 0, -1f, thickness, bottomY, topY, vertices, normals, tangents, uv, triangles);
             AddEndCap(span, count - 1, 1f, thickness, bottomY, topY, vertices, normals, tangents, uv, triangles);
 
-            // Bottom cap (opt-in): a band suspended above the floor — a window HEADER or a trim
-            // piece — shows its underside; without this ring you would look up into the hollow.
-            if (capBottom)
+            // Bottom cap: a band suspended above the floor — a window HEADER or a trim piece —
+            // shows its underside; without this ring you would look up into the hollow. Decided
+            // here from bottomY (not a caller flag) so no producer can forget it: a floor-seated
+            // band (bottomY ~ 0) needs no underside; any raised band gets one automatically.
+            if (bottomY > 0.001f)
             {
                 var bottomCapStart = vertices.Count;
                 for (var i = 0; i < count; i++)

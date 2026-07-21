@@ -108,12 +108,19 @@ namespace RoomGen.Validation
                 paths.Add(path);
         }
 
-        // A declared manipulation covers an exact field OR a whole sub-object: declaring
-        // "geometry.wall_bow" allows geometry.wall_bow.front/back/left/right to differ together
-        // (one conceptual variable applied to all four walls) while still blocking everything else.
+        // Declarations that are a single conceptual variable spanning several leaf fields which
+        // MUST move together. Only these may cover a whole sub-object; wall_bow is one variable
+        // applied to all four walls. Everything else must name an exact leaf.
+        static readonly string[] GroupVariables = { "geometry.wall_bow" };
+
+        // A declared manipulation covers an exact field, OR — only for a whitelisted group variable
+        // — the whole sub-object beneath it. Without the whitelist a bare prefix like "geometry" or
+        // "lighting" would absorb every field under it (width + ceiling + radius + bow at once),
+        // silently voiding the single-variable guarantee the gate exists to enforce.
         static bool Covers(string declared, string path) =>
             string.Equals(path, declared, StringComparison.Ordinal) ||
-            path.StartsWith(declared + ".", StringComparison.Ordinal);
+            (Array.IndexOf(GroupVariables, declared) >= 0 &&
+             path.StartsWith(declared + ".", StringComparison.Ordinal));
 
         static ValidationIssue Prefix(ValidationIssue issue, string prefix) =>
             new ValidationIssue(issue.Severity, issue.Code,

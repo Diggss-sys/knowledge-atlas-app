@@ -25,9 +25,8 @@ namespace RoomGen.Lighting
         public const float MaxHour = 20f;   // dusk
         public const float PeakHour = 13f;  // solar noon (slightly after 12, like real local time)
 
-        // LightingSystem.AddSun baseline: intensity = TargetLux * 2.5 at its fixed angle. The arc
-        // reproduces that strength at the peak so midday matches the calibrated look.
-        const float SunTargetLuxFactor = 2.5f;
+        // The sun's calibrated strength lives on LightingSystem (single source of truth); the arc
+        // reproduces it at the peak so midday matches the calibrated look.
         const float HorizonKelvin = 2600f;
         const float NoonKelvin = 5800f;
         const float MaxElevationDeg = 62f;  // midsummer temperate-latitude peak
@@ -55,7 +54,7 @@ namespace RoomGen.Lighting
 
             // Peak matches LightingSystem's calibrated strength; low sun tapers toward a soft glow.
             var strength = Mathf.Max(0.06f, Mathf.Sin(elevation * Mathf.Deg2Rad));
-            var lux = targetLux * SunTargetLuxFactor * strength;
+            var lux = targetLux * LightingSystem.SunTargetLuxFactor * strength;
 
             foreach (var sun in FindSuns(root))
             {
@@ -69,16 +68,18 @@ namespace RoomGen.Lighting
         /// <summary>
         /// Restore LightingSystem's static sun (its fixed angle, blend and calibrated intensity)
         /// so the default look — and the matched-luminance calibration — is exactly as built.
-        /// Mirrors LightingSystem.AddSun; if that changes, keep these values in sync.
+        /// Reads LightingSystem's calibration constants directly, so recalibrating the sun there
+        /// automatically flows through here — no hand-kept copies to fall out of sync.
         /// </summary>
         public static void Reset(Transform root, float specColorTemperatureK, float targetLux)
         {
             foreach (var sun in FindSuns(root))
             {
-                sun.transform.localRotation = Quaternion.Euler(52f, 35f, 0f);
+                sun.transform.localRotation = Quaternion.Euler(LightingSystem.CalibratedSunEuler);
                 sun.useColorTemperature = true;
-                sun.colorTemperature = Mathf.Lerp(specColorTemperatureK, 6500f, 0.5f);
-                sun.intensity = targetLux * SunTargetLuxFactor;
+                sun.colorTemperature = Mathf.Lerp(specColorTemperatureK,
+                    LightingSystem.SunDaylightKelvin, LightingSystem.SunDaylightBlend);
+                sun.intensity = targetLux * LightingSystem.SunTargetLuxFactor;
             }
         }
 

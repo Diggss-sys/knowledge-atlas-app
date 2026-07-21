@@ -64,6 +64,40 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void GroupPrefixCannotAbsorbMultipleLeaves()
+        {
+            // A bare parent path must NOT cover its whole subtree: declaring "geometry" while
+            // changing several geometry leaves would otherwise pass the single-variable gate and
+            // void its entire guarantee. Only whitelisted group variables (geometry.wall_bow) expand.
+            var pair = LoadExamplePair();
+            pair.ManipulatedVariable = "geometry";
+            pair.Treatment.Geometry.WidthM = pair.Control.Geometry.WidthM + 0.5f;
+            pair.Treatment.Geometry.CeilingHeightM = pair.Control.Geometry.CeilingHeightM + 0.3f;
+
+            var report = PairValidator.Validate(pair);
+            Assert.That(report.Ok, Is.False, "a bare 'geometry' prefix must not satisfy the gate");
+            Assert.That(report.Issues.Any(issue =>
+                issue.Code == "UNDECLARED_DIFFERENCE" &&
+                issue.Path == "geometry.width_m"), Is.True, IssueSummary(report));
+        }
+
+        [Test]
+        public void WallBowGroupCoversAllFourWalls()
+        {
+            // The one legitimate group variable still works: geometry.wall_bow covers its four
+            // leaves moving together as a single conceptual manipulation.
+            var pair = LoadExamplePair();
+            pair.ManipulatedVariable = "geometry.wall_bow";
+            // Clear the example's baseline ceiling difference so bow is the ONLY manipulation.
+            pair.Treatment.Geometry.CeilingHeightM = pair.Control.Geometry.CeilingHeightM;
+            pair.Treatment.Geometry.WallBow = new WallBowSpec { Front = 0.5f, Back = 0.5f, Left = 0.5f, Right = 0.5f };
+
+            var report = PairValidator.Validate(pair);
+            Assert.That(report.Issues.Any(issue => issue.Code == "UNDECLARED_DIFFERENCE"), Is.False,
+                IssueSummary(report));
+        }
+
+        [Test]
         public void ValidatorRejectsOpeningOutsideWall()
         {
             var pair = LoadExamplePair();

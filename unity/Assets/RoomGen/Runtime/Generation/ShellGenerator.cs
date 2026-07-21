@@ -210,9 +210,7 @@ namespace RoomGen.Generation
             var sub = FootprintPath.SubSpan(span, side, lo, hi);
             if (sub.Count < 2) return;
             var name = $"{kind} {lo:0.00} to {hi:0.00}";
-            // A band whose bottom floats above the floor (header) shows its underside — cap it.
-            var mesh = WallBand.BuildMesh(sub, bottom, top, geometry.WallThicknessM,
-                name + " Mesh", capBottom: bottom > 0.001f);
+            var mesh = WallBand.BuildMesh(sub, bottom, top, geometry.WallThicknessM, name + " Mesh");
             GenerationUtil.CreateMeshObject(name, parent, mesh, material, layer);
         }
 
