@@ -86,10 +86,18 @@ def flatten(node: Any, prefix: str = "") -> dict[str, Any]:
     return {prefix: node}
 
 
+# Only these declared variables may cover a whole sub-object; every other declaration must match a
+# leaf exactly. Keep in lockstep with PairValidator.GroupVariables (C#) — the gate ports must agree.
+GROUP_VARIABLES = ("geometry.wall_bow",)
+
+
 def _is_covered(path: str, declared: list[str]) -> bool:
-    """A declared variable covers its own path and everything nested under it."""
+    """A declared variable covers its own exact path; a whitelisted GROUP variable also covers
+    everything nested under it. Without the whitelist a bare prefix like 'geometry' or 'lighting'
+    would absorb every field beneath it, silently voiding the single-variable guarantee."""
     return any(
-        path == var or path.startswith(var + ".") or path.startswith(var + "[")
+        path == var
+        or (var in GROUP_VARIABLES and (path.startswith(var + ".") or path.startswith(var + "[")))
         for var in declared
     )
 

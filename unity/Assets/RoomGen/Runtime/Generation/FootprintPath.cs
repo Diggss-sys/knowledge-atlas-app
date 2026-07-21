@@ -169,8 +169,8 @@ namespace RoomGen.Generation
 
         /// <summary>
         /// Wall-local coordinate used for opening placement: openings store CenterM as world x on
-        /// front/back walls and world z (footprint y) on side walls — same convention as
-        /// OpeningGenerator.OpeningPosition and the validator's bounds check.
+        /// front/back walls and world z (footprint y) on side walls — the same convention the
+        /// ShellGenerator/OpeningGenerator span cuts and the validator's bounds check rely on.
         /// </summary>
         public static float WallCoord(FootprintSample sample, bool sideWall) =>
             sideWall ? sample.Position.y : sample.Position.x;
@@ -277,9 +277,14 @@ namespace RoomGen.Generation
             var radius = (h * h + s * s) / (2f * s);
 
             var mid = (start + end) * 0.5f;
-            // Arc center sits on the mid-perpendicular, on the opposite side of the bulge.
+            // Arc center sits on the mid-perpendicular, on the side OPPOSITE the bulge: the apex
+            // (mid + bulgeDir*s) is one radius out from the center along bulgeDir, so
+            // center = apex - bulgeDir*radius = mid - bulgeDir*(radius - s). bulgeDir already carries
+            // the sign, so this is the same for convex and concave — the old per-sign ternary put the
+            // concave center on the wrong side, making bow=-1 bulge OUTWARD identically to bow=+1
+            // (concave rooms never ate floor area — caught by BowedWallChangesFootprintArea...).
             var bulgeDir = flatOutward * Mathf.Sign(sagitta);
-            var center = mid + bulgeDir * (sagitta > 0f ? -(radius - s) : radius - s);
+            var center = mid - bulgeDir * (radius - s);
 
             var angleStart = Mathf.Atan2(start.y - center.y, start.x - center.x);
             var angleEnd = Mathf.Atan2(end.y - center.y, end.x - center.x);
