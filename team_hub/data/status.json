@@ -228,9 +228,9 @@
     "headline": "Windows build is live — download, do one session, send 3 files",
     "windows_download": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-Windows.zip",
     "mac_download": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-macOS.zip",
-    "mac_status": "pending_verification",
+    "mac_status": "live",
     "release_page": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10",
-    "mac_note": "Mac build is universal (Apple Silicon + Intel), attached to the release; unsigned so first launch is right-click -> Open -> Open. Being verified on a real Mac before the team is told.",
+    "mac_note": "Mac build is universal (Apple Silicon + Intel) and confirmed working on an M3 Air. Unsigned, so the first launch is blocked: double-click once, dismiss the warning, then System Settings -> Privacy & Security -> 'Open Anyway'. (Terminal fallback: xattr -cr on the app.) A Mac performance tier was added after the first test, so re-tests help confirm it runs smoothly.",
     "guide": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
   },
   "run_paths": [

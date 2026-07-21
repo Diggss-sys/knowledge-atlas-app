@@ -4,6 +4,16 @@
 "what happened lately" narrative; `status.json` carries the structured state. Neither is ever
 rewritten retroactively — append only.*
 
+## 2026-07-20 — first Mac test back (Raven) → Mac perf tier + fixes → Mac is live
+- **Raven ran the macOS build on an M3 Air (macOS 14.6)** — full session, all rows valid. The perf
+  sidecar did its job and caught the real problem: the app ran at ~5.7 fps because it used the
+  full-desktop quality profile at retina resolution. Added a Mac performance tier (lower resolution +
+  cheaper shadows on Apple Silicon; Windows unchanged), fixed the "Open results folder" button on
+  macOS (path-escaping bug), and rewrote the Mac launch steps (System Settings → "Open Anyway" first,
+  Terminal `xattr` fallback — right-click → Open is unreliable on macOS 14+).
+- Rebuilt the Mac app, swapped the release asset, `mac_status` is now **live**. 108 EditMode + 3
+  PlayMode green. Re-tests welcome — each one logs its own frame rate so we can confirm the tier holds.
+
 ## 2026-07-10 (later) — Team Run app RELEASED · author→run loop closed · Mac build
 - **Team Run app is downloadable.** Published a private prerelease (`team-run-2026-07-10`) with the
   double-clickable participant study app. **Windows** build verified rendering (RTX 5070 Ti) and
