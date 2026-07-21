@@ -27,82 +27,20 @@ namespace RoomGen.Generation
                 var root = new GameObject("Opening " + opening.OpeningId);
                 root.layer = layer;
                 root.transform.SetParent(parent, false);
-                var side = IsSideWall(opening.Wall);
-
-                // Bowed wall: glass + trim must ride the arc, not sit on the flat wall plane.
-                var bowAmount = spec.Geometry.WallBow?.For(opening.Wall.ToLowerInvariant()) ?? 0f;
-                if (Mathf.Abs(bowAmount) * spec.Geometry.BowMaxM > 0.001f)
-                {
-                    BuildCurvedInsert(spec, opening, root.transform, trimMaterial, glassMaterial, layer);
-                    continue;
-                }
-
-                var center = OpeningPosition(spec, opening, -0.01f);
-                var verticalCenter = (opening.BottomM + opening.TopM) * 0.5f;
-                center.y = verticalCenter;
-
-                if (string.Equals(opening.Kind, "window", StringComparison.OrdinalIgnoreCase))
-                {
-                    var glassSize = side
-                        ? new Vector3(0.025f, opening.TopM - opening.BottomM, opening.WidthM)
-                        : new Vector3(opening.WidthM, opening.TopM - opening.BottomM, 0.025f);
-                    GenerationUtil.CreateBox("Glass", root.transform, glassSize, center, glassMaterial, layer);
-                    AddTrim(opening, spec, root.transform, trimMaterial, layer);
-                }
-                else
-                {
-                    AddTrim(opening, spec, root.transform, trimMaterial, layer, false);
-                }
-            }
-        }
-
-        static void AddTrim(
-            OpeningSpec opening,
-            RoomSpec spec,
-            Transform parent,
-            Material material,
-            int layer,
-            bool includeSill = true)
-        {
-            const float trim = 0.07f;
-            const float depth = 0.06f;
-            var side = IsSideWall(opening.Wall);
-            var vertical = opening.TopM - opening.BottomM;
-            var center = OpeningPosition(spec, opening, -0.045f);
-
-            if (side)
-            {
-                GenerationUtil.CreateBox("Trim A", parent, new Vector3(depth, vertical + trim, trim),
-                    center + new Vector3(0f, (opening.BottomM + opening.TopM) * 0.5f, -opening.WidthM * 0.5f), material, layer);
-                GenerationUtil.CreateBox("Trim B", parent, new Vector3(depth, vertical + trim, trim),
-                    center + new Vector3(0f, (opening.BottomM + opening.TopM) * 0.5f, opening.WidthM * 0.5f), material, layer);
-                GenerationUtil.CreateBox("Trim Top", parent, new Vector3(depth, trim, opening.WidthM + trim),
-                    center + new Vector3(0f, opening.TopM, 0f), material, layer);
-                if (includeSill)
-                    GenerationUtil.CreateBox("Trim Bottom", parent, new Vector3(depth, trim, opening.WidthM + trim),
-                        center + new Vector3(0f, opening.BottomM, 0f), material, layer);
-            }
-            else
-            {
-                GenerationUtil.CreateBox("Trim A", parent, new Vector3(trim, vertical + trim, depth),
-                    center + new Vector3(-opening.WidthM * 0.5f, (opening.BottomM + opening.TopM) * 0.5f, 0f), material, layer);
-                GenerationUtil.CreateBox("Trim B", parent, new Vector3(trim, vertical + trim, depth),
-                    center + new Vector3(opening.WidthM * 0.5f, (opening.BottomM + opening.TopM) * 0.5f, 0f), material, layer);
-                GenerationUtil.CreateBox("Trim Top", parent, new Vector3(opening.WidthM + trim, trim, depth),
-                    center + new Vector3(0f, opening.TopM, 0f), material, layer);
-                if (includeSill)
-                    GenerationUtil.CreateBox("Trim Bottom", parent, new Vector3(opening.WidthM + trim, trim, depth),
-                        center + new Vector3(0f, opening.BottomM, 0f), material, layer);
+                // ONE insert path for every opening. Each piece is a thin band over the wall's arc
+                // sub-span (WallBand); a flat wall is just a straight sub-span, so its glass and trim
+                // are built exactly like a bowed wall's — no box-vs-band difference between the two
+                // conditions of a wall_bow pair (same reasoning as ShellGenerator.BuildWall).
+                BuildInsert(spec, opening, root.transform, trimMaterial, glassMaterial, layer);
             }
         }
 
         /// <summary>
-        /// Insert for an opening on a BOWED wall: every piece is a thin curved band (WallBand over
-        /// an arc sub-span) instead of an axis-aligned box, so glass and trim hug the curve.
-        /// Bands are offset INTO the room from the footprint line: OffsetInward(d) + thickness t
-        /// occupies [-d, -d+t] relative to the inner wall face.
+        /// Insert for an opening: every piece is a thin curved band (WallBand over an arc sub-span)
+        /// that hugs the wall — bowed or flat. Bands are offset INTO the room from the footprint
+        /// line: OffsetInward(d) + thickness t occupies [-d, -d+t] relative to the inner wall face.
         /// </summary>
-        static void BuildCurvedInsert(
+        static void BuildInsert(
             RoomSpec spec,
             OpeningSpec opening,
             Transform parent,
@@ -166,19 +104,6 @@ namespace RoomGen.Generation
             var mesh = WallBand.BuildMesh(FootprintPath.OffsetInward(sub, inset),
                 bottom, top, thickness, name + " Mesh");
             GenerationUtil.CreateMeshObject(name, parent, mesh, material, layer);
-        }
-
-        static Vector3 OpeningPosition(RoomSpec spec, OpeningSpec opening, float inwardOffset)
-        {
-            var halfWidth = spec.Geometry.WidthM * 0.5f;
-            var halfLength = spec.Geometry.LengthM * 0.5f;
-            switch (opening.Wall.ToLowerInvariant())
-            {
-                case "front": return new Vector3(opening.CenterM, 0f, halfLength + inwardOffset);
-                case "back": return new Vector3(opening.CenterM, 0f, -halfLength - inwardOffset);
-                case "left": return new Vector3(-halfWidth - inwardOffset, 0f, opening.CenterM);
-                default: return new Vector3(halfWidth + inwardOffset, 0f, opening.CenterM);
-            }
         }
 
         static bool IsSideWall(string wall) =>

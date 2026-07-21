@@ -12,6 +12,10 @@ namespace RoomGen.Validation
             "front", "back", "left", "right"
         };
 
+        // Corner radius may not exceed this fraction of the shorter room span, or the footprint
+        // collapses toward a circle ("blob"). Tunable knob for the realism/study bar.
+        const float MaxCornerRadiusFraction = 0.25f;
+
         public static List<ValidationIssue> Validate(RoomSpec spec, DiningRoomPreset preset = null)
         {
             var issues = new List<ValidationIssue>();
@@ -36,7 +40,14 @@ namespace RoomGen.Validation
             CheckRange(issues, "geometry.ceiling_height_m", spec.Geometry.CeilingHeightM, 2.1f, 6f);
             CheckRange(issues, "geometry.wall_thickness_m", spec.Geometry.WallThicknessM, 0.08f, 0.4f);
 
-            var maximumRadius = Mathf.Min(spec.Geometry.WidthM, spec.Geometry.LengthM) * 0.5f - 0.1f;
+            var shortSpan = Mathf.Min(spec.Geometry.WidthM, spec.Geometry.LengthM);
+            // Geometric hard limit: opposite corner arcs must not meet.
+            var geometricMax = shortSpan * 0.5f - 0.1f;
+            // Perceptual limit (the BINDING one): past ~1/4 of the shorter span the footprint collapses
+            // toward a circle ("blob") and stops reading as a room with flat walls. Enforced here so
+            // EVERY producer inherits it — the operator UI and the AI copilot, not just the legacy
+            // studio that happened to seed a safe value. Tunable: raise for stadium-shaped studies.
+            var maximumRadius = Mathf.Min(geometricMax, shortSpan * MaxCornerRadiusFraction);
             CheckRange(issues, "geometry.corner_radius_m", spec.Geometry.CornerRadiusM, 0f, maximumRadius);
 
             if (spec.Geometry.WallBow != null)

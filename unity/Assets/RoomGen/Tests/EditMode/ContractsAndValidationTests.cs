@@ -107,6 +107,23 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void ValidatorRejectsBlobCornerRadius()
+        {
+            // A corner radius past ~1/4 of the shorter span collapses the footprint toward a circle.
+            // The old bound (short/2 - 0.1 = 2.6 m here) let this through; every producer must inherit
+            // the tighter perceptual cap, so the validator — not just the studio — has to reject it.
+            var room = LoadExamplePair().Control;   // 5.4 x 6.2 -> cap = 0.25 * 5.4 = 1.35 m
+            room.Geometry.CornerRadiusM = 2.0f;     // legal geometrically, but a blob
+            var issues = RoomSpecValidator.Validate(room);
+            Assert.That(issues.Any(issue =>
+                issue.Code == "RANGE" && issue.Path == "geometry.corner_radius_m"), Is.True,
+                IssueSummary2(issues));
+        }
+
+        static string IssueSummary2(System.Collections.Generic.List<ValidationIssue> issues) =>
+            string.Join("\n", issues.Select(i => i.Code + " " + i.Path));
+
+        [Test]
         public void ValidatorRejectsFurnitureCollision()
         {
             var pair = LoadExamplePair();

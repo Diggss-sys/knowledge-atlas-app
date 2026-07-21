@@ -29,119 +29,31 @@ namespace RoomGen.Generation
             var wallMaterial = surfaces.Resolve(spec.Surfaces.WallMaterialId);
             var radius = Mathf.Max(0f, geometry.CornerRadiusM);
 
+            // EVERY wall — flat or bowed — is built the same way, from its footprint span through
+            // WallBand. A flat wall is just a 2-sample straight span, so it gets the same arc-length
+            // UVs and analytic normals as a bowed one. This is deliberate: when the two conditions of
+            // a wall_bow pair differ only by the bow, they must NOT also differ by mesh construction
+            // (box UVs/normals vs band) — that would be a second, invisible visual variable riding
+            // the manipulation. One path = one appearance basis for both conditions.
             foreach (var wall in new[] { "front", "back", "left", "right" })
             {
-                var length = (wall == "front" || wall == "back" ? geometry.WidthM : geometry.LengthM)
-                             - 2f * radius;
                 var openings = OpeningGenerator.ForWall(spec, wall);
-                var bowAmount = geometry.WallBow?.For(wall) ?? 0f;
-
-                if (Mathf.Abs(bowAmount) * geometry.BowMaxM > 0.001f)
-                {
-                    BuildBowedWall(spec, wall, openings, walls.transform, wallMaterial, layer);
-                }
-                else
-                {
-                    BuildStraightWall(spec, wall, length, openings, walls.transform, wallMaterial, layer);
-                }
+                BuildWall(spec, wall, openings, walls.transform, wallMaterial, layer);
             }
 
             if (radius > 0.0001f)
                 BuildRoundedCorners(spec, walls.transform, wallMaterial, layer);
         }
 
-        static void BuildStraightWall(
-            RoomSpec spec,
-            string wall,
-            float length,
-            IReadOnlyList<OpeningSpec> openings,
-            Transform parent,
-            Material material,
-            int layer)
-        {
-            var root = new GameObject(char.ToUpperInvariant(wall[0]) + wall.Substring(1) + " Wall");
-            root.layer = layer;
-            root.transform.SetParent(parent, false);
-            var cursor = -length * 0.5f;
-
-            foreach (var opening in openings)
-            {
-                var left = opening.CenterM - opening.WidthM * 0.5f;
-                var right = opening.CenterM + opening.WidthM * 0.5f;
-                AddWallBlock(spec, wall, root.transform, cursor, left, 0f,
-                    spec.Geometry.CeilingHeightM, material, layer);
-                AddWallBlock(spec, wall, root.transform, left, right, 0f,
-                    opening.BottomM, material, layer);
-                AddWallBlock(spec, wall, root.transform, left, right, opening.TopM,
-                    spec.Geometry.CeilingHeightM, material, layer);
-                cursor = right;
-            }
-
-            AddWallBlock(spec, wall, root.transform, cursor, length * 0.5f, 0f,
-                spec.Geometry.CeilingHeightM, material, layer);
-        }
-
-        static void AddWallBlock(
-            RoomSpec spec,
-            string wall,
-            Transform parent,
-            float start,
-            float end,
-            float bottom,
-            float top,
-            Material material,
-            int layer)
-        {
-            var span = end - start;
-            var height = top - bottom;
-            if (span <= 0.001f || height <= 0.001f) return;
-
-            var center = (start + end) * 0.5f;
-            var y = (bottom + top) * 0.5f;
-            var halfWidth = spec.Geometry.WidthM * 0.5f;
-            var halfLength = spec.Geometry.LengthM * 0.5f;
-            var thickness = spec.Geometry.WallThicknessM;
-            Vector3 size;
-            Vector3 position;
-
-            switch (wall)
-            {
-                case "front":
-                    size = new Vector3(span, height, thickness);
-                    position = new Vector3(center, y, halfLength + thickness * 0.5f);
-                    break;
-                case "back":
-                    size = new Vector3(span, height, thickness);
-                    position = new Vector3(center, y, -halfLength - thickness * 0.5f);
-                    break;
-                case "left":
-                    size = new Vector3(thickness, height, span);
-                    position = new Vector3(-halfWidth - thickness * 0.5f, y, center);
-                    break;
-                default:
-                    size = new Vector3(thickness, height, span);
-                    position = new Vector3(halfWidth + thickness * 0.5f, y, center);
-                    break;
-            }
-
-            GenerationUtil.CreateBox(
-                $"Section {start:0.00} to {end:0.00}",
-                parent,
-                size,
-                position,
-                material,
-                layer);
-        }
-
         /// <summary>
-        /// A bowed wall (wall_bow != 0): smooth curved band mesh(es) — sagitta arc through the
-        /// wall's corner points, analytic normals, arc-length UVs (WallBand). Concave (-) bows into
-        /// the room, convex (+) bulges outward. Openings are cut the same way BuildStraightWall
-        /// cuts them — full-height segments between openings plus a sill band below and a header
-        /// band above each — but every piece is an arc SUB-SPAN of the wall's curve, so windows
-        /// and doors ride the bow instead of forcing the wall straight.
+        /// Build one wall as smooth band mesh(es) from its footprint span (WallBand): sagitta arc
+        /// through the wall's corner points when bowed, a straight 2-sample span when flat — either
+        /// way analytic normals + arc-length UVs, so flat and bowed walls share ONE appearance basis
+        /// (no box-vs-band confound). Concave bow (-) curves into the room, convex (+) bulges out.
+        /// Openings cut the span into full-height segments between them plus a sill band below and a
+        /// header band above each; every piece is an arc SUB-SPAN, so windows and doors ride the bow.
         /// </summary>
-        static void BuildBowedWall(
+        static void BuildWall(
             RoomSpec spec,
             string wall,
             IReadOnlyList<OpeningSpec> openings,
@@ -156,12 +68,12 @@ namespace RoomGen.Generation
             if (openings.Count == 0)
             {
                 var mesh = WallBand.BuildMesh(span, 0f, geometry.CeilingHeightM,
-                    geometry.WallThicknessM, title + " Bowed Wall Mesh");
-                GenerationUtil.CreateMeshObject(title + " Wall (Bowed)", parent, mesh, material, layer);
+                    geometry.WallThicknessM, title + " Wall Mesh");
+                GenerationUtil.CreateMeshObject(title + " Wall", parent, mesh, material, layer);
                 return;
             }
 
-            var root = new GameObject(title + " Wall (Bowed)");
+            var root = new GameObject(title + " Wall");
             root.layer = layer;
             root.transform.SetParent(parent, false);
             var side = wall == "left" || wall == "right";
