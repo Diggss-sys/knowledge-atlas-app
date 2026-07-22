@@ -4,6 +4,20 @@
 "what happened lately" narrative; `status.json` carries the structured state. Neither is ever
 rewritten retroactively — append only.*
 
+## 2026-07-22 — PR #4 closeout: status honesty pass (GPT-reviewed)
+- A closeout audit (first review from the new GPT-planner loop, Opus-executed) found the hub was
+  overclaiming Mac readiness: `mac_status: "live"` implied a verified-good state, but we only ever
+  had a PRE-FIX session (5.7 fps) — no post-fix Mac data exists yet. Corrected to
+  `"launch_verified_perf_pending"` with an explicit meaning field, everywhere the hub/docs state it.
+- Swept every doc for the same staleness pattern: `status.json`, `index.html`, and
+  `docs/GETTING_STARTED.md` all still pointed at PR #3 as the open PR (it merged Jul 14), still
+  carried Diego's now-done "M2 Mac smoke test" ask, and GETTING_STARTED's Path C still described the
+  Mac app as "waiting on one test" — all replaced with PR #4 (open, awaiting review) and the honest
+  Mac state. Test counts bumped 106→108 EditMode (109→111 total) to match the real suite.
+- 108 EditMode + 3 PlayMode still green after the doc-only changes (no code touched in this pass).
+- **The one remaining external item, unchanged by this pass:** a post-fix Mac performance re-test.
+  Nothing here can substitute for that — it needs a human on real Mac hardware.
+
 ## 2026-07-20 — first Mac test back (Raven) → Mac perf tier + fixes → Mac is live
 - **Raven ran the macOS build on an M3 Air (macOS 14.6)** — full session, all rows valid. The perf
   sidecar did its job and caught the real problem: the app ran at ~5.7 fps because it used the

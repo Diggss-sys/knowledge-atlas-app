@@ -4,9 +4,9 @@
 project from source in Unity (an M1/M2 MacBook handles it fine — the scene is light). ~30 min the
 first time, almost all of it Unity importing.*
 
-> **Which branch?** Until PR #2 merges, `main` does NOT contain the current engine/UI work.
-> After cloning, check out **`paco/lighting-l0-l4`** (engine + fixes) or **`paco/ui-foundation`**
-> (that plus the new operator UI). After the merge you'll just use the integration branch.
+> **Which branch?** `main` is current through PR #3 (engine, the operator studio, the participant
+> runner). The Team Run app release and the Mac performance fixes are on **`paco/ui-foundation`**
+> (PR #4, open — review pending) — check that branch out if you want the latest before it merges.
 
 ## Path A — Mac (and any dev machine): run from source
 
@@ -31,19 +31,33 @@ first time, almost all of it Unity importing.*
 7. **Run it**: open `Assets/RoomGen/Scenes/RoomStudio.unity` and press **Play**. Load the KA pair,
    walk it (WASD + mouse, Esc exits, Tab switches condition in the seam walk).
 8. **Sanity check (optional but appreciated)**: Window ▸ General ▸ Test Runner ▸ EditMode ▸ Run All
-   — expect **92/92 green**. If not, screenshot the failures into Discord.
+   — expect **108/108 green** (plus 3/3 in Play Mode). If not, screenshot the failures into Discord.
 
 ## Path B — Windows: the built app
 
 Ask Paco for the current `RoomStudio.exe` folder (build output isn't committed). Unzip anywhere,
 double-click `RoomStudio.exe` → "Load KA spec pair (adapter)" → "Walk control (desktop)".
 
-## Path C — Mac .app (waiting on one test)
+*(This is the dev/legacy studio build. If you just want to run a study session with no Unity setup
+at all, see Path C — that's the app the team actually tests with.)*
 
-The macOS build target exists (**RoomGen ▸ Build macOS Application**) but no one has produced and
-smoke-tested a .app on real hardware yet. First volunteer with an M2: run that menu item on your
-Mac (or ask Paco after he adds Mac Build Support to his editor), then launch via right-click ▸ Open
-(unsigned app). Report back and Path C becomes the normal route for non-dev Macs.
+## Path C — the participant app (no Unity, no source — Windows + Mac)
+
+We now ship a released, double-clickable study app for both platforms — this is the real
+no-dev-setup path, and it's what the team run uses. Full download links and step-by-step
+instructions: **[docs/TEAM_RUN.md](TEAM_RUN.md)**.
+
+Status: Windows is verified rendering. Mac launched and produced a valid full session for a real
+tester (M3 Air, macOS 14.6), but that same run measured an unacceptably low frame rate (~5.7 fps) —
+a Mac-specific performance tier has since been added and shipped, but **post-fix performance on real
+Mac hardware is not yet confirmed**. If you're on a Mac, running it and sending back the `.perf.csv`
+is exactly the data we need.
+
+If you want to build the .app yourself instead (e.g. after making a change):
+**RoomGen ▸ Build Participant App (Windows)** / **(macOS)** — the macOS one needs the *Mac Build
+Support (Mono)* module in Unity Hub. First launch of an unsigned build on macOS: double-click once,
+dismiss the "cannot be opened" warning, then **System Settings ▸ Privacy & Security ▸ "Open
+Anyway."** (Right-click ▸ Open is unreliable on macOS 14+.)
 
 ## Troubleshooting
 
