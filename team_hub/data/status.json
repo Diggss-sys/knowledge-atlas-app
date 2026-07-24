@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "_contract": "This file is the ONLY content source for the team-hub page. Written by Claude (Fable/Opus sessions) at every work checkpoint; read by Antigravity, which renders it and NEVER invents or edits status. If it isn't in this file, it doesn't go on the hub.",
-  "updated_at": "2026-07-10",
+  "updated_at": "2026-07-22",
   "project": {
     "name": "Knowledge Atlas",
     "track": "Track 3 · Room Studio",
@@ -11,15 +11,15 @@
   },
   "metrics": [
     {
-      "value": "108",
-      "label": "automated checks green (105 EditMode + 3 PlayMode, PR #3 branch)",
+      "value": "111",
+      "label": "automated checks green (108 EditMode + 3 PlayMode, PR #4 branch)",
       "tone": "ok"
     },
     {
-      "value": "PR #3",
-      "label": "open — A1+A2 instrument; needs Diego's review (PR #2 merged ✅)",
+      "value": "PR #4",
+      "label": "open — Team Run release + Mac perf fixes; needs Diego's review (PR #2, #3 merged ✅)",
       "tone": "warn",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
     },
     {
       "value": "3",
@@ -77,7 +77,22 @@
   ],
   "shipped": [
     {
-      "title": "A1 + A2 — the interactive instrument (PR #3)",
+      "title": "Real Mac feedback → fixes (PR #4, open)",
+      "blurb": "a teammate's M3 Air ran a full session — all rows valid — but our own perf monitor caught the real problem: ~5.7 fps, essentially every frame a hitch. Added a Mac-tuned quality tier, fixed the \"Open results folder\" button (broken on macOS), corrected the launch steps. POST-FIX Mac performance is not yet re-measured on real hardware — that's the one open item",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+    },
+    {
+      "title": "Team Run app released (Windows verified, Mac launch verified)",
+      "blurb": "double-clickable participant study app — no Unity or git needed. Windows build verified rendering + released. Mac build is universal (Apple Silicon + Intel); a real tester confirmed it launches and produces valid data (see the fixes above for what that first run found). Each session silently logs per-machine frame rate — this is our cross-machine baseline before Diego's rendering changes",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10"
+    },
+    {
+      "title": "Author → run loop closed (publish → consume)",
+      "blurb": "the operator's Publish button now emits a real study document (re-gated — a confounded pair is refused) that the participant app then runs, instead of a bundled fixture. Full loop: author → validate → publish → participate → data",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+    },
+    {
+      "title": "A1 + A2 — the interactive instrument (PR #3, merged ✅)",
       "blurb": "Operator Studio (live previews, real single-variable gate, publish lock, walk button) + Participant Runner (neutral screens → walk each room → rate → validated CSV). M1 tracer closed end-to-end; both scenes verified live; 5 review defects found & fixed",
       "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
     },
@@ -127,8 +142,8 @@
       },
       "actions": [
         {
-          "text": "PR #2 merged — thank you! Next: review PR #3 (the A1+A2 instrument; zero file overlap with your realism branch, either merge order works).",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
+          "text": "PR #2 and PR #3 are merged — thank you! Next: review PR #4 (Team Run release + Mac perf fixes; zero file overlap with your realism branch, either merge order works).",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
         },
         {
           "text": "Preset ranges call: add ranges for warmth/contour/wall-bow to dining_room.preset and the new studio's disabled sliders unlock automatically — cheapest way to make it THE demo studio.",
@@ -149,11 +164,11 @@
       },
       "actions": [
         {
-          "text": "M2 Mac smoke test: build RoomGen ▸ Build macOS Application on a lab MacBook, launch (right-click → Open), walk the pair, report. Unlocks Macs for everyone.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md"
+          "text": "The Mac path is already unlocked — a teammate ran the released app on an M3 Air. What's still needed: a POST-FIX Mac re-test (download the current build, run a session, send back the .perf.csv) to confirm the new performance tier actually holds ≥45fps avg / ≥30fps min.",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
         },
         {
-          "text": "Fresh-clone check per GETTING_STARTED.md; expect all tests green.",
+          "text": "Fresh-clone check per GETTING_STARTED.md; expect 108/108 EditMode + 3/3 PlayMode green.",
           "link": null
         }
       ]
@@ -203,16 +218,27 @@
       "pill": null,
       "actions": [
         {
-          "text": "A1 + A2 SHIPPED (PR #3) and live-verified — including a full participant session producing a clean CSV.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
+          "text": "A1+A2 (PR #3) and the Team Run release + publish→consume + Mac fixes (PR #4) are all shipped — PR #4 is open for review.",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
         },
         {
-          "text": "Now: verify the built participant app renders → publish the download for the team run; wire the operator's Publish button to the study JSON the participant app loads.",
+          "text": "Now: waiting on a post-fix Mac performance re-test (the one open external item); everything else in PR #4 is verified.",
           "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
         }
       ]
     }
   ],
+  "team_run": {
+    "status": "live",
+    "headline": "Download, do one session, send 3 files — both platforms",
+    "windows_download": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-Windows.zip",
+    "mac_download": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-macOS.zip",
+    "mac_status": "launch_verified_perf_pending",
+    "mac_status_meaning": "Mac launch fix implemented and build available. A real tester's session launched and produced valid data, but that same run measured ~5.7 fps (well under our 45fps target) — a Mac performance tier has since been added and shipped. Post-fix performance on real Mac hardware has NOT yet been re-verified. This is the one item still awaiting a human test.",
+    "release_page": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10",
+    "mac_note": "Mac build is universal (Apple Silicon + Intel). Unsigned, so the first launch is blocked: double-click once, dismiss the warning, then System Settings -> Privacy & Security -> 'Open Anyway'. (Terminal fallback: xattr -cr on the app.) A Mac performance tier was added after the first test found low fps -- re-tests are exactly what we need to confirm it now holds the target (45fps avg / 30fps min / control-treatment within 10%).",
+    "guide": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
+  },
   "run_paths": [
     {
       "title": "Mac — from source",
@@ -237,14 +263,15 @@
       "link": null
     },
     {
-      "title": "Mac — the .app",
-      "state": "needs one volunteer",
-      "tone": "hot",
+      "title": "Mac — the released app",
+      "state": "launch verified, perf re-test wanted",
+      "tone": "warn",
       "steps": [
-        "Build on an M2 (RoomGen ▸ Build macOS Application)",
-        "Right-click → Open (unsigned), report back"
+        "Download the Mac zip from the team-run release, unzip",
+        "Double-click once, dismiss the warning, then System Settings -> Privacy & Security -> 'Open Anyway'",
+        "Run one session, send back the .perf.csv — confirms the new performance tier holds"
       ],
-      "link": null
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
     }
   ],
   "footer_links": [
@@ -253,8 +280,8 @@
       "link": "https://github.com/Diggss-sys/knowledge-atlas-app"
     },
     {
-      "text": "PR #3",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
+      "text": "PR #4",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
     }
   ]
 }

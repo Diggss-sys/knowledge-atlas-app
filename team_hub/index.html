@@ -78,14 +78,16 @@
           <li>Double-click → Load KA spec pair → Walk control (WASD/mouse, Tab switches, Esc exits)</li>
         </ol>
 
-        <h3>Mac — the .app</h3>
+        <h3>Mac — the released app</h3>
         <div class="callout callout-amber">
-          <strong>Status: needs one volunteer</strong>
+          <strong>Status: launch verified, perf re-test wanted</strong>
         </div>
         <ol>
-          <li>Build on an M2 (RoomGen ▸ Build macOS Application)</li>
-          <li>Right-click → Open (unsigned), report back</li>
+          <li>Download the Mac zip from the team-run release, unzip</li>
+          <li>Double-click once, dismiss the warning, then System Settings → Privacy &amp; Security → "Open Anyway"</li>
+          <li>Run one session, send back the .perf.csv — confirms the new performance tier holds</li>
         </ol>
+        <p>Full steps: <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md">docs/TEAM_RUN.md</a></p>
       </section>
 
       <section id="progress" class="gsap-section">
@@ -94,12 +96,12 @@
         
         <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
           <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
-            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">108</div>
-            <div style="font-size: 0.9rem; color: var(--color-text-light);">automated checks green (PR #3 branch)</div>
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: #228B22;">111</div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">automated checks green (108 EditMode + 3 PlayMode, PR #4 branch)</div>
           </div>
           <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
-            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;"><a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" style="color: #cc7700">PR #3</a></div>
-            <div style="font-size: 0.9rem; color: var(--color-text-light);">open — A1+A2 instrument, needs Diego's review (PR #2 merged ✅)</div>
+            <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;"><a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/4" style="color: #cc7700">PR #4</a></div>
+            <div style="font-size: 0.9rem; color: var(--color-text-light);">open — Team Run release + Mac perf fixes, needs Diego's review (PR #2, #3 merged ✅)</div>
           </div>
           <div style="border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; flex: 1; min-width: 200px;">
             <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem;">3</div>
@@ -127,7 +129,10 @@
         
         <h3>Recently Shipped</h3>
         <ul>
-          <li><strong>A1 + A2 — the interactive instrument:</strong> Operator Studio (live previews, real single-variable gate, publish lock, walk) + Participant Runner (neutral screens &rarr; validated CSV). M1 closed; both scenes verified live <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[PR #3]</a></li>
+          <li><strong>Real Mac feedback &rarr; fixes (PR #4, open):</strong> a teammate's M3 Air ran a full session &mdash; all rows valid &mdash; but our own perf monitor caught the real problem: ~5.7 fps, essentially every frame a hitch. Added a Mac-tuned quality tier, fixed the "Open results folder" button (broken on macOS), corrected the launch steps. <strong>Post-fix Mac performance is not yet re-measured on real hardware</strong> &mdash; that's the one open item <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/4" target="_blank">[Link]</a></li>
+          <li><strong>Team Run app released (Windows verified, Mac launch verified):</strong> double-clickable participant study app &mdash; no Unity or git needed. Windows build verified rendering + released. Mac build is universal (Apple Silicon + Intel); a real tester confirmed it launches and produces valid data (see the fixes above for what that first run found). Each session silently logs per-machine frame rate &mdash; this is our cross-machine baseline before Diego's rendering changes <a href="https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10" target="_blank">[Link]</a></li>
+          <li><strong>Author &rarr; run loop closed (publish &rarr; consume):</strong> the operator's Publish button now emits a real study document (re-gated &mdash; a confounded pair is refused) that the participant app then runs, instead of a bundled fixture. Full loop: author &rarr; validate &rarr; publish &rarr; participate &rarr; data <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/4" target="_blank">[Link]</a></li>
+          <li><strong>A1 + A2 — the interactive instrument (merged &check;):</strong> Operator Studio (live previews, real single-variable gate, publish lock, walk) + Participant Runner (neutral screens &rarr; validated CSV). M1 closed; both scenes verified live <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[PR #3]</a></li>
           <li><strong>Performance gate:</strong> fps targets defined (60 demo PC / 45&ndash;30 M2 Macs / conditions within 10%); operator fps readout; participant sessions silently log per-room frame rate + machine <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/PERFORMANCE.md" target="_blank">[Link]</a></li>
           <li><strong>July replan:</strong> two tracks — Track A finishes the instrument (2 build items left), Track B runs the pilot study; no Unity needed for Track B roles <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md" target="_blank">[Link]</a></li>
           <li><strong>Fidelity gate package:</strong> real materials + furniture models, pendant luminaire, measured luminance match <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FIDELITY_GATE.md" target="_blank">[Link]</a></li>
@@ -142,16 +147,18 @@
         <h2>3. Team Run (Dry Run Study)</h2>
         <p>We're testing whether the room study runs well on everyone's machine before we go further. You don't need Unity, git, or any setup &mdash; just download an app, do one short session as a participant, and send back the files it saves. (~5 minutes)</p>
         
-        <div class="callout callout-amber">
-          <strong>Status: waiting on the verified build &mdash; you'll get a ping when it's ready</strong>
+        <div class="callout callout-teal">
+          <strong>Status: ready</strong> &mdash; the Windows build is verified and available below.
         </div>
 
         <h3>1. Get the app</h3>
         <ul>
-          <li><strong>Windows:</strong> <button disabled style="margin-left: 0.5rem; padding: 0.2rem 0.5rem; font-size: 0.9em; cursor: not-allowed; opacity: 0.7;">Download &mdash; coming soon, pending build verification</button>
-            <br><small style="color: var(--color-text-light);"><em>Note: Windows may warn "Windows protected your PC". Click <strong>More info &rarr; Run anyway</strong>.</em></small>
+          <li><strong>Windows:</strong> <a href="https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-Windows.zip" style="display: inline-block; margin-left: 0.5rem; padding: 0.35rem 0.8rem; font-size: 0.9em; background: #228B22; color: #fff; border-radius: 6px; text-decoration: none;">Download for Windows (.zip, 132 MB)</a>
+            <br><small style="color: var(--color-text-light);"><em>Extract, double-click <code>KnowledgeAtlasStudy.exe</code>. Windows may warn "Windows protected your PC" &mdash; click <strong>More info &rarr; Run anyway</strong>.</em></small>
           </li>
-          <li style="margin-top: 1rem;"><strong>Mac:</strong> get <code>KnowledgeAtlasStudy.app</code> from <strong>Michael</strong>. First launch: <strong>right-click the app &rarr; Open &rarr; Open</strong> (needed once because it's unsigned).</li>
+          <li style="margin-top: 1rem;"><strong>Mac (universal &mdash; Apple Silicon + Intel):</strong> <a href="https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-macOS.zip" style="display: inline-block; margin-left: 0.5rem; padding: 0.35rem 0.8rem; font-size: 0.9em; background: #1a3630; color: #fff; border-radius: 6px; text-decoration: none;">Download for Mac (.zip, 141 MB)</a>
+            <br><small style="color: var(--color-text-light);"><em>Unzip. It's unsigned, so the first launch is blocked &mdash; the reliable way in: double-click once and dismiss the warning, then <strong>System Settings &rarr; Privacy &amp; Security &rarr; scroll down &rarr; "Open Anyway"</strong>. (Still stuck? Terminal: <code>xattr -cr </code> then drag the app in, Enter.) <strong>Launch is verified</strong> (a real M3 Air session produced valid data) and a Mac performance tier has since been shipped, but <strong>post-fix performance has not yet been re-tested on real hardware</strong> &mdash; that's exactly what your run tells us. Please include your macOS version.</em></small>
+          </li>
         </ul>
 
         <h3>2. Do one session (about 3&ndash;4 minutes)</h3>
@@ -195,15 +202,15 @@
 
         <h3>Diego <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(ENGINE · CONTRACTS)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #ffebee; color: #b71c1c;">unblocks everyone</span></h3>
         <ul>
-          <li>PR #2 merged — thank you! Next: review PR #3 (the A1+A2 instrument; zero file overlap with your realism branch, either merge order works). <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[Link]</a></li>
+          <li>PR #2 and PR #3 are merged — thank you! Next: review PR #4 (Team Run release + Mac perf fixes; zero file overlap with your realism branch, either merge order works). <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/4" target="_blank">[Link]</a></li>
           <li>Preset ranges call: add ranges for warmth/contour/wall-bow to dining_room.preset and the new studio's disabled sliders unlock automatically — cheapest way to make it THE demo studio.</li>
           <li>Two contract calls still open: lighting.warmth label/formula inversion; coupled-vars notes.</li>
         </ul>
 
         <h3>Michael <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(INTEGRATOR → RELEASE MANAGER)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #ffebee; color: #b71c1c;">this week</span></h3>
         <ul>
-          <li>M2 Mac smoke test: build RoomGen ▸ Build macOS Application on a lab MacBook, launch (right-click → Open), walk the pair, report. Unlocks Macs for everyone. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md" target="_blank">[Link]</a></li>
-          <li>Fresh-clone check per GETTING_STARTED.md; expect all tests green.</li>
+          <li>The Mac path is already unlocked — a teammate ran the released app on an M3 Air. What's still needed: a <strong>post-fix Mac re-test</strong> (download the current build, run a session, send back the <code>.perf.csv</code>) to confirm the new performance tier actually holds &ge;45fps avg / &ge;30fps min. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md" target="_blank">[Link]</a></li>
+          <li>Fresh-clone check per GETTING_STARTED.md; expect 108/108 EditMode + 3/3 PlayMode green.</li>
         </ul>
 
         <h3>Study design <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK B · 2 TEAMMATES · NO CODE)</span> <span class="hero-pill" style="font-size: 0.8em; padding: 0.2em 0.6em; background: #e0f7fa; color: #006064;">claim at meeting</span></h3>
@@ -223,8 +230,8 @@
 
         <h3>Paco + Claude <span style="font-weight: normal; font-size: 0.9em; color: var(--color-text-light);">(TRACK A · BUILDERS)</span></h3>
         <ul>
-          <li>A1 + A2 SHIPPED (PR #3) and live-verified — including a full participant session producing a clean CSV. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/3" target="_blank">[Link]</a></li>
-          <li>Now: verify the built participant app renders → publish the download for the Team Run; wire the operator's Publish button to the study JSON the participant app loads. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md" target="_blank">[Link]</a></li>
+          <li>A1+A2 (PR #3) and the Team Run release + publish&rarr;consume + Mac fixes (PR #4) are all shipped — PR #4 is open for review. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/pull/4" target="_blank">[Link]</a></li>
+          <li>Now: waiting on a post-fix Mac performance re-test (the one open external item); everything else in PR #4 is verified. <a href="https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md" target="_blank">[Link]</a></li>
         </ul>
 
         <div class="callout callout-blue" style="margin-top: 3rem;">

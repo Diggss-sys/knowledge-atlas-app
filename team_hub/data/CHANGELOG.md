@@ -4,6 +4,44 @@
 "what happened lately" narrative; `status.json` carries the structured state. Neither is ever
 rewritten retroactively — append only.*
 
+## 2026-07-22 — PR #4 closeout: status honesty pass (GPT-reviewed)
+- A closeout audit (first review from the new GPT-planner loop, Opus-executed) found the hub was
+  overclaiming Mac readiness: `mac_status: "live"` implied a verified-good state, but we only ever
+  had a PRE-FIX session (5.7 fps) — no post-fix Mac data exists yet. Corrected to
+  `"launch_verified_perf_pending"` with an explicit meaning field, everywhere the hub/docs state it.
+- Swept every doc for the same staleness pattern: `status.json`, `index.html`, and
+  `docs/GETTING_STARTED.md` all still pointed at PR #3 as the open PR (it merged Jul 14), still
+  carried Diego's now-done "M2 Mac smoke test" ask, and GETTING_STARTED's Path C still described the
+  Mac app as "waiting on one test" — all replaced with PR #4 (open, awaiting review) and the honest
+  Mac state. Test counts bumped 106→108 EditMode (109→111 total) to match the real suite.
+- 108 EditMode + 3 PlayMode still green after the doc-only changes (no code touched in this pass).
+- **The one remaining external item, unchanged by this pass:** a post-fix Mac performance re-test.
+  Nothing here can substitute for that — it needs a human on real Mac hardware.
+
+## 2026-07-20 — first Mac test back (Raven) → Mac perf tier + fixes → Mac is live
+- **Raven ran the macOS build on an M3 Air (macOS 14.6)** — full session, all rows valid. The perf
+  sidecar did its job and caught the real problem: the app ran at ~5.7 fps because it used the
+  full-desktop quality profile at retina resolution. Added a Mac performance tier (lower resolution +
+  cheaper shadows on Apple Silicon; Windows unchanged), fixed the "Open results folder" button on
+  macOS (path-escaping bug), and rewrote the Mac launch steps (System Settings → "Open Anyway" first,
+  Terminal `xattr` fallback — right-click → Open is unreliable on macOS 14+).
+- Rebuilt the Mac app, swapped the release asset, `mac_status` is now **live**. 108 EditMode + 3
+  PlayMode green. Re-tests welcome — each one logs its own frame rate so we can confirm the tier holds.
+
+## 2026-07-10 (later) — Team Run app RELEASED · author→run loop closed · Mac build
+- **Team Run app is downloadable.** Published a private prerelease (`team-run-2026-07-10`) with the
+  double-clickable participant study app. **Windows** build verified rendering (RTX 5070 Ti) and
+  released; **Mac** build added — universal (Apple Silicon + Intel), packaged Mac-launchable, attached
+  and *pending a first-launch check on a real Mac* before we tell the team. Download links + unsigned
+  first-launch steps are in docs/TEAM_RUN.md; the hub's Team Run section can now show real downloads
+  (see `data/status.json` → `team_run`).
+- **Author → run loop closed.** The operator's Publish button now emits a real study document (gated —
+  a confounded pair is refused) that the participant app runs, instead of only the bundled fixture.
+- **Perf sidecar now stamps the machine** (GPU/OS/model) so the cross-machine team-run numbers are
+  attributable; the participant done-screen gained an "Open results folder" button.
+- 109 automated checks green (106 EditMode + 3 PlayMode). A render-path note for Diego was drafted
+  (RT stays an optional demo-PC tier; the Macs and the study run on raster).
+
 ## 2026-07-10 — PR #2 merged · the instrument shipped (A1+A2, PR #3) · Team Run prep
 - **Diego merged PR #2** (merge commit `284a152`) — the engine/fidelity/runtime package is on `main`.
   He's now building an engine realism pass (curved walls, time-of-day sun, SSGI) on his branch.

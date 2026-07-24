@@ -1,10 +1,12 @@
 using System;
+using System.Globalization;
 using System.IO;
 using KnowledgeAtlas.Seam;
 using Newtonsoft.Json.Linq;
 using RoomGen.Adapter;
 using RoomGen.Contracts;
 using RoomGen.Generation;
+using RoomGen.Runner;
 using RoomGen.VR;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -104,7 +106,7 @@ namespace RoomGen.UI
                 return false;
             }
 
-            RenderQualityProfiles.ApplyDesktop();
+            RenderQualityProfiles.ApplyAuto();   // Mac → portable tier
             _root = root;
             _baseTemplate = StudioSpecChannel.BuildBase(template.text);
 
@@ -160,11 +162,7 @@ namespace RoomGen.UI
             if (walk != null) walk.clicked += ToggleWalk;
 
             var publish = _root.Q<Button>("publish-button");
-            if (publish != null) publish.clicked += () =>
-            {
-                if (!_vm.PublishEnabled) return;   // belt-and-braces; the binder also disables it
-                Debug.Log("OperatorStudio: study published (pair validated single-variable).");
-            };
+            if (publish != null) publish.clicked += PublishStudy;
         }
 
         void Update()
@@ -240,6 +238,54 @@ namespace RoomGen.UI
                 if (_backdrop != null) _backdrop.enabled = false; // the walk camera owns the display now
                 ShowPanel(false);
             }
+        }
+
+        // Author → run: turn the validated pair into a study JSON (StudyPublisher gates it again — a
+        // confounded pair is refused) and drop it where the participant runner picks it up. Closes the
+        // last fixture gap: the operator can author the very study a participant then walks.
+        void PublishStudy()
+        {
+            if (_vm == null || !_vm.PublishEnabled) return;   // belt-and-braces; the binder also disables it
+            RenderPreviews();                                  // make sure the adapted specs are current
+            if (_controlSpec == null || _treatmentSpec == null) return;
+
+            var nowIso = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture);
+            var result = StudyPublisher.CreateDefault().Publish(new StudyPublisher.StudyInput
+            {
+                StudyId = "operator_authored_study",
+                PairId = "operator_studio_pair",
+                Title = "Operator-authored study",
+                Modality = "desktop_3d",
+                ControlSpecJson = RoomJson.Serialize(_controlSpec),
+                TreatmentSpecJson = RoomJson.Serialize(_treatmentSpec),
+                Validation = new StudyPublisher.ValidationStamp
+                {
+                    Ok = _vm.Validation.Ok,
+                    DiffPaths = _vm.Validation.DiffPaths,
+                    Validator = "PairGate.cs@1.0",
+                    ValidatedAtIso = nowIso,
+                },
+                Task = new StudyPublisher.TaskConfig
+                {
+                    Type = "rating",
+                    Prompt = "How pleasant does this room feel?",
+                    ScaleMin = 1,
+                    ScaleMax = 7,
+                },
+                CreatedAtIso = nowIso,
+            });
+
+            var publishButton = _root.Q<Button>("publish-button");
+            if (!result.Ok)
+            {
+                Debug.LogWarning("OperatorStudio: publish refused — " + string.Join(" | ", result.Errors));
+                if (publishButton != null) publishButton.text = "Publish refused — see console";
+                return;
+            }
+
+            File.WriteAllText(StudyHandoff.PublishedStudyPath, result.StudyJson);
+            Debug.Log("OperatorStudio: study published → " + StudyHandoff.PublishedStudyPath);
+            if (publishButton != null) publishButton.text = "Published ✓ — participant app will run this study";
         }
 
         void ShowPanel(bool show)
