@@ -16,6 +16,24 @@ namespace RoomGen.Validation
         // collapses toward a circle ("blob"). Tunable knob for the realism/study bar.
         const float MaxCornerRadiusFraction = 0.25f;
 
+        // The legal geometry envelope. PUBLIC so authoring UIs can bound their sliders to exactly
+        // what the validator accepts instead of keeping a second copy of the numbers — the studio's
+        // sliders used their own constants, so you could drag to a value the engine then refused,
+        // which is what made the controls feel like they "broke the app".
+        public const float MinWidthM = 3f;
+        public const float MaxWidthM = 12f;
+        public const float MinLengthM = 3f;
+        public const float MaxLengthM = 12f;
+        public const float MinCeilingHeightM = 2.1f;
+        public const float MaxCeilingHeightM = 6f;
+
+        /// <summary>Largest corner radius this spec may legally use (geometric AND blob limits).</summary>
+        public static float MaxCornerRadiusM(GeometrySpec geometry)
+        {
+            var shortSpan = Mathf.Min(geometry.WidthM, geometry.LengthM);
+            return Mathf.Max(0f, Mathf.Min(shortSpan * 0.5f - 0.1f, shortSpan * MaxCornerRadiusFraction));
+        }
+
         public static List<ValidationIssue> Validate(RoomSpec spec, DiningRoomPreset preset = null)
         {
             var issues = new List<ValidationIssue>();
@@ -35,20 +53,19 @@ namespace RoomGen.Validation
             if (spec.SpecVersion != RoomSpec.CurrentVersion)
                 issues.Add(Error("SPEC_VERSION", "spec_version", $"Expected {RoomSpec.CurrentVersion}."));
 
-            CheckRange(issues, "geometry.width_m", spec.Geometry.WidthM, 3f, 12f);
-            CheckRange(issues, "geometry.length_m", spec.Geometry.LengthM, 3f, 12f);
-            CheckRange(issues, "geometry.ceiling_height_m", spec.Geometry.CeilingHeightM, 2.1f, 6f);
+            CheckRange(issues, "geometry.width_m", spec.Geometry.WidthM, MinWidthM, MaxWidthM);
+            CheckRange(issues, "geometry.length_m", spec.Geometry.LengthM, MinLengthM, MaxLengthM);
+            CheckRange(issues, "geometry.ceiling_height_m", spec.Geometry.CeilingHeightM,
+                MinCeilingHeightM, MaxCeilingHeightM);
             CheckRange(issues, "geometry.wall_thickness_m", spec.Geometry.WallThicknessM, 0.08f, 0.4f);
 
-            var shortSpan = Mathf.Min(spec.Geometry.WidthM, spec.Geometry.LengthM);
-            // Geometric hard limit: opposite corner arcs must not meet.
-            var geometricMax = shortSpan * 0.5f - 0.1f;
-            // Perceptual limit (the BINDING one): past ~1/4 of the shorter span the footprint collapses
-            // toward a circle ("blob") and stops reading as a room with flat walls. Enforced here so
-            // EVERY producer inherits it — the operator UI and the AI copilot, not just the legacy
-            // studio that happened to seed a safe value. Tunable: raise for stadium-shaped studies.
-            var maximumRadius = Mathf.Min(geometricMax, shortSpan * MaxCornerRadiusFraction);
-            CheckRange(issues, "geometry.corner_radius_m", spec.Geometry.CornerRadiusM, 0f, maximumRadius);
+            // Two limits, whichever binds: the GEOMETRIC one (opposite corner arcs must not meet) and
+            // the PERCEPTUAL one (past ~1/4 of the shorter span the footprint collapses toward a
+            // circle — a "blob" — and stops reading as a room with flat walls). Enforced here so
+            // EVERY producer inherits it: the operator UI and the AI copilot, not just the legacy
+            // studio that happened to seed a safe value.
+            CheckRange(issues, "geometry.corner_radius_m", spec.Geometry.CornerRadiusM,
+                0f, MaxCornerRadiusM(spec.Geometry));
 
             if (spec.Geometry.WallBow != null)
             {
