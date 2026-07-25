@@ -187,10 +187,23 @@ namespace RoomGen.Gate
             }
         }
 
+        // Declarations that are a single conceptual variable spanning several leaf fields which MUST
+        // move together — the only ones allowed to cover a whole sub-object. Kept in LOCKSTEP with
+        // tools/validate_pair.py's GROUP_VARIABLES and PairValidator.GroupVariables: all three gate
+        // implementations must agree, or the editor refuses what the runtime accepts (and vice versa).
+        static readonly string[] GroupVariables = { "geometry.wall_bow" };
+
+        // A declared variable covers its own exact path; a whitelisted GROUP variable also covers
+        // everything nested under it (dotted or indexed). Without the whitelist a bare parent like
+        // "shell", "lighting" or "furniture" would absorb every field beneath it, letting a pair
+        // differ in any number of nested fields while declaring one variable — silently voiding the
+        // single-variable guarantee this gate exists to enforce. To declare an indexed change, name
+        // the exact leaf paths (e.g. "furniture[8].catalog_id").
         static bool IsCovered(string path, IEnumerable<string> declared) =>
             declared.Any(v => path == v
-                || path.StartsWith(v + ".", StringComparison.Ordinal)
-                || path.StartsWith(v + "[", StringComparison.Ordinal));
+                || (Array.IndexOf(GroupVariables, v) >= 0
+                    && (path.StartsWith(v + ".", StringComparison.Ordinal)
+                        || path.StartsWith(v + "[", StringComparison.Ordinal))));
 
         static List<string> StringList(JToken token) =>
             token is JArray arr ? arr.Select(t => (string)t).ToList() : new List<string>();
