@@ -589,7 +589,23 @@ namespace RoomGen.Studio
             }
             pair = RoomJson.Deserialize<ConditionPairSpec>(source.text);
             Rebuild();
-            status = "Realism test room loaded — try the Sun slider and walk it. " + status;
+            DriveSeamFromCurrentPair();
+            status = "Realism test room loaded — walk it, or try the Sun slider. " + status;
+        }
+
+        /// <summary>
+        /// Push the CURRENT pair through the seam so the WALK generator is populated too.
+        /// Rebuild() only fills the two preview generators; without this a loaded pair could be
+        /// previewed but never entered — "Walk pair via seam" stays hidden (the button keys off
+        /// canonicalControlJson, which only LoadKaPair used to set) and ToggleSeamWalk would hand
+        /// the walker a null root. Every loader must call this, or it dead-ends the same way.
+        /// </summary>
+        void DriveSeamFromCurrentPair()
+        {
+            canonicalControlJson = RoomJson.Serialize(pair.Control);
+            canonicalTreatmentJson = RoomJson.Serialize(pair.Treatment);
+            activeWalkCondition = "control";
+            seamChannel?.LoadPair(canonicalControlJson, canonicalTreatmentJson, NextRequestId());
         }
 
         void ToggleSeamWalk()

@@ -89,10 +89,20 @@ namespace RoomGen.Lighting
         // recessed spots); total emitted flux is unchanged so the calibration target still holds.
         // Public so LightingCalibrator models the same split (keeps prediction honest).
         public const float PendantFluxFraction = 0.4f;
-        // Daylight sun strength as a multiple of the room's target lux — gentle, scales with mood.
-        // Public: SunSkySystem's time-of-day arc reproduces this exact calibrated baseline at its
-        // peak, so both must read the same constant (one source of truth for the sun's look).
-        public const float SunTargetLuxFactor = 2.5f;
+        // EXTERIOR daylight illuminance, as a multiple of the room's INTERIOR target lux. These are
+        // two different worlds: a room lit to 300 lux sits under a several-thousand-lux sky. The old
+        // 2.5x put the sun at 750 lux — dead twilight — so windows read as flat pale panels, threw
+        // no floor patch, and the walls only ever got GI crumbs (the "Roblox" tell). 20x lands the
+        // sky in real overcast-day territory while still scaling with mood: a 70-lux dim preset gets
+        // a ~1,400 lux dusk sky, a 300-lux room a ~6,000 lux day, a 500-lux bright one ~10,000.
+        // Deliberately not 100,000 (direct noon sun): at the fixed EV100=8 that would leave the
+        // interior a silhouette against blown windows. Tune here first if the look needs pushing.
+        // The room does NOT get brighter overall — LightingCalibrator subtracts the daylight that
+        // reaches the working plane and the fixtures fill only the remainder, so total illuminance
+        // still lands on target and the FIXED exposure stays correct. What changes is where the
+        // light COMES FROM (windows, with direction) instead of how much there is.
+        // Public: SunSkySystem's time-of-day arc and the calibrator both read this one constant.
+        public const float SunTargetLuxFactor = 20f;
         // The calibrated static sun: high-left angle for a daylight patch + soft shadows, and the
         // daylight-blend that tints it cooler than the interior lamps. SunSkySystem.Reset restores
         // exactly these, so they live here (change once, both agree) rather than being hand-copied.
@@ -137,7 +147,10 @@ namespace RoomGen.Lighting
             sun.lightUnit = LightUnit.Lux;
             // Scales with target lux so a dim preset gets a dim sky and a bright one a brighter sky,
             // without overpowering the calibrated interior.
-            sun.intensity = spec.Lighting.TargetLux * SunTargetLuxFactor;
+            // EXTERIOR daylight, not the interior target — see SunTargetLuxFactor. The calibrator
+            // owns this number so the sun, the time-of-day arc, and the daylight the fixtures
+            // harvest against can never disagree.
+            sun.intensity = LightingCalibrator.ExteriorDaylightLux(spec);
         }
 
         static void AddPendantLuminaire(Transform parent, RoomSpec spec, LightingResult result, int layer)

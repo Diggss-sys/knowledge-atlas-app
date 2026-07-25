@@ -44,6 +44,14 @@ namespace RoomGen.Lighting
             var profile = ScriptableObject.CreateInstance<VolumeProfile>();
             profile.hideFlags = HideFlags.DontSave;
 
+            // Ray tracing is DXR-only: Windows + DX12 + an RTX-class GPU. HDRP has NO Metal /
+            // Apple-Silicon path, and the participant machines are M2/M3 Macs — so probe the
+            // hardware ONCE here and fall back to the screen-space (RayMarching) path everywhere
+            // DXR is absent. Raster stays the default and the data-collection path; RT is an
+            // optional tier for the demo PC (handoffs/RENDER_PATH_NOTE.md).
+            var rayTracing = SystemInfo.supportsRayTracing;
+            var tracingMode = rayTracing ? RayCastingMode.RayTracing : RayCastingMode.RayMarching;
+
             // Filmic tonemapping — the single biggest step away from the flat, clipped
             // look of an untonemapped HDRP frame.
             var tone = profile.Add<Tonemapping>(true);
@@ -55,7 +63,7 @@ namespace RoomGen.Lighting
             var ao = profile.Add<ScreenSpaceAmbientOcclusion>(true);
             ao.intensity.Override(0.6f);
             ao.radius.Override(0.5f);
-            ao.rayTracing.Override(true);
+            ao.rayTracing.Override(rayTracing);
             // Quality preset drives the RT denoiser (VolumeComponentWithQuality defaults to
             // Medium). High = widest RTAO denoiser radius — no speckle in the corners.
             ao.quality.Override((int)ScalableSettingLevelParameter.Level.High);
@@ -74,7 +82,7 @@ namespace RoomGen.Lighting
             // instead of the screen-space approximation — off-screen surfaces contribute bounce,
             // sunlight through the windows actually lights the room. Cameras without the
             // RayTracing frame setting (preview thumbnails) fall back to raster/SSGI path.
-            gi.tracing.Override(RayCastingMode.RayTracing);
+            gi.tracing.Override(tracingMode);
             // Default quality (Medium) runs RTGI at HALF RESOLUTION (RTGIFullResolution:
             // Low/Med=false, High=true) — the upscale is the dark blotchy "warping" patches on
             // curved walls. High = full-resolution RTGI + full-res denoise: clean bounce light.
@@ -90,7 +98,7 @@ namespace RoomGen.Lighting
             ssr.reflectSky.Override(true);      // sky/window light reflects off interior surfaces
             // Ray-traced reflections: mirror off-screen geometry too (screen-space can only
             // reflect what the camera already sees — the big "fake reflections" tell).
-            ssr.tracing.Override(RayCastingMode.RayTracing);
+            ssr.tracing.Override(tracingMode);
             // High quality tier: full-resolution ray-traced reflections + best denoiser preset
             // (Medium is the default tier and denoises at reduced resolution).
             ssr.quality.Override((int)ScalableSettingLevelParameter.Level.High);
