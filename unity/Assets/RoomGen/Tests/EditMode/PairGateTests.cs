@@ -8,8 +8,10 @@ namespace RoomGen.Tests
     /// <summary>
     /// G3 — proves the C# PairGate reproduces Diego's reference validator (tools/validate_pair.py).
     /// The definition of done is the golden-vector test: every case in the committed
-    /// spec/fixtures/diff_vectors.json must match its expected block exactly. The two parity tests
-    /// cover the one path the 8 vectors don't (indexed furniture coverage) and the provenance rule.
+    /// spec/fixtures/diff_vectors.json must match its expected block exactly. The remaining tests
+    /// cover what the 8 dotted-path vectors don't reach: the strict coverage contract (a bare parent
+    /// declaration is refused, an exact indexed leaf declaration is accepted), the exact-leaf
+    /// flagship case, and the provenance rule.
     /// Tests read only strings + plain structs, so this assembly needs no Newtonsoft reference.
     /// </summary>
     public sealed class PairGateTests
@@ -31,18 +33,60 @@ namespace RoomGen.Tests
         // --- parity coverage the 8 dotted-path vectors don't reach ---
 
         [Test]
-        public void Declared_parent_path_covers_nested_indexed_changes()
+        public void Broad_parent_declaration_does_not_cover_nested_indexed_changes()
         {
-            // manipulated_variables:["furniture"] must cover a change at furniture[8].* — the indexed
-            // path convention + prefix coverage that the dotted-only golden vectors never exercise.
+            // A bare parent like "furniture" must NOT absorb everything beneath it: that would let a
+            // pair differ in any number of nested fields while declaring a single variable, voiding
+            // the single-variable guarantee. The reference validator (tools/validate_pair.py) and the
+            // editor-side PairValidator both refuse this, so the runtime gate must too.
+            // (This test previously asserted the opposite — the runtime gate was left permissive when
+            // the reference + editor validator were tightened; see the strictness note on IsCovered.)
             var control = Pair("control", furnitureCount: 9, ceiling: "3.0", manipulated: "\"furniture\"");
             var treatment = Pair("treatment", furnitureCount: 8, ceiling: "3.0", manipulated: "\"furniture\"");
 
             var r = PairGate.ValidateJson(control, treatment, Schema);
-            Assert.IsTrue(r.Ok, "furniture[] change is covered by the declared 'furniture' parent path: "
-                + string.Join(", ", r.Violations.Select(v => v.Code + " " + v.Path)));
+
+            Assert.IsFalse(r.Ok, "a bare 'furniture' parent must not cover furniture[8].* changes");
+            CollectionAssert.Contains(r.ViolationCodes, "undeclared_change",
+                "the nested change is undeclared: " + string.Join(", ", r.ViolationCodes));
             Assert.IsTrue(r.DiffPaths.Any(p => p.StartsWith("furniture[")),
-                "the diff should be an indexed furniture path, got: " + string.Join(", ", r.DiffPaths));
+                "the diff should still report the indexed furniture path, got: " + string.Join(", ", r.DiffPaths));
+        }
+
+        [Test]
+        public void Exact_indexed_leaf_declarations_cover_indexed_changes()
+        {
+            // The strict-contract way to declare an indexed change: name the exact leaf paths.
+            // Dropping the 9th chair removes both of its leaves, so both are declared — and each
+            // declared variable really does differ, so there is no declared_unchanged either.
+            const string declared = "\"furniture[8].catalog_id\",\"furniture[8].placement.slot\"";
+            var control = Pair("control", furnitureCount: 9, ceiling: "3.0", manipulated: declared);
+            var treatment = Pair("treatment", furnitureCount: 8, ceiling: "3.0", manipulated: declared);
+
+            var r = PairGate.ValidateJson(control, treatment, Schema);
+
+            Assert.IsTrue(r.Ok, "exact indexed leaf declarations should pass: "
+                + string.Join(", ", r.Violations.Select(v => v.Code + " " + v.Path)));
+            Assert.IsTrue(r.DiffPaths.All(p => p.StartsWith("furniture[")),
+                "only the indexed furniture leaves should differ, got: " + string.Join(", ", r.DiffPaths));
+        }
+
+        [Test]
+        public void Exact_leaf_declaration_still_passes_the_flagship_pair()
+        {
+            // Guards the common case the whole demo rests on: one exact leaf declared, one leaf
+            // differs, pair accepted. (The golden vectors cover this too; kept explicit so a
+            // strictness regression names itself here.)
+            var control = Pair("control", furnitureCount: 9, ceiling: "3.0",
+                manipulated: "\"shell.ceiling_height_m\"");
+            var treatment = Pair("treatment", furnitureCount: 9, ceiling: "2.6",
+                manipulated: "\"shell.ceiling_height_m\"");
+
+            var r = PairGate.ValidateJson(control, treatment, Schema);
+
+            Assert.IsTrue(r.Ok, "the single-variable ceiling pair must pass: "
+                + string.Join(", ", r.Violations.Select(v => v.Code + " " + v.Path)));
+            Assert.AreEqual(new[] { "shell.ceiling_height_m" }, r.DiffPaths.ToArray());
         }
 
         [Test]
