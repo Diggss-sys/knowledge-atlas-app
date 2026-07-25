@@ -1,25 +1,25 @@
 {
   "schema_version": "1.0",
-  "_contract": "This file is the ONLY content source for the team-hub page. Written by Claude (Fable/Opus sessions) at every work checkpoint; read by Antigravity, which renders it and NEVER invents or edits status. If it isn't in this file, it doesn't go on the hub.",
-  "updated_at": "2026-07-22",
+  "_contract": "This file is the only content source for the Team Hub. If it is not here, it does not go on the hub.",
+  "updated_at": "2026-07-24",
   "project": {
     "name": "Knowledge Atlas",
-    "track": "Track 3 · Room Studio",
+    "track": "Track 3 - Room Studio",
     "repo": "https://github.com/Diggss-sys/knowledge-atlas-app",
     "milestone_now": "M2",
-    "headline": "Replanned: finish the instrument, then run the study"
+    "headline": "Windows-first: stabilize the demo, then widen delivery"
   },
   "metrics": [
     {
-      "value": "111",
-      "label": "automated checks green (108 EditMode + 3 PlayMode, PR #4 branch)",
-      "tone": "ok"
+      "value": "main",
+      "label": "Windows engine realism and UI flow are integrated",
+      "tone": "ok",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
     },
     {
-      "value": "PR #4",
-      "label": "open — Team Run release + Mac perf fixes; needs Diego's review (PR #2, #3 merged ✅)",
-      "tone": "warn",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+      "value": "Windows",
+      "label": "primary platform until the visual target is stable",
+      "tone": "ok"
     },
     {
       "value": "3",
@@ -27,13 +27,8 @@
       "tone": "plain"
     },
     {
-      "value": "4.7%",
-      "label": "ceiling-pair luminance match (goal ≤ 25%)",
-      "tone": "ok"
-    },
-    {
       "value": "M2 gate",
-      "label": "evidence in, verdict pending",
+      "label": "Windows fidelity and runtime-gate parity next",
       "tone": "warn"
     }
   ],
@@ -48,240 +43,174 @@
       "id": "M1",
       "label": "Tracer",
       "state": "done",
-      "note": "closed end-to-end: author → validate → publish → run → data (A1+A2, live-verified)"
+      "note": "author -> validate -> publish -> run -> data is live-verified"
     },
     {
       "id": "M2",
-      "label": "Instrument",
+      "label": "Windows demo",
       "state": "now",
-      "note": "instrument side done (operator studio drives the gate + publish lock); fidelity verdict pending"
+      "note": "fidelity, runtime-gate parity, full demo smoke, and demo-PC performance"
     },
     {
       "id": "M3",
-      "label": "Kirsh demo",
+      "label": "Delivery expansion",
       "state": "todo",
-      "note": "≈ Aug 1"
+      "note": "prove Mac access to the Windows GPU host; cloud GPU only if needed"
     },
     {
       "id": "M4",
       "label": "Library",
       "state": "todo",
-      "note": "August"
+      "note": "after the demo path is stable"
     },
     {
       "id": "M5",
       "label": "VR arm",
       "state": "todo",
-      "note": "≤ Sep 15"
+      "note": "after the desktop demo path"
     }
   ],
   "shipped": [
     {
-      "title": "Real Mac feedback → fixes (PR #4, open)",
-      "blurb": "a teammate's M3 Air ran a full session — all rows valid — but our own perf monitor caught the real problem: ~5.7 fps, essentially every frame a hitch. Added a Mac-tuned quality tier, fixed the \"Open results folder\" button (broken on macOS), corrected the launch steps. POST-FIX Mac performance is not yet re-measured on real hardware — that's the one open item",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+      "title": "Windows-first pivot",
+      "blurb": "Windows is now the primary demo path while the visual target is still moving. Mac optimization and release work are deferred, not abandoned.",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
     },
     {
-      "title": "Team Run app released (Windows verified, Mac launch verified)",
-      "blurb": "double-clickable participant study app — no Unity or git needed. Windows build verified rendering + released. Mac build is universal (Apple Silicon + Intel); a real tester confirmed it launches and produces valid data (see the fixes above for what that first run found). Each session silently logs per-machine frame rate — this is our cross-machine baseline before Diego's rendering changes",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10"
+      "title": "Windows realism and UI flow integrated on main",
+      "blurb": "Diego's geometry and lighting work now sits with the operator-to-participant flow. Next: Windows visual smoke, runtime pair-gate parity, full author-to-CSV verification, and a demo-PC performance run.",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
     },
     {
-      "title": "Author → run loop closed (publish → consume)",
-      "blurb": "the operator's Publish button now emits a real study document (re-gated — a confounded pair is refused) that the participant app then runs, instead of a bundled fixture. Full loop: author → validate → publish → participate → data",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+      "title": "Author to run loop closed",
+      "blurb": "The operator publishes a gated study document and the participant app runs it, producing validated response data.",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
     },
     {
-      "title": "A1 + A2 — the interactive instrument (PR #3, merged ✅)",
-      "blurb": "Operator Studio (live previews, real single-variable gate, publish lock, walk button) + Participant Runner (neutral screens → walk each room → rate → validated CSV). M1 tracer closed end-to-end; both scenes verified live; 5 review defects found & fixed",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/3"
-    },
-    {
-      "title": "Performance gate — what 'runnable' means",
-      "blurb": "fps targets defined (60 demo PC / 45–30 M2 Macs / conditions within 10%); live fps readout in the operator studio; participant sessions silently log per-room frame rate + machine to a perf sidecar next to the CSV",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/PERFORMANCE.md"
-    },
-    {
-      "title": "July replan",
-      "blurb": "two tracks — Track A finishes the instrument (2 build items left), Track B runs the pilot study; no Unity needed for Track B roles",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md"
-    },
-    {
-      "title": "Fidelity gate package",
-      "blurb": "real materials + furniture models, pendant luminaire, measured luminance match",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FIDELITY_GATE.md"
-    },
-    {
-      "title": "Experiment runtime core",
-      "blurb": "schema-valid response rows → CSV, seeded ordering, study honesty-gate (E3's R0+R1)",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/EXPERIMENT_RUNTIME.md"
-    },
-    {
-      "title": "Experiment library",
-      "blurb": "ceiling height · curved walls · lighting warmth — each provably single-variable",
+      "title": "Mac work parked",
+      "blurb": "The current Mac release has a packaging defect and below-target performance. The packaging fix is preserved as parked work; no new Mac release or testing is requested during the Windows-first phase.",
       "link": null
-    },
-    {
-      "title": "Operator UI foundation",
-      "blurb": "panel + live control/treatment previews in the lab palette",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/fidelity/ui-operator.jpg"
-    },
-    {
-      "title": "Fixes that matter",
-      "blurb": "walk-mode input bug fixed (rebuild needed on old exes); adversarial review: 7 defects found & fixed",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/lighting-l0-l4/handoffs/FABLE_REVIEW.md"
     }
   ],
   "people": [
     {
       "name": "Diego",
-      "role": "ENGINE · CONTRACTS",
+      "role": "WINDOWS ENGINE AND CONTRACTS",
       "pill": {
-        "text": "unblocks everyone",
+        "text": "Windows fidelity",
         "tone": "hot"
       },
       "actions": [
         {
-          "text": "PR #2 and PR #3 are merged — thank you! Next: review PR #4 (Team Run release + Mac perf fixes; zero file overlap with your realism branch, either merge order works).",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+          "text": "Own Windows geometry, HDRP and lighting realism. Close the runtime PairGate parity gap before calling a room pair study-valid.",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main/unity/Assets/RoomGen/Runtime"
         },
         {
-          "text": "Preset ranges call: add ranges for warmth/contour/wall-bow to dining_room.preset and the new studio's disabled sliders unlock automatically — cheapest way to make it THE demo studio.",
+          "text": "Provide a Windows visual smoke of the current realism path and identify the next fidelity improvement only after the smoke is clean.",
           "link": null
-        },
-        {
-          "text": "Two contract calls still open: lighting.warmth label/formula inversion; coupled-vars notes.",
-          "link": null
-        }
-      ]
-    },
-    {
-      "name": "Michael",
-      "role": "INTEGRATOR → RELEASE MANAGER",
-      "pill": {
-        "text": "this week",
-        "tone": "hot"
-      },
-      "actions": [
-        {
-          "text": "The Mac path is already unlocked — a teammate ran the released app on an M3 Air. What's still needed: a POST-FIX Mac re-test (download the current build, run a session, send back the .perf.csv) to confirm the new performance tier actually holds ≥45fps avg / ≥30fps min.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
-        },
-        {
-          "text": "Fresh-clone check per GETTING_STARTED.md; expect 108/108 EditMode + 3/3 PlayMode green.",
-          "link": null
-        }
-      ]
-    },
-    {
-      "name": "Study design",
-      "role": "TRACK B · 2 TEAMMATES · NO CODE",
-      "pill": {
-        "text": "claim at meeting",
-        "tone": "open"
-      },
-      "actions": [
-        {
-          "text": "Pick the demo experiment (ceiling pair is flagship), write the rating prompt + trials config + hypothesis. A1 has shipped — the operator studio is ready to author through.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/handoffs/REPLAN_JULY.md"
-        }
-      ]
-    },
-    {
-      "name": "Piloting",
-      "role": "TRACK B · EVERYONE",
-      "pill": null,
-      "actions": [
-        {
-          "text": "Run one session as operator, sit as participant in another's. Target 5+ clean CSVs. Report anything confusing — that's the feedback we can't generate.",
-          "link": null
-        }
-      ]
-    },
-    {
-      "name": "Evidence & verdicts",
-      "role": "TRACK B · 1 TEAMMATE",
-      "pill": {
-        "text": "claim at meeting",
-        "tone": "open"
-      },
-      "actions": [
-        {
-          "text": "Call the M2 fidelity-gate verdict on the renders (proposed: conditional pass); then own the demo-day evidence pack.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/paco/lighting-l0-l4/docs/fidelity"
         }
       ]
     },
     {
       "name": "Paco + Claude",
-      "role": "TRACK A · BUILDERS",
-      "pill": null,
+      "role": "WINDOWS INTEGRATION",
+      "pill": {
+        "text": "main baseline",
+        "tone": "hot"
+      },
       "actions": [
         {
-          "text": "A1+A2 (PR #3) and the Team Run release + publish→consume + Mac fixes (PR #4) are all shipped — PR #4 is open for review.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+          "text": "Use a clean Windows workspace from main. Verify author -> publish -> participant -> CSV and record demo-PC performance.",
+          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
         },
         {
-          "text": "Now: waiting on a post-fix Mac performance re-test (the one open external item); everything else in PR #4 is verified.",
-          "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
+          "text": "Keep the local Mac packaging work parked. Do not spend engineering time on Mac optimization until the Windows visual target is stable.",
+          "link": null
+        }
+      ]
+    },
+    {
+      "name": "Study + fidelity review",
+      "role": "NO-CODE TEAM ROLE",
+      "pill": {
+        "text": "claim at meeting",
+        "tone": "open"
+      },
+      "actions": [
+        {
+          "text": "Choose the demo experiment, hypothesis, rating prompt and participant instructions. Review Windows screenshots or video and give a pass, conditional-pass or fail fidelity verdict.",
+          "link": null
+        }
+      ]
+    },
+    {
+      "name": "Access + streaming",
+      "role": "MAC TEAM ROLE",
+      "pill": {
+        "text": "after Windows smoke",
+        "tone": "open"
+      },
+      "actions": [
+        {
+          "text": "Prove that a Mac can use the Windows PC as a GPU host: crisp video, responsive input and simple same-network setup. Research hourly cloud GPU only if this self-hosted route is not enough.",
+          "link": null
         }
       ]
     }
   ],
   "team_run": {
-    "status": "live",
-    "headline": "Download, do one session, send 3 files — both platforms",
+    "status": "windows_primary",
+    "headline": "Windows local demo first; Mac delivery is deferred",
     "windows_download": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-Windows.zip",
-    "mac_download": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/download/team-run-2026-07-10/KnowledgeAtlasStudy-macOS.zip",
-    "mac_status": "launch_verified_perf_pending",
-    "mac_status_meaning": "Mac launch fix implemented and build available. A real tester's session launched and produced valid data, but that same run measured ~5.7 fps (well under our 45fps target) — a Mac performance tier has since been added and shipped. Post-fix performance on real Mac hardware has NOT yet been re-verified. This is the one item still awaiting a human test.",
+    "mac_download": null,
+    "mac_status": "deferred",
+    "mac_status_meaning": "Mac packaging and performance work are parked while the Windows visual target is stabilized. Mac teammates can still contribute through fidelity review, study design, and later streaming tests from the Windows GPU host.",
     "release_page": "https://github.com/Diggss-sys/knowledge-atlas-app/releases/tag/team-run-2026-07-10",
-    "mac_note": "Mac build is universal (Apple Silicon + Intel). Unsigned, so the first launch is blocked: double-click once, dismiss the warning, then System Settings -> Privacy & Security -> 'Open Anyway'. (Terminal fallback: xattr -cr on the app.) A Mac performance tier was added after the first test found low fps -- re-tests are exactly what we need to confirm it now holds the target (45fps avg / 30fps min / control-treatment within 10%).",
-    "guide": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
+    "mac_note": "Do not run new Mac build or performance tests during the Windows-first phase.",
+    "guide": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
   },
   "run_paths": [
     {
-      "title": "Mac — from source",
-      "state": "works now",
+      "title": "Windows local demo",
+      "state": "primary path",
       "tone": "ok",
       "steps": [
-        "Clone, git checkout paco/ui-foundation",
-        "Unity Hub → install 6000.3.16f1 exactly",
-        "Open unity/, wait out first import (10–20 min)",
-        "RoomGen ▸ Fetch CC0 Materials, open RoomStudio scene, Play"
+        "Use a clean Windows workspace from main",
+        "Run the Windows visual smoke and full author-to-participant flow",
+        "Record demo-PC performance before expanding delivery"
       ],
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/GETTING_STARTED.md"
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
     },
     {
-      "title": "Windows — the exe",
-      "state": "works now",
-      "tone": "ok",
+      "title": "Mac access to the Windows GPU",
+      "state": "next delivery experiment",
+      "tone": "warn",
       "steps": [
-        "Ask Paco for the RoomStudio.exe folder",
-        "Double-click → Load KA spec pair → Walk control (WASD/mouse, Tab switches, Esc exits)"
+        "Wait until the local Windows demo is stable",
+        "Test a Mac client against the Windows PC on the same network",
+        "Evaluate cloud GPU only if self-hosted access is not sufficient"
       ],
       "link": null
     },
     {
-      "title": "Mac — the released app",
-      "state": "launch verified, perf re-test wanted",
-      "tone": "warn",
+      "title": "Mac native app",
+      "state": "deferred",
+      "tone": "plain",
       "steps": [
-        "Download the Mac zip from the team-run release, unzip",
-        "Double-click once, dismiss the warning, then System Settings -> Privacy & Security -> 'Open Anyway'",
-        "Run one session, send back the .perf.csv — confirms the new performance tier holds"
+        "Preserve the parked packaging fix",
+        "Return after the Windows visual target and delivery path are stable"
       ],
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/blob/paco/ui-foundation/docs/TEAM_RUN.md"
+      "link": null
     }
   ],
   "footer_links": [
     {
-      "text": "repo",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app"
+      "text": "repo main",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main"
     },
     {
-      "text": "PR #4",
-      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/pull/4"
+      "text": "Windows-first plan",
+      "link": "https://github.com/Diggss-sys/knowledge-atlas-app/tree/main/team_hub"
     }
   ]
 }
