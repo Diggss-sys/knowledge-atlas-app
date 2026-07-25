@@ -4,7 +4,7 @@ A tool that lets a researcher (or a student with two weeks) **design, generate, 
 
 Start with [PLAN.md](PLAN.md). Everything hangs off one contract: the **RoomSpec** ([spec/ROOM_SPEC.md](spec/ROOM_SPEC.md)).
 
-> **⚠ Current architecture (v3, 2026-07-02): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).** Native Unity **HDRP** desktop app (WebGL/URP superseded, DL-8); a **working HDRP parametric generator lives in [`unity/`](unity/)** — curved walls, physically-calibrated lighting, VR scaffolding, one-click Windows build. Team staffing + AI workflow: [docs/TEAM_PLAN.md](docs/TEAM_PLAN.md). Workstreams: [handoffs/](handoffs/). Anything below or in older docs describing "web-first / WebGL / bridge" is history.
+> **Current architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Native Unity **HDRP** desktop app; a working HDRP parametric generator lives in [`unity/`](unity/). **Current execution plan:** [docs/WINDOWS_FIRST_ROADMAP.md](docs/WINDOWS_FIRST_ROADMAP.md) — stabilize the complete Windows experience first, then widen delivery. Older staffing and Mac/VR plans are historical context unless this roadmap says otherwise.
 
 ## The restart — what changed, what didn't
 
@@ -25,6 +25,7 @@ AUTHOR (Unity slider UI, live) → RoomSpec (JSON) → VALIDATE (single-var gate
 | [PLAN.md](PLAN.md) | The one-page plan + dated roadmap. Read first. |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | **The architecture of record** (v3): schematic, data flow, decision log DL-1..14, risk register. |
 | [docs/TEAM_PLAN.md](docs/TEAM_PLAN.md) | 7-person staffing (two trios + integrator) + the human+AI operating model. |
+| [docs/WINDOWS_FIRST_ROADMAP.md](docs/WINDOWS_FIRST_ROADMAP.md) | **Current execution plan:** Windows-first milestones, ownership boundaries, and immediate next actions. |
 | [handoffs/](handoffs/) | Six self-contained workstream files — each teammate feeds ONE to their AI. |
 | [`unity/`](unity/) | The native Unity 6000.3 + HDRP app: parametric generator, studio scene, Windows build. |
 | [spec/ROOM_SPEC.md](spec/ROOM_SPEC.md) · [spec/room_spec.schema.json](spec/room_spec.schema.json) | The RoomSpec contract (frozen v1). |
@@ -44,7 +45,7 @@ AUTHOR (Unity slider UI, live) → RoomSpec (JSON) → VALIDATE (single-var gate
 - Phase 0 (lock the contract): ✅ `spec/room_spec.schema.json` v1 frozen.
 - Phase 1 (prove the pipeline): ✅ ceiling pair + `validate_pair.py` (the gate), tests green.
 - Phase 2 (this package, 2026-07-02): ✅ HDRP pivot decided + working generator adopted into `unity/` + contracts/fixtures/handoffs committed.
-- **Now: M0 → M3** (boot → tracer bullet → instrument → **Kirsh demo ≈ Aug 1**), then M4 library / M5 VR — dated roadmap in [PLAN.md](PLAN.md), live status board in [handoffs/COORDINATION.md](handoffs/COORDINATION.md).
+- **Now: Windows-first execution.** Follow [docs/WINDOWS_FIRST_ROADMAP.md](docs/WINDOWS_FIRST_ROADMAP.md) for current priorities and [team_hub/](team_hub/) for the team-facing status. Older dated roadmaps remain as history.
 
 ## Dev setup
 
