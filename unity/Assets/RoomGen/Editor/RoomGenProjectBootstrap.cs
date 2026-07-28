@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.XR.Management;
@@ -14,6 +15,9 @@ namespace RoomGen.Editor
     public static class RoomGenProjectBootstrap
     {
         const string ScenePath = "Assets/RoomGen/Scenes/RoomStudio.unity";
+        // The UI Toolkit studio goes FIRST so Play lands on it; the legacy IMGUI scene stays enabled
+        // behind it. Only added when the file exists, so a fresh project still bootstraps cleanly.
+        const string UiScenePath = "Assets/RoomGen/Scenes/RoomStudioUI.unity";
         const string PipelinePath = "Assets/RoomGen/Settings/RoomGenHDRP.asset";
 
         static RoomGenProjectBootstrap()
@@ -115,10 +119,15 @@ namespace RoomGen.Editor
                 EditorSceneManager.SaveScene(scene, ScenePath);
             }
 
-            EditorBuildSettings.scenes = new[]
-            {
-                new EditorBuildSettingsScene(ScenePath, true)
-            };
+            // ADDITIVE, never clobbering. This runs on every editor load, so hard-assigning a
+            // single-entry array here silently deleted RoomStudioUI from the build list every time
+            // the editor restarted — which is why "press Play" kept landing on the legacy scene.
+            var scenes = EditorBuildSettings.scenes.ToList();
+            if (File.Exists(UiScenePath) && scenes.All(s => s.path != UiScenePath))
+                scenes.Insert(0, new EditorBuildSettingsScene(UiScenePath, true));
+            if (scenes.All(s => s.path != ScenePath))
+                scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
         }
 
         static void ConfigurePlayer()

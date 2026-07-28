@@ -30,14 +30,14 @@
 
             <engine:ScrollView name="controls-col" class="ka-rail">
 
-                <!-- 1 · ROOM ------------------------------------------------------------------->
+                <!-- 1 · ROOM -->
                 <engine:VisualElement name="room-panel" class="ka-panel">
                     <engine:Label text="Room" class="ka-subheading" />
                     <engine:DropdownField name="room-select" label="Load" class="ka-dropdown" />
                     <engine:Label name="room-hint" class="ka-hint" />
                 </engine:VisualElement>
 
-                <!-- 2 · VARIABLE (the manipulation) --------------------------------------------->
+                <!-- 2 · VARIABLE (the manipulation) -->
                 <engine:VisualElement name="variable-panel" class="ka-panel ka-panel--accent">
                     <engine:Label text="Manipulated variable" class="ka-subheading" />
                     <engine:DropdownField name="variable-select" label="Variable" class="ka-dropdown" />
@@ -46,14 +46,14 @@
                     <engine:Label name="variable-hint" class="ka-hint" />
                 </engine:VisualElement>
 
-                <!-- 3 · SHARED ROOM ------------------------------------------------------------->
+                <!-- 3 · SHARED ROOM -->
                 <engine:VisualElement name="shared-room-panel" class="ka-panel">
                     <engine:Label text="Shared room (both conditions)" class="ka-subheading" />
                     <engine:Slider name="shared.width_m"  label="Width"  show-input-field="true" class="ka-slider" />
                     <engine:Slider name="shared.length_m" label="Length" show-input-field="true" class="ka-slider" />
                 </engine:VisualElement>
 
-                <!-- 4 · SHARED LIGHTING --------------------------------------------------------->
+                <!-- 4 · SHARED LIGHTING -->
                 <engine:VisualElement name="shared-lighting-panel" class="ka-panel">
                     <engine:Label text="Shared lighting (both conditions)" class="ka-subheading" />
                     <engine:Slider name="shared.color_temperature_k" label="Colour temp" show-input-field="true" class="ka-slider" />
@@ -66,7 +66,7 @@
                     <engine:Label name="lighting-hint" class="ka-hint" />
                 </engine:VisualElement>
 
-                <!-- 5 · VIEW (entering the room) ------------------------------------------------>
+                <!-- 5 · VIEW (entering the room) -->
                 <engine:VisualElement name="view-panel" class="ka-panel">
                     <engine:Label text="View" class="ka-subheading" />
                     <engine:Button name="walk-control-button"   text="Walk control"    class="ka-button ka-button--primary" />
@@ -78,7 +78,7 @@
                     <engine:Label name="view-hint" class="ka-hint" />
                 </engine:VisualElement>
 
-                <!-- 6 · DATA -------------------------------------------------------------------->
+                <!-- 6 · DATA -->
                 <engine:VisualElement name="data-panel" class="ka-panel">
                     <engine:Label text="Data" class="ka-subheading" />
                     <engine:VisualElement class="ka-button-row">
@@ -89,7 +89,7 @@
                     <engine:Label name="data-hint" class="ka-hint" />
                 </engine:VisualElement>
 
-                <!-- 7 · STATUS ------------------------------------------------------------------>
+                <!-- 7 · STATUS -->
                 <engine:VisualElement name="status-panel" class="ka-panel">
                     <engine:Label text="Pair check" class="ka-subheading" />
                     <engine:Label name="verdict" text="—" class="ka-status" />
