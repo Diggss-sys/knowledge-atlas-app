@@ -165,10 +165,64 @@ as live process. Don't file tickets into `REQUESTS.md` expecting anyone to pick 
 
 ---
 
-## 7. Open question on this handoff
+## 7. Scope — confirmed: both surfaces
 
-**Does Michael own the hub *and* the Unity operator UI, or just the hub?** They are quite different
-skill sets — the hub is HTML/CSS/GSAP, while the operator panel is Unity UI Toolkit plus C#
-view-models with a test suite behind them. This document assumes **both**. If the intent is web-only,
-the Unity operator lane (and especially the upcoming furniture placement UI) needs a separate owner,
-and that should be settled before the furniture work starts.
+**Settled 2026-07-27: Michael owns both the team hub (web) and the Unity operator UI.** That means
+the upcoming furniture placement UI lands in this lane too, once Diego confirms the engine interface.
+
+The two halves are genuinely different work — HTML/CSS/GSAP on one side, Unity UI Toolkit plus C#
+view-models with a test suite on the other — so §8 is an onramp for the Unity half specifically.
+
+---
+
+## 8. Getting productive (the Unity half)
+
+### Run the project
+
+1. Open [`unity/`](../unity/) in Unity **exactly 6000.3.16f1** (a different version silently upgrades
+   the project). First import takes 10–20 minutes, once.
+2. Run **`RoomGen ▸ Fetch CC0 Materials`** once, with internet. Without it you get flat placeholder
+   colours — everything still works, and one test self-skips.
+3. Full setup detail, including the no-Unity paths: [`docs/GETTING_STARTED.md`](../docs/GETTING_STARTED.md).
+
+### See the UI actually run
+
+**`RoomGen ▸ Live Smoke ▸ Play Operator Studio`** (or **`Play Participant Runner`**) — opens the
+scene and enters Play in one click. Use this constantly; per §4 it's the only thing that catches the
+render bugs the test suite can't see.
+
+### Run the tests
+
+In-editor: **Window ▸ General ▸ Test Runner** → EditMode → Run All, then PlayMode → Run All. Expect
+all green, with at most one skip (`AssetPipelineTests` self-skips when CC0 textures aren't fetched).
+
+Headless, for a clean check or CI:
+
+```
+Unity.exe -runTests -batchmode -projectPath unity -testPlatform EditMode -testResults results.xml -logFile run.log
+```
+
+On Windows, PowerShell does **not** reliably wait on `Unity.exe` — use
+`Start-Process -Wait -PassThru` and parse the `-testResults` XML. Never trust `$LASTEXITCODE` alone.
+
+### What's yours vs what's Diego's
+
+| Yours | Diego's (PR review required to touch) |
+|---|---|
+| [`UI/Operator/`](../unity/Assets/RoomGen/UI/Operator/), [`UI/Runner/`](../unity/Assets/RoomGen/UI/Runner/), [`UI/Shared/`](../unity/Assets/RoomGen/UI/Shared/) | `Runtime/Generation/`, `Runtime/Adapter/`, `Runtime/Validation/`, `Runtime/Gate/` |
+| [`team_hub/`](../team_hub/), [`docs/TEAM_RUN.md`](../docs/TEAM_RUN.md) | `Runtime/Studio/RoomStudioController.cs` (the legacy IMGUI studio) |
+
+Cross-surface edits go through the other lane's owner as reviewer — same spirit as the
+contract-change rule in [`COORDINATION.md`](COORDINATION.md). Anything under `spec/` (schemas,
+fixtures, presets) is a **contract change** with its own heavier ritual; don't edit those casually.
+
+### Branch discipline
+
+Feature branches (`michael/<thing>`), PR into `main`, **never push to `main` directly**. Merges are
+reviewed by the other code contributor.
+
+### Suggested first change
+
+Restore the Team Run downloads to the hub (§3a). It's small, immediately visible to the whole team,
+unblocks people who are currently hitting a dead end — and it walks you straight through the
+`status.json` ↔ page relationship in §3b, which is the thing most worth understanding early.
