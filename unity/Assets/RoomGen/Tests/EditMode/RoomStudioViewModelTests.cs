@@ -30,26 +30,37 @@ namespace RoomGen.Tests
         }
 
         [Test]
-        public void DraggingCoalescesIntoASingleRebuild()
+        public void DragUpdatesLiveButRateLimited()
         {
             var vm = new RoomStudioViewModel(NewPair());
             var rebuilds = 0;
             vm.RebuildRequested += () => rebuilds++;
 
-            // Simulate a drag: many edits inside one debounce window.
+            // A real drag: the room must FOLLOW the slider, not jump to the value once you let go.
+            // 20 frames at 60 fps ≈ 0.33 s, which spans several throttle windows.
             for (var i = 0; i < 20; i++)
             {
                 vm.SetConditionValue(false, 2.4f + i * 0.01f);
-                vm.Tick(0.001f);
+                vm.Tick(1f / 60f);
             }
-            Assert.That(rebuilds, Is.EqualTo(0), "must not rebuild mid-drag");
+            Assert.That(rebuilds, Is.GreaterThan(1),
+                "the room must update DURING the drag, not only when the slider is released");
 
-            vm.Tick(RoomStudioViewModel.DebounceSeconds);
-            Assert.That(rebuilds, Is.EqualTo(1), "one rebuild after the drag settles");
+            // ...but not once per frame — that is the legacy panel's bug (a full mesh regeneration
+            // every frame). 0.33 s at a 0.05 s floor can produce at most ~7.
+            Assert.That(rebuilds, Is.LessThanOrEqualTo(8),
+                "rebuilds must stay rate-limited, not fire every frame");
 
-            // Idle ticks must not keep firing.
+            // Releasing the slider flushes the FINAL value: the last edit of a drag usually lands
+            // inside a throttle window, so one more rebuild is owed. Without it the room would keep
+            // the second-to-last value and quietly disagree with the slider.
             vm.Tick(1f);
-            Assert.That(rebuilds, Is.EqualTo(1));
+            var settled = rebuilds;
+
+            // After that flush, idling must be silent — no rebuild loop burning frames.
+            vm.Tick(1f);
+            vm.Tick(1f);
+            Assert.That(rebuilds, Is.EqualTo(settled), "no rebuilds while idle");
         }
 
         [Test]

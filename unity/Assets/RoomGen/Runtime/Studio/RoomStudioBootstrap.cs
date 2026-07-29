@@ -5,21 +5,17 @@ namespace RoomGen.Studio
 {
     public static class RoomStudioBootstrap
     {
-        // The additive scenes (A1 operator studio, A2 participant runner) compose their own UI and
-        // rooms; auto-spawning the legacy IMGUI controller there would draw a second studio over them
-        // and fight for input. Skip those scenes by name — every other scene (the built RoomStudio
-        // demo, a bare test scene) behaves exactly as before.
-        static readonly string[] AdditiveScenes = { "OperatorStudio", "ParticipantRunner", "RoomStudioUI" };
+        // The ONE scene the legacy IMGUI studio still owns. This used to be an opt-OUT list (spawn
+        // everywhere except a few named scenes), which meant pressing Play on any empty/Untitled
+        // scene silently produced the OLD panel — you had to know to open a specific scene to see the
+        // new one. Opt-IN inverts that: the legacy studio appears only where it is explicitly wanted,
+        // and RoomStudioUiBootstrap (in RoomGen.UI) supplies the UI Toolkit studio everywhere else.
+        const string LegacySceneName = "RoomStudio";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void EnsureStudio()
         {
-            var active = SceneManager.GetActiveScene().name;
-            if (System.Array.IndexOf(AdditiveScenes, active) >= 0) return;
-            // PlayMode test scenes ("InitTestScene<guid>") must stay empty too: auto-spawning the full
-            // IMGUI studio there builds its bundled pair on layers 8/9 at the origin — superimposed on
-            // whatever rooms the test itself builds on those layers (Fable review, 2026-07-10).
-            if (active.StartsWith("InitTestScene")) return;
+            if (SceneManager.GetActiveScene().name != LegacySceneName) return;
             if (Object.FindFirstObjectByType<RoomStudioController>() != null) return;
             if (HasUiToolkitStudio()) return;
             var root = new GameObject("Room Studio");

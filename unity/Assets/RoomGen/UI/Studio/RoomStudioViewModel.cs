@@ -21,7 +21,15 @@ namespace RoomGen.UI.Studio
     /// </summary>
     public sealed class RoomStudioViewModel
     {
-        public const float DebounceSeconds = 0.15f;
+        /// <summary>
+        /// Shortest gap between two rebuilds while the operator is dragging. This is a THROTTLE
+        /// (leading edge), not a debounce: the room updates CONTINUOUSLY during a drag, capped at
+        /// ~20 Hz, instead of waiting for the drag to end. The first version debounced — it only
+        /// rebuilt once the slider was released, so the room snapped to the final value instead of
+        /// following your hand, which is not a live studio. The cap still prevents the legacy panel's
+        /// real problem: regenerating the whole room mesh on every single frame of the drag.
+        /// </summary>
+        public const float MinRebuildInterval = 0.05f;
 
         // ---- plain value types the view renders -------------------------------------------------
 
@@ -71,7 +79,9 @@ namespace RoomGen.UI.Studio
         // ---- state ------------------------------------------------------------------------------
 
         ConditionPairSpec _pair;
-        float _pending = -1f;
+        bool _dirty;
+        // Starts "ready" so the very first edit rebuilds on the next frame, not 50 ms later.
+        float _sinceRebuild = MinRebuildInterval;
         bool _vrAvailable;
         bool _walking;
 
@@ -96,20 +106,20 @@ namespace RoomGen.UI.Studio
         // ---- debounce ---------------------------------------------------------------------------
 
         /// <summary>Queue a rebuild. Repeated calls while dragging coalesce into ONE rebuild.</summary>
-        public void MarkDirty() => _pending = DebounceSeconds;
+        public void MarkDirty() => _dirty = true;
 
         /// <summary>Advance the debounce clock. Call once per frame with Time.deltaTime.</summary>
         public void Tick(float deltaSeconds)
         {
-            if (_pending < 0f) return;
-            _pending -= deltaSeconds;
-            if (_pending > 0f) return;
-            _pending = -1f;
+            _sinceRebuild += deltaSeconds;
+            if (!_dirty || _sinceRebuild < MinRebuildInterval) return;
+            _dirty = false;
+            _sinceRebuild = 0f;
             RebuildRequested?.Invoke();
         }
 
         /// <summary>True while an edit is waiting to be applied (the view can show a subtle hint).</summary>
-        public bool HasPendingEdit => _pending >= 0f;
+        public bool HasPendingEdit => _dirty;
 
         // ---- sliders ----------------------------------------------------------------------------
 
