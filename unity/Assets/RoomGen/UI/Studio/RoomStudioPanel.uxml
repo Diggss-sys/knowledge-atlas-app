@@ -49,16 +49,17 @@
                 <!-- 3 · SHARED ROOM -->
                 <engine:VisualElement name="shared-room-panel" class="ka-panel">
                     <engine:Label text="Shared room (both conditions)" class="ka-subheading" />
-                    <engine:Slider name="shared.width_m"  label="Width"  show-input-field="true" class="ka-slider" />
-                    <engine:Slider name="shared.length_m" label="Length" show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.width_m"  label="Width (m)"  show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.length_m" label="Length (m)" show-input-field="true" class="ka-slider" />
+                    <engine:Label name="shared-room-hint" class="ka-hint" />
                 </engine:VisualElement>
 
                 <!-- 4 · SHARED LIGHTING -->
                 <engine:VisualElement name="shared-lighting-panel" class="ka-panel">
                     <engine:Label text="Shared lighting (both conditions)" class="ka-subheading" />
-                    <engine:Slider name="shared.color_temperature_k" label="Colour temp" show-input-field="true" class="ka-slider" />
-                    <engine:Slider name="shared.target_lux"          label="Brightness"  show-input-field="true" class="ka-slider" />
-                    <engine:Slider name="shared.sun_hour"            label="Sun (hour)"  show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.color_temperature_k" label="Colour temp (K)"  show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.target_lux"          label="Brightness (lux)" show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.sun_hour"            label="Sun (hour)"       show-input-field="true" class="ka-slider" />
                     <engine:VisualElement class="ka-button-row">
                         <engine:Button name="reset-sun-button"  text="Reset sun" class="ka-button" />
                         <engine:Button name="floor-button"      text="Floor: —"  class="ka-button" />

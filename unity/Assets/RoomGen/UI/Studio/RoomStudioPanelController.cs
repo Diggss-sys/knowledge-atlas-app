@@ -113,6 +113,9 @@ namespace RoomGen.UI.Studio
                 RefreshSliders();
             });
             SetLabel("room-hint", "The glazed room is the realism reference — it is what daylight work is judged on.");
+            SetLabel("shared-room-hint",
+                "Applies to BOTH rooms at once, so it can never become a second manipulated variable. "
+                + "Slider limits come from the validator, so you cannot drag into a room the engine will reject.");
         }
 
         void BindVariable()
@@ -319,7 +322,15 @@ namespace RoomGen.UI.Studio
             var seam = _vm.SeamWalkAction(_control?.Root != null);
             SetEnabled("vr-button", vr.Enabled);
             SetEnabled("walk-seam-button", seam.Enabled);
-            SetLabel("view-hint", !vr.Enabled ? vr.Reason : !seam.Enabled ? seam.Reason : "");
+            // ALWAYS explain what the buttons do, and append any disabled reason. The first version
+            // chose one or the other, so on a desktop (where VR is never available) the explanation
+            // was permanently hidden behind "No VR headset detected" — the operator would never learn
+            // what Walk actually does.
+            var what = "Walk = first-person inside that room (WASD, mouse look, Esc to exit). "
+                       + "Walk pair shows both conditions back to back with a fade, the way a "
+                       + "participant sees them.";
+            var blocked = !seam.Enabled ? seam.Reason : !vr.Enabled ? vr.Reason : "";
+            SetLabel("view-hint", string.IsNullOrEmpty(blocked) ? what : what + "\n" + blocked);
 
             var floor = _root.Q<Button>("floor-button");
             if (floor != null)
