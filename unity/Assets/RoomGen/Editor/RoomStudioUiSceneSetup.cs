@@ -26,6 +26,41 @@ namespace RoomGen.Editor
         // walk camera's view the moment the operator enters a room).
         const string PanelSettingsPath = "Assets/RoomGen/UI/Operator/OperatorPanelSettings.asset";
 
+        const string ThemePath = "Assets/UI Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss";
+
+        /// <summary>
+        /// Repairs the PanelSettings' theme reference. A UI Toolkit panel with a DANGLING themeUss
+        /// still lays out perfectly — panels, sliders and buttons all appear — but renders NO TEXT at
+        /// all, because the font comes from the theme. That is exactly what shipped: every label,
+        /// heading, hint and button caption was invisible while the layout looked correct.
+        ///
+        /// It went unnoticed because the capture test builds its OWN PanelSettings via
+        /// CreateInstance and assigns the theme by path, so the rendered PNG had text while the
+        /// editor did not — the screenshot was testing a different object than the one in the scene.
+        /// </summary>
+        [MenuItem("RoomGen/Repair Panel Settings theme")]
+        public static void RepairPanelSettingsTheme()
+        {
+            var ps = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
+            var theme = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(ThemePath);
+            if (ps == null || theme == null)
+            {
+                Debug.LogError($"RepairPanelSettingsTheme: panelSettings={(ps != null)} theme={(theme != null)}");
+                return;
+            }
+
+            var so = new SerializedObject(ps);
+            so.FindProperty("themeUss").objectReferenceValue = theme;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(ps);
+            AssetDatabase.SaveAssets();
+
+            var check = new SerializedObject(
+                AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath));
+            Debug.Log("RepairPanelSettingsTheme: themeUss="
+                      + (check.FindProperty("themeUss").objectReferenceValue?.name ?? "NULL"));
+        }
+
         [MenuItem("RoomGen/Setup Room Studio (UI Toolkit) Scene")]
         public static void CreateAndSaveScene()
         {
