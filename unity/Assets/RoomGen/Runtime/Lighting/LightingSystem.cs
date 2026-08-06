@@ -92,17 +92,21 @@ namespace RoomGen.Lighting
         // EXTERIOR daylight illuminance, as a multiple of the room's INTERIOR target lux. These are
         // two different worlds: a room lit to 300 lux sits under a several-thousand-lux sky. The old
         // 2.5x put the sun at 750 lux — dead twilight — so windows read as flat pale panels, threw
-        // no floor patch, and the walls only ever got GI crumbs (the "Roblox" tell). 20x lands the
-        // sky in real overcast-day territory while still scaling with mood: a 70-lux dim preset gets
-        // a ~1,400 lux dusk sky, a 300-lux room a ~6,000 lux day, a 500-lux bright one ~10,000.
-        // Deliberately not 100,000 (direct noon sun): at the fixed EV100=8 that would leave the
-        // interior a silhouette against blown windows. Tune here first if the look needs pushing.
+        // no floor patch, and the walls only ever got GI crumbs (the "Roblox" tell). 20x overshot the
+        // other way: HDRP's PhysicallyBasedSky derives its visible RADIANCE from this same light, so
+        // the sky dome (seen directly through the glazing, and doubled by SSR.reflectSky bouncing it
+        // off every surface) blew out and read as a saturated "heaven" glow at the fixed EV100 —
+        // exposure is locked (CLAUDE.md: fix physics, don't mask with exposure), so this constant is
+        // the one legal knob. 12x sits lower in the real daylight range (heavy-overcast to bright-sun
+        // spans roughly 2,000-25,000 lux) while staying honest daylight, not the old 750-lux dusk: a
+        // 70-lux dim preset gets a ~840 lux sky, a 300-lux room a ~3,600 lux day, a 500-lux bright one
+        // ~6,000. Tune here first if the look needs pushing either direction.
         // The room does NOT get brighter overall — LightingCalibrator subtracts the daylight that
         // reaches the working plane and the fixtures fill only the remainder, so total illuminance
         // still lands on target and the FIXED exposure stays correct. What changes is where the
         // light COMES FROM (windows, with direction) instead of how much there is.
         // Public: SunSkySystem's time-of-day arc and the calibrator both read this one constant.
-        public const float SunTargetLuxFactor = 20f;
+        public const float SunTargetLuxFactor = 12f;
         // The calibrated static sun: high-left angle for a daylight patch + soft shadows, and the
         // daylight-blend that tints it cooler than the interior lamps. SunSkySystem.Reset restores
         // exactly these, so they live here (change once, both agree) rather than being hand-copied.
