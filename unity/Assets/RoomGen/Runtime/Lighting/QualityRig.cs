@@ -111,12 +111,19 @@ namespace RoomGen.Lighting
             rt.extendShadowCulling.Override(true);
 
             // Volumetric fog: thin indoor participating medium so the sun through the windows
-            // draws visible shafts (god-rays) and the recessed spots get gentle halos. Mean free
-            // path is short enough to read indoors, long enough not to haze the whole room.
+            // draws visible shafts (god-rays) and the recessed spots get gentle halos.
+            // meanFreePath=35 was tuned when LightingSystem.SunTargetLuxFactor was 2.5 (a dim
+            // interior sun). In-scatter brightness scales with the light passing through the medium,
+            // so once the sun became real daylight (12x-20x, Phase 1) the SAME fog density scattered
+            // ~5-8x more light and hazed the whole room to a flat, low-contrast milky wash — every
+            // surface reading close to the same pale tone, windows blown solid white with no visible
+            // sun disk or shaft (Diego's screenshot). Longer mean free path = thinner medium = less
+            // in-scatter per unit light, so it's raised to match the brighter sun instead of masking
+            // it with fog density that no longer fits the room's actual illuminance.
             var fog = profile.Add<Fog>(true);
             fog.enabled.Override(true);
             fog.enableVolumetricFog.Override(true);
-            fog.meanFreePath.Override(35f);
+            fog.meanFreePath.Override(150f);
             fog.anisotropy.Override(0.4f);      // forward scattering — shafts brighten toward the sun
 
             // Contact shadows: short-range screen-space occlusion exactly where geometry meets —
