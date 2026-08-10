@@ -92,14 +92,47 @@ def test_provenance_differences_are_not_stimulus_changes(control, treatment, sch
     assert result["ok"], result["violations"]
 
 
-def test_declared_parent_path_covers_nested_changes(control, treatment, schema):
+def test_broad_parent_declaration_does_not_cover_nested_indexed_changes(control, treatment, schema):
+    """A bare parent like "furniture" must NOT absorb everything beneath it.
+
+    Only GROUP_VARIABLES may cover a whole sub-object; otherwise a pair could differ in any
+    number of nested fields while declaring one variable, voiding the single-variable guarantee.
+    This test asserted the opposite until 2026-08-10 — it was written against the permissive
+    coverage rule and never updated when _is_covered gained the whitelist, so the reference
+    suite was red while all three gate ports agreed with each other. Mirrors the C#
+    PairGateTests.Broad_parent_declaration_does_not_cover_nested_indexed_changes.
+    """
     control, treatment = copy.deepcopy(control), copy.deepcopy(treatment)
     treatment["shell"]["ceiling_height_m"] = control["shell"]["ceiling_height_m"]
     for spec in (control, treatment):
         spec["experiment"]["manipulated_variables"] = ["furniture"]
     treatment["furniture"] = treatment["furniture"][:-1]  # drop the pendant light
+
     result = validate_pair(control, treatment, schema)
+
+    assert not result["ok"], "a bare 'furniture' parent must not cover furniture[8].* changes"
+    assert "undeclared_change" in codes(result), codes(result)
+    assert any(path.startswith("furniture[") for path in result["diff"]), result["diff"]
+
+
+def test_exact_indexed_leaf_declarations_cover_indexed_changes(control, treatment, schema):
+    """The strict-contract way to declare an indexed change: name the exact leaf paths.
+
+    Dropping the 9th item removes both of its leaves, so both are declared and both really do
+    differ — no undeclared_change and no declared_unchanged. Mirrors the C#
+    PairGateTests.Exact_indexed_leaf_declarations_cover_indexed_changes.
+    """
+    control, treatment = copy.deepcopy(control), copy.deepcopy(treatment)
+    treatment["shell"]["ceiling_height_m"] = control["shell"]["ceiling_height_m"]
+    declared = ["furniture[8].catalog_id", "furniture[8].placement.slot"]
+    for spec in (control, treatment):
+        spec["experiment"]["manipulated_variables"] = list(declared)
+    treatment["furniture"] = treatment["furniture"][:-1]  # drop the pendant light
+
+    result = validate_pair(control, treatment, schema)
+
     assert result["ok"], result["violations"]
+    assert all(path.startswith("furniture[") for path in result["diff"]), result["diff"]
 
 
 def test_flatten_uses_dotted_and_indexed_paths():
