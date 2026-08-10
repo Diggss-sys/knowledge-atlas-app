@@ -1,10 +1,16 @@
 # HANDOFF — Knowledge Atlas App (master context for the next session)
 
+> **ARCHIVED 2026-08-10.** This was the repository's front door in June 2026 and is kept for
+> provenance. It is a snapshot of state, not current instruction — several sections describe files,
+> branches, and machine-local paths that have since moved. Start at [README.md](../../README.md),
+> then [PLAN.md](../../PLAN.md), [docs/ARCHITECTURE.md](../ARCHITECTURE.md), and
+> [docs/CODE_MAP.md](../CODE_MAP.md).
+
 *Written 2026-06-10 at the end of the restart session. Everything below is verified state, not aspiration. If you are an assistant reading this: start by running `git status` and the test suite (commands in §6), then pick up at §9.*
 
-> **⚠⚠ MASTER PLAN v3 LANDED (2026-07-02) — start there, not here.** The architecture of record is now **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** (native Unity **HDRP** desktop app; WebGL/URP superseded — decisions DL-8..DL-14): a **working HDRP parametric generator** (built by Paco in the predecessor repo) now lives in **`unity/`** — curved walls, calibrated physical lighting, VR scaffolding, one-click Windows build. Read in order: **[PLAN.md](PLAN.md)** → **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** → **[docs/TEAM_PLAN.md](docs/TEAM_PLAN.md)** (7-person staffing + AI workflow) → YOUR file in **[handoffs/](handoffs/)** (six self-contained workstreams). New contracts: `spec/contracts/` (ENGINE_SEAM, ROOM_API, schema.sql), `spec/study.schema.json`, `spec/response_log.schema.json`, `spec/PRESETS.md`, golden fixtures in `spec/fixtures/` (incl. `diff_vectors.json`, generated from the reference validator). Phase 0/1 state below (§5, §6) is still accurate; PHASE2_PLAN.md is now history/design-source.
+> **⚠⚠ MASTER PLAN v3 LANDED (2026-07-02) — start there, not here.** The architecture of record is now **[docs/ARCHITECTURE.md](../ARCHITECTURE.md)** (native Unity **HDRP** desktop app; WebGL/URP superseded — decisions DL-8..DL-14): a **working HDRP parametric generator** (built by Paco in the predecessor repo) now lives in **`unity/`** — curved walls, calibrated physical lighting, VR scaffolding, one-click Windows build. Read in order: **[PLAN.md](../../PLAN.md)** → **[docs/ARCHITECTURE.md](../ARCHITECTURE.md)** → **[docs/TEAM_PLAN.md](../TEAM_PLAN.md)** (7-person staffing + AI workflow) → YOUR file in **[handoffs/](../../handoffs/)** (six self-contained workstreams). New contracts: `spec/contracts/` (ENGINE_SEAM, ROOM_API, schema.sql), `spec/study.schema.json`, `spec/response_log.schema.json`, `spec/PRESETS.md`, golden fixtures in `spec/fixtures/` (incl. `diff_vectors.json`, generated from the reference validator). Phase 0/1 state below (§5, §6) is still accurate; PHASE2_PLAN.md is now history/design-source.
 
-> **⚠ ARCHITECTURE UPDATED (2026-06-11) — superseded by the 2026-07-02 banner above; kept as history.** The platform is now **Unity-generated parametric 3D rooms with live VR editing** (subject in VR, operator editing live via a Unity slider UI). **3D-only — no 2D/images; the old A-Frame web viewer is dropped; Unity is the renderer, not optional; VR is the end goal, not Phase 5.** Current truth: **[docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md)** + **[docs/VR_LIVE_EDITING.md](docs/VR_LIVE_EDITING.md)** + [docs/RENDERING_RESEARCH.md](docs/RENDERING_RESEARCH.md) + [docs/PROPOSAL.md](docs/PROPOSAL.md). Sections below describing "web-first / images / web viewer" reflect the older draft — trust the current-plan docs over them.
+> **⚠ ARCHITECTURE UPDATED (2026-06-11) — superseded by the 2026-07-02 banner above; kept as history.** The platform is now **Unity-generated parametric 3D rooms with live VR editing** (subject in VR, operator editing live via a Unity slider UI). **3D-only — no 2D/images; the old A-Frame web viewer is dropped; Unity is the renderer, not optional; VR is the end goal, not Phase 5.** Current truth: **[docs/PHASE2_PLAN.md](../PHASE2_PLAN.md)** + **[docs/VR_LIVE_EDITING.md](../VR_LIVE_EDITING.md)** + [docs/RENDERING_RESEARCH.md](../RENDERING_RESEARCH.md) + [docs/PROPOSAL.md](../PROPOSAL.md). Sections below describing "web-first / images / web viewer" reflect the older draft — trust the current-plan docs over them.
 
 ---
 
@@ -34,14 +40,14 @@ AUTHOR (Unity slider UI, live) → RoomSpec JSON → VALIDATE (single-var gate) 
 - **Old angle (cogs160track3v2):** the *generator* was the product — Infinigen/Blender procedural pipeline, baked renders, web viewer/wizard, Cloudflare hosting. Retired because Infinigen's doors/windows were unfixably bad, parameters were unreachable without tearing it apart, and server compression wrecked textures.
 - **New angle (this repo):** the *platform* is the product and the **RoomSpec contract is the keystone**. Renderers are swappable consumers. The validation gate **is** the science. The data-collection half is what makes it a tool, not a demo.
 
-The five guardrails (from [PLAN.md](PLAN.md)): one contract · single-variable isolation **enforced** · modality is a variable, never pool image/VR data · determinism (seed + pinned assets) · generic data layer.
+The five guardrails (from [PLAN.md](../../PLAN.md)): one contract · single-variable isolation **enforced** · modality is a variable, never pool image/VR data · determinism (seed + pinned assets) · generic data layer.
 
 ## 4. Requirements from Prof. Kirsh (June 2026 meeting)
 
-Full notes: [docs/reference/KIRSH_MEETING_NOTES.md](docs/reference/KIRSH_MEETING_NOTES.md). The load-bearing points:
+Full notes: [docs/reference/KIRSH_MEETING_NOTES.md](../reference/KIRSH_MEETING_NOTES.md). The load-bearing points:
 
 - Students get **two weeks** to build stimuli; everything starts from control vs. treatment; he'll curate ~25–50 candidate experiment ideas.
-- Manipulation difficulty, his ranking: ceiling height (easiest) → windows/lighting → wall texture → curved wall (hard; see [docs/CURVED_WALLS_SUBPLAN.md](docs/CURVED_WALLS_SUBPLAN.md)).
+- Manipulation difficulty, his ranking: ceiling height (easiest) → windows/lighting → wall texture → curved wall (hard; see [docs/CURVED_WALLS_SUBPLAN.md](../CURVED_WALLS_SUBPLAN.md)).
 - Experiment types are behavioral: concentration tasks in-room (proofreading), memory tests administered *after/outside* the room, navigation/pointing (angular error as measure), adaptive preference (A-vs-B, ~20 stimuli in ~8 smart comparisons).
 - **Realism bar:** "realistic enough that it gives you a reliable experience of being in the room" — low-poly/GitHub-Pages-VR fidelity explicitly fails.
 - **Engine-agnostic:** he doesn't care about Unity vs anything, only that a non-engine user can say "make the ceiling high." The front end is the product.
@@ -113,7 +119,7 @@ knowledge atlas app/
 
 ## 9. What's NEXT (Phase 2 — "the data half", per PLAN.md)
 
-> **⚠ SUPERSEDED 2026-06-10 — read [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md) instead.** A grill session replanned Phase 2: Unity WebGL is the renderer/display (the old web-viewer route is dropped), Cloudflare Worker + R2 + D1 is the room library and response store, and the next deliverable is an AI-readable workstream handoff package, not code. The sketch below is kept only as history. PHASE2_PLAN.md is a living doc — iterated and pushed in rounds before execution.
+> **⚠ SUPERSEDED 2026-06-10 — read [docs/PHASE2_PLAN.md](../PHASE2_PLAN.md) instead.** A grill session replanned Phase 2: Unity WebGL is the renderer/display (the old web-viewer route is dropped), Cloudflare Worker + R2 + D1 is the room library and response store, and the next deliverable is an AI-readable workstream handoff package, not code. The sketch below is kept only as history. PHASE2_PLAN.md is a living doc — iterated and pushed in rounds before execution.
 
 A minimal **experiment runner**: show the two rooms of a pair → run one task type → log responses → export CSV/JSON. This is the half that makes it a tool to run experiments, not a room generator. Suggested first slice:
 
@@ -124,7 +130,7 @@ A minimal **experiment runner**: show the two rooms of a pair → run one task t
 
 After that (Phase 3+): nuisance-variance control (matched luminance, fixed camera), determinism hooks, more presets (`bedroom`, `classroom` — mirror the dining preset), the curved/bowed-walls geometry (v1.1), the Cloudflare room library + standalone-VR network transport, and the optional AI authoring path (NL brief + preset → structured output → schema-validate → retry; API key server-side only). **Note: the front end is a Unity slider UI, not an HTML form — the old `wizard/` is not the path.**
 
-**Open question pending with Kirsh** (see [docs/PROPOSAL.md](docs/PROPOSAL.md)): what experiment/response types must the tool support, and is **web-3D** a valid primary outcome or is VR core? (Project is **3D-only** — no 2D.) Scopes how generic the data layer must be.
+**Open question pending with Kirsh** (see [docs/PROPOSAL.md](../PROPOSAL.md)): what experiment/response types must the tool support, and is **web-3D** a valid primary outcome or is VR core? (Project is **3D-only** — no 2D.) Scopes how generic the data layer must be.
 
 ## 10. Old-repo salvage map (short version — full version in docs/LEGACY_PROJECT.md)
 

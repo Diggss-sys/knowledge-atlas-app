@@ -15,15 +15,15 @@
 
 | Role | Workstream (handoff) | What they own | Suggested |
 |---|---|---|---|
-| **E1 · Generator steward** | [UNITY_GENERATOR.md](../handoffs/UNITY_GENERATOR.md) | RoomSpecAdapter (KA schema → generator), desktop walk mode, shell/openings/furniture per PRESETS.md, the C# pair gate | **Paco** (it's his code) |
+| **E1 · Generator steward** | [UNITY_GENERATOR.md](../handoffs/archive/UNITY_GENERATOR.md) | RoomSpecAdapter (KA schema → generator), desktop walk mode, shell/openings/furniture per PRESETS.md, the C# pair gate | **Paco** (it's his code) |
 | **E2 · Lighting & fidelity** | [VR_LIVE_EDIT.md](../handoffs/VR_LIVE_EDIT.md) §fidelity + VR phase | HDRP light rig from `lighting.*`, materials/texture playbook, the fidelity gate, matched-luminance calibration; later: the PCVR arm + comfort | engine-curious teammate |
-| **E3 · Experiment runtime** | [EXPERIMENT_RUNTIME.md](../handoffs/EXPERIMENT_RUNTIME.md) | Participant flow (id → instructions → rooms → task), seeded ordering, response rows, CSV + POST, the Windows build | teammate comfortable with app logic |
+| **E3 · Experiment runtime** | [EXPERIMENT_RUNTIME.md](../handoffs/archive/EXPERIMENT_RUNTIME.md) | Participant flow (id → instructions → rooms → task), seeded ordering, response rows, CSV + POST, the Windows build | teammate comfortable with app logic |
 
 ### Platform trio — contracts, UI, data
 
 | Role | Workstream (handoff) | What they own | Suggested |
 |---|---|---|---|
-| **P1 · Operator UI** | [UNITY_UI.md](../handoffs/UNITY_UI.md) | UI Toolkit editor panel (sliders within preset ranges), live diff panel, publish gate, save/load/library browse, AI edit copilot (AI_AUTHORING contract) | design/UX-leaning teammate |
+| **P1 · Operator UI** | [UNITY_UI.md](../handoffs/archive/UNITY_UI.md) | UI Toolkit editor panel (sliders within preset ranges), live diff panel, publish gate, save/load/library browse, AI edit copilot (AI_AUTHORING contract) | design/UX-leaning teammate |
 | **P2 · Contracts & validation** | fixtures + schemas + gate parity (spread across handoffs; referee duties in [COORDINATION.md](../handoffs/COORDINATION.md)) | The schemas, `validate_pair.py` stewardship, golden fixtures, the v1.1 batch, C#/JS gate conformance review | **Diego** (owns the contract) |
 | **P3 · Data & library** | [CLOUDFLARE_DATA.md](../handoffs/CLOUDFLARE_DATA.md) | Worker + D1 + R2 per ROOM_API.md, the JS pair gate, CSV export, deploy runbook | teammate with any web/JS exposure |
 

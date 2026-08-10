@@ -1,6 +1,6 @@
 # Preset contract — how a renderer consumes a RoomPreset + RoomSpec
 
-*Makes the semantics that [presets/dining_room.preset.json](presets/dining_room.preset.json) uses implicitly into a normative contract. The Unity generator ([handoffs/UNITY_GENERATOR.md](../handoffs/UNITY_GENERATOR.md)) implements this; new presets (bedroom, classroom …) must follow it. Closes the gap flagged in [docs/PHASE2_PLAN.md](../docs/PHASE2_PLAN.md) (SlotResolver semantics "currently UNDEFINED").*
+*Makes the semantics that [presets/dining_room.preset.json](presets/dining_room.preset.json) uses implicitly into a normative contract. The Unity generator ([handoffs/archive/UNITY_GENERATOR.md](../handoffs/archive/UNITY_GENERATOR.md)) implements this; new presets (bedroom, classroom …) must follow it. Closes the gap flagged in [docs/PHASE2_PLAN.md](../docs/PHASE2_PLAN.md) (SlotResolver semantics "currently UNDEFINED").*
 
 ## What a preset is
 

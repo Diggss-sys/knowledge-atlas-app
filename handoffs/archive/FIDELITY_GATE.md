@@ -7,10 +7,10 @@
 | Gate | Delivered | Verify |
 |---|---|---|
 | **L0** HDRP quality pass | ACES tonemapping + SSAO + bloom (runtime `QualityRig`); asset support flags (SSGI/SSAO/SSR/shadow-mask) + 4096 shadow atlas set in bootstrap code (`HdrpQualityConfigurator`) so they survive a fresh clone | `QualityRigTests` |
-| **L1** Real PBR materials | `AssetFetcher` downloads ambientCG CC0 zips (SHA-256 locked in [`unity/ASSETS.md`](../unity/ASSETS.md)), packs HDRP MaskMap, builds **triplanar world-mapped** materials over the flat builtins (wood floor, plaster walls/ceiling; +carpet/tile for future rooms) | `AssetPipelineTests` |
+| **L1** Real PBR materials | `AssetFetcher` downloads ambientCG CC0 zips (SHA-256 locked in [`unity/ASSETS.md`](../../unity/ASSETS.md)), packs HDRP MaskMap, builds **triplanar world-mapped** materials over the flat builtins (wood floor, plaster walls/ceiling; +carpet/tile for future rooms) | `AssetPipelineTests` |
 | **L2** Luminaires | Pendant is now a **real luminaire** (emissive shade + point light carrying 40% of the flux, spots give up their share so total flux is conserved) + a directional **sun** per room | `LightingLuminaireTests` |
 | **L3** Calibration honesty | `LightingCalibrator` extended to model the pendant (shared flux split); **measured** matched-luminance harness renders both conditions and checks a reference card at the calibration plane | `CalibrationTests` + `l3-calibration-report.txt` |
-| **L4** Gate evidence | This document + the renders in [`docs/fidelity/`](../docs/fidelity/) | — |
+| **L4** Gate evidence | This document + the renders in [`docs/fidelity/`](../../docs/fidelity/) | — |
 
 ## Evidence (in `docs/fidelity/`)
 

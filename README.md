@@ -1,62 +1,97 @@
-# Knowledge Atlas App — Experiment-Room Platform
+# Knowledge Atlas
 
-A tool that lets a researcher (or a student with two weeks) **design, generate, and run controlled room experiments** — and collect the data.
+**A research instrument for environmental neuroscience.** It lets a researcher author two rooms
+that differ in *exactly one* declared variable, walk both in 3D, run a participant through them,
+and collect clean response data.
 
-Start with [PLAN.md](PLAN.md). Everything hangs off one contract: the **RoomSpec** ([spec/ROOM_SPEC.md](spec/ROOM_SPEC.md)).
+COGS 160 Track 3 · UC San Diego · advised by Prof. David Kirsh.
 
-> **⚠ Current architecture (v3, 2026-07-02): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).** Native Unity **HDRP** desktop app (WebGL/URP superseded, DL-8); a **working HDRP parametric generator lives in [`unity/`](unity/)** — curved walls, physically-calibrated lighting, VR scaffolding, one-click Windows build. Team staffing + AI workflow: [docs/TEAM_PLAN.md](docs/TEAM_PLAN.md). Workstreams: [handoffs/](handoffs/). Anything below or in older docs describing "web-first / WebGL / bridge" is history.
+![The operator studio: a control/treatment pair with live previews and the single-variable verdict](docs/fidelity/ui-operator.jpg)
 
-## The restart — what changed, what didn't
+## The problem this solves
 
-This project is a restart of the COGS 160 Track 3 work (`../cogs160track3v2`). **The goal is unchanged; the angle is new.**
+Studies on how architecture affects people — does a higher ceiling change how you feel, does a
+curved wall read as calmer — live or die on **stimulus control**. If the "high ceiling" room is also
+slightly brighter, or has one more chair, the result is confounded and the finding is worthless.
+Building matched room pairs by hand in a 3D tool is slow and the mistakes are invisible.
 
-**The goal (same as ever):** produce controlled, single-variable room stimuli for environmental-neuroscience experiments — a control room and a treatment room that differ in *exactly one* declared variable (ceiling height, contour angular↔curved, lighting, wall texture) — and run participants through them.
-
-**The angle (v3):** the *platform* is the product, and the **RoomSpec JSON contract** is its keystone. Rooms are generated + rendered **parametrically in Unity HDRP** (native Windows app; the browser arm is deferred — DL-9). The end goal: a subject in VR while another student edits the room live. **3D-only — no flat 2D/images** (the 2D-evidence question is parked with Kirsh, DL-11).
+So the guarantee is the product. Every room is described by a single JSON contract, and a
+control/treatment pair is **mechanically rejected** unless the two specs differ in precisely the
+variables the researcher declared — nothing more, nothing less. A confounded pair cannot be
+published to a participant.
 
 ```
-AUTHOR (Unity slider UI, live) → RoomSpec (JSON) → VALIDATE (single-var gate) → GENERATE+RENDER (Unity HDRP: desktop walk / native VR) → COLLECT (responses → CSV + Cloudflare)
+AUTHOR              VALIDATE               GENERATE + RENDER          COLLECT
+Unity slider UI  →  single-variable gate → Unity HDRP room build  →  responses → CSV
+(live previews)     (declared vars only)   (desktop walk / VR)
 ```
 
-## Layout
+The gate has a Python reference implementation, [`tools/validate_pair.py`](tools/validate_pair.py),
+and every port must reproduce it against committed golden vectors
+([`spec/fixtures/diff_vectors.json`](spec/fixtures/)). That is the project's load-bearing test.
+
+## Run it
+
+**Just want to see a study run?** Download the participant app — no Unity, no source.
+See [docs/TEAM_RUN.md](docs/TEAM_RUN.md). *(Windows is verified. macOS currently has a known
+packaging defect and is below its performance target — details in that doc.)*
+
+**Working on it?** Full setup in [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md). The short
+version:
+
+```powershell
+# Contracts + the reference gate (Python)
+python -m pip install -r requirements.txt
+python -m pytest tests -q
+python tools/validate_pair.py spec/pairs/ceiling_height_study_01/control.spec.json `
+                              spec/pairs/ceiling_height_study_01/treatment.spec.json
+
+# The app: Unity Hub → install exactly 6000.3.16f1 → open unity/ → wait for HDRP import
+# → menu "RoomGen ▸ Bootstrap Project" → "RoomGen ▸ Fetch CC0 Materials" → Play.
+```
+
+A different Unity version will silently upgrade the project — 6000.3.16f1 exactly.
+
+## Where things are
+
+**Read first:** [PLAN.md](PLAN.md) (one-page plan) → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+(architecture of record, decision log) → [docs/CODE_MAP.md](docs/CODE_MAP.md) (**what boots, what
+owns what, which surfaces are retiring** — read this before touching any UI).
 
 | Path | What |
 |---|---|
-| [PLAN.md](PLAN.md) | The one-page plan + dated roadmap. Read first. |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | **The architecture of record** (v3): schematic, data flow, decision log DL-1..14, risk register. |
-| [docs/TEAM_PLAN.md](docs/TEAM_PLAN.md) | 7-person staffing (two trios + integrator) + the human+AI operating model. |
-| [handoffs/](handoffs/) | Six self-contained workstream files — each teammate feeds ONE to their AI. |
-| [`unity/`](unity/) | The native Unity 6000.3 + HDRP app: parametric generator, studio scene, Windows build. |
-| [spec/ROOM_SPEC.md](spec/ROOM_SPEC.md) · [spec/room_spec.schema.json](spec/room_spec.schema.json) | The RoomSpec contract (frozen v1). |
-| [spec/PRESETS.md](spec/PRESETS.md) · [spec/presets/](spec/presets/) | The preset envelope contract + room-type presets. |
-| [spec/study.schema.json](spec/study.schema.json) · [spec/response_log.schema.json](spec/response_log.schema.json) · [spec/RESPONSE_LOG.md](spec/RESPONSE_LOG.md) | Study + data-row contracts. |
-| [spec/contracts/](spec/contracts/) | ENGINE_SEAM (ISpecChannel) · ROOM_API (Worker REST) · AI_AUTHORING (NL copilot) · schema.sql (D1). |
-| [spec/fixtures/](spec/fixtures/) | Golden fixtures: `diff_vectors.json` (generated from the reference validator), seam messages, response rows. |
-| [spec/pairs/](spec/pairs/) · [spec/examples/](spec/examples/) | Committed control/treatment pairs + example specs. |
-| [tools/validate_pair.py](tools/validate_pair.py) | **The single-variable gate** — the reference implementation every port must match. |
-| [docs/PROPOSAL.md](docs/PROPOSAL.md) · [docs/RENDERING_RESEARCH.md](docs/RENDERING_RESEARCH.md) · [docs/VR_LIVE_EDITING.md](docs/VR_LIVE_EDITING.md) · [docs/ROOMSPEC_V1_1.md](docs/ROOMSPEC_V1_1.md) · [docs/CURVED_WALLS_SUBPLAN.md](docs/CURVED_WALLS_SUBPLAN.md) · [docs/ASSET_SOURCING.md](docs/ASSET_SOURCING.md) · [docs/STORAGE.md](docs/STORAGE.md) | Science, rendering physics, VR end-goal, v1.1 batch, assets, storage. |
-| [docs/PHASE2_PLAN.md](docs/PHASE2_PLAN.md) · [docs/TECH_FEASIBILITY.md](docs/TECH_FEASIBILITY.md) | **History / design source** (the WebGL-era plan superseded by v3). |
-| [docs/reference/KIRSH_MEETING_NOTES.md](docs/reference/KIRSH_MEETING_NOTES.md) | Distilled requirements from the June 2026 Kirsh meeting. |
-| [docs/LEGACY_PROJECT.md](docs/LEGACY_PROJECT.md) | Salvage map of the old repo. |
+| [`unity/`](unity/) | The Unity 6000.3 + HDRP app: parametric generator, operator studio, participant runner. |
+| [`spec/`](spec/) | The contracts. `room_spec.schema.json` (frozen v1), `study.schema.json`, `response_log.schema.json`, `contracts/` (engine seam, room API), `fixtures/` (golden vectors), `pairs/` (committed study pairs). |
+| [`tools/validate_pair.py`](tools/validate_pair.py) | The single-variable gate — reference implementation. |
+| [`tests/`](tests/) | Python contract tests. Unity tests live in `unity/Assets/RoomGen/Tests/`. |
+| [`docs/`](docs/) | Architecture, code map, setup, performance targets, research notes, and `history/` for superseded plans. |
+| [`handoffs/`](handoffs/) | Per-workstream execution briefs — see [handoffs/README.md](handoffs/README.md) for what's live vs archived. |
+| [`team_hub/`](team_hub/) | The team's status site. |
 
 ## Status
 
-- Phase 0 (lock the contract): ✅ `spec/room_spec.schema.json` v1 frozen.
-- Phase 1 (prove the pipeline): ✅ ceiling pair + `validate_pair.py` (the gate), tests green.
-- Phase 2 (this package, 2026-07-02): ✅ HDRP pivot decided + working generator adopted into `unity/` + contracts/fixtures/handoffs committed.
-- **Now: M0 → M3** (boot → tracer bullet → instrument → **Kirsh demo ≈ Aug 1**), then M4 library / M5 VR — dated roadmap in [PLAN.md](PLAN.md), live status board in [handoffs/COORDINATION.md](handoffs/COORDINATION.md).
+| Milestone | State |
+|---|---|
+| Contract frozen (`room_spec.schema.json` v1) | Done |
+| Pipeline proven end-to-end (author → gate → render → CSV) | Done |
+| HDRP generator: curved walls, calibrated physical lighting, daylight model | Done |
+| Operator studio + participant runner, released as a desktop app | Windows verified; macOS has open defects |
+| Furniture placement (free X/Z, catalog) | In progress |
+| VR live-editing (participant in headset, operator editing live) | Not started — the north star |
 
-## Dev setup
+Current focus and dated roadmap: [PLAN.md](PLAN.md). Live status board:
+[handoffs/COORDINATION.md](handoffs/COORDINATION.md).
 
-```powershell
-# Python (contracts + gate) — from the repo root:
-python -m pip install -r requirements.txt
-python -m pytest tests -q
-python tools/validate_pair.py spec/pairs/ceiling_height_study_01/control.spec.json spec/pairs/ceiling_height_study_01/treatment.spec.json
+## About the code
 
-# Unity (Engine trio): Unity Hub → install 6000.3.16f1 (+ Windows Build Support) →
-# open unity/ → wait for packages → menu "RoomGen ▸ Bootstrap Project" → open
-# Assets/RoomGen/Scenes/RoomStudio.unity → Play.  Build: "RoomGen ▸ Build Windows Application".
-```
+This is a student research project built with heavy AI assistance, and the commit history says so
+openly — co-author trailers are left intact. The engineering standards that matter here are the ones
+the science depends on: the single-variable gate has a reference implementation and golden vectors,
+the participant-facing UI is kept free of anything that could cue a hypothesis, and claims about
+visual output are verified by looking at renders rather than by green tests
+([docs/CODE_MAP.md](docs/CODE_MAP.md) §4).
 
-*(Some machines use `py` instead of `python` — whichever launcher works.)*
+*Predecessor repo (retired): [`1michaelbongiorno/cogs160track3v2`](https://github.com/1michaelbongiorno/cogs160track3v2) —
+a Blender/Infinigen generation pipeline with a web viewer. Retired because the generator's openings
+were unfixable and its parameters weren't reachable; the salvage map is
+[docs/LEGACY_PROJECT.md](docs/LEGACY_PROJECT.md).*

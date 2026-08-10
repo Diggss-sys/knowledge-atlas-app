@@ -8,7 +8,7 @@ The platform generates controlled room stimuli in a native Unity app and logs pa
 
 Important scope note: **the V1 Kirsh demo does not depend on you** (local CSV is the fallback per decision DL-5), so you can build against `wrangler dev` on your own machine without ever blocking the Unity trios. Your workstream turns "a demo" into "a shared library + global data collection" (milestone M4).
 
-The predecessor repo (`1michaelbongiorno/cogs160track3v2`, reachable read-only as a sibling checkout) contains a **proven Worker pattern** to mine: `cloudflare/worker.js` + `cloudflare/upload_room.py` (API-key auth, content-addressed R2 keys, deploy flow). Mine the *patterns* (auth header handling, hashing, CORS), not the code wholesale — that Worker stored heavy GLB assets; yours stores tiny JSON.
+The predecessor repo (`1michaelbongiorno/cogs160track3v2`) contains a **proven Worker pattern** to mine: `cloudflare/worker.js` + `cloudflare/upload_room.py` (API-key auth, content-addressed R2 keys, deploy flow). Mine the *patterns* (auth header handling, hashing, CORS), not the code wholesale — that Worker stored heavy GLB assets; yours stores tiny JSON.
 
 ## Contracts you implement
 

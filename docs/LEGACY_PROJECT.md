@@ -1,6 +1,6 @@
 # Legacy project map — what to salvage from `cogs160track3v2`
 
-The previous repo lives at `../cogs160track3v2` (branch work on `Diggss-sys-branch`; shared class repo `1michaelbongiorno/cogs160track3v2`). It stays untouched as reference. This is the map of what's there and what's worth pulling into the new platform when each phase needs it.
+The previous repo is the shared class repo [`1michaelbongiorno/cogs160track3v2`](https://github.com/1michaelbongiorno/cogs160track3v2) (branch work on `Diggss-sys-branch`). It stays untouched as reference. This is the map of what's there and what's worth pulling into the new platform when each phase needs it.
 
 ## Directly reusable (pull when the phase calls for it)
 

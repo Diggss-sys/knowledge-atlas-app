@@ -1,6 +1,6 @@
 # AI_AUTHORING — the natural-language authoring contract
 
-*Decided 2026-07-03 (ARCHITECTURE.md DL-15; a Kirsh requirement). Phase A = **edit copilot**, minimal version ships with the demo (M2–M3, feature-flagged). Phase B = **experiment-design assistant** (M4). Implemented inside the operator UI workstream ([handoffs/UNITY_UI.md](../../handoffs/UNITY_UI.md) step U5).*
+*Decided 2026-07-03 (ARCHITECTURE.md DL-15; a Kirsh requirement). Phase A = **edit copilot**, minimal version ships with the demo (M2–M3, feature-flagged). Phase B = **experiment-design assistant** (M4). Implemented inside the operator UI workstream ([handoffs/UNITY_UI.md](../../handoffs/archive/UNITY_UI.md) step U5).*
 
 ## The invariant (read this first)
 
