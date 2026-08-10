@@ -17,7 +17,10 @@ AUTHOR (sliders/AI) → RoomSpec JSON → VALIDATE (single-var gate) → GENERAT
 ## Read order
 
 1. **This file.**
-2. [PLAN.md](PLAN.md) — one-page picture + pipeline diagram.
+2. **[docs/CODE_MAP.md](docs/CODE_MAP.md)** — what boots when you press Play, which of the three UI
+   surfaces is current, what is being retired, and the rules that stop a fourth one appearing.
+   **Read this before adding any UI or entry point.**
+3. [PLAN.md](PLAN.md) — one-page picture + pipeline diagram.
 3. [handoffs/REPLAN_JULY.md](handoffs/REPLAN_JULY.md) — **the current execution plan** (2026-07-09).
 4. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — architecture of record (v3, HDRP-native) + decision log DL-1..15.
 5. Your lane's doc (below), then code.
@@ -59,6 +62,12 @@ AUTHOR (sliders/AI) → RoomSpec JSON → VALIDATE (single-var gate) → GENERAT
 - Sprint records (`handoffs/LIGHTING_SPRINT`, `OVERNIGHT_BUILD`, `FABLE_REVIEW`, `FIDELITY_GATE`,
   `A1_A2_REVIEW`, `SOFTWARE_FOUNDATION`) — completed work logs.
 - `docs/PROPOSAL.md` — the course proposal; keep intact, it's a deliverable.
+
+## THREE studios (known duplication — see [docs/CODE_MAP.md](docs/CODE_MAP.md) §3 for the retirement order)
+
+There is now a third surface: `UI/Studio/` (UI Toolkit, the current default on Play). **Do not add a
+fourth.** Extend `UI/Studio`; any parallel build must ship with the commit that deletes what it
+replaces. The section below predates it and is kept for context.
 
 ## Two studios (known duplication — converging, not both forever)
 

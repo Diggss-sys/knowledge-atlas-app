@@ -65,7 +65,14 @@ namespace RoomGen.Generation
                 {
                     var mesh = WallBand.BuildMesh(FootprintPath.OffsetInward(pane, 0.005f),
                         opening.BottomM, opening.TopM, 0.025f, "Glass Mesh");
-                    GenerationUtil.CreateMeshObject("Glass", parent, mesh, glassMaterial, layer);
+                    var glass = GenerationUtil.CreateMeshObject("Glass", parent, mesh, glassMaterial, layer);
+                    // A window pane must not cast a shadow. HDRP renderers default to
+                    // ShadowCastingMode.On, and a TRANSPARENT material without explicit
+                    // transparent-shadow setup casts a SOLID shadow — so the glass was blocking the
+                    // very sunlight it exists to admit: bright panes, but no light patch on the
+                    // floor and no daylight in the room, no matter how strong the sun.
+                    glass.GetComponent<MeshRenderer>().shadowCastingMode =
+                        UnityEngine.Rendering.ShadowCastingMode.Off;
                 }
             }
 

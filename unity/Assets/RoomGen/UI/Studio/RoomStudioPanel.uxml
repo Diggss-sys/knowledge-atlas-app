@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML
+    xmlns:engine="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements">
+
+    <!--
+      Room Studio (UI Toolkit rebuild of the legacy IMGUI panel).
+
+      The IMGUI original put TWELVE ungrouped buttons in a fixed GUILayout.BeginArea with no
+      scrolling, so on a short window the last controls were clipped off-screen and simply could not
+      be clicked — they read as "dead buttons" when they were only unreachable. Everything here lives
+      in a ScrollView and is grouped under a labelled panel, so the operator can always see what a
+      control belongs to and can always reach it.
+
+      This is a THIN view: no state lives here. RoomStudioPanelController binds every named element
+      to RoomStudioViewModel. Styling is the lab palette in UI/Shared/base.uss.
+    -->
+    <engine:VisualElement name="studio-root" class="ka-root">
+
+        <Style src="../Shared/base.uss" />
+
+        <engine:VisualElement name="topbar" class="ka-topbar">
+            <engine:Label text="Knowledge Atlas" class="ka-wordmark" />
+            <!-- The loaded room's REAL name. The IMGUI title was hardcoded "Dining room /…" and kept
+                 saying that after you loaded a different room. -->
+            <engine:Label name="room-title" text="—" class="ka-wordmark-sub" />
+        </engine:VisualElement>
+
+        <engine:VisualElement name="body" class="ka-body">
+
+            <engine:ScrollView name="controls-col" class="ka-rail">
+
+                <!-- 1 · ROOM -->
+                <engine:VisualElement name="room-panel" class="ka-panel">
+                    <engine:Label text="Room" class="ka-subheading" />
+                    <engine:DropdownField name="room-select" label="Load" class="ka-dropdown" />
+                    <engine:Label name="room-hint" class="ka-hint" />
+                </engine:VisualElement>
+
+                <!-- 2 · VARIABLE (the manipulation) -->
+                <engine:VisualElement name="variable-panel" class="ka-panel ka-panel--accent">
+                    <engine:Label text="Manipulated variable" class="ka-subheading" />
+                    <engine:DropdownField name="variable-select" label="Variable" class="ka-dropdown" />
+                    <engine:Slider name="control-value"   label="Control"   show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="treatment-value" label="Treatment" show-input-field="true" class="ka-slider" />
+                    <engine:Label name="variable-hint" class="ka-hint" />
+                </engine:VisualElement>
+
+                <!-- 3 · SHARED ROOM -->
+                <engine:VisualElement name="shared-room-panel" class="ka-panel">
+                    <engine:Label text="Shared room (both conditions)" class="ka-subheading" />
+                    <engine:Slider name="shared.width_m"  label="Width (m)"  show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.length_m" label="Length (m)" show-input-field="true" class="ka-slider" />
+                    <engine:Label name="shared-room-hint" class="ka-hint" />
+                </engine:VisualElement>
+
+                <!-- 4 · SHARED LIGHTING -->
+                <engine:VisualElement name="shared-lighting-panel" class="ka-panel">
+                    <engine:Label text="Shared lighting (both conditions)" class="ka-subheading" />
+                    <engine:Slider name="shared.color_temperature_k" label="Colour temp (K)"  show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.target_lux"          label="Brightness (lux)" show-input-field="true" class="ka-slider" />
+                    <engine:Slider name="shared.sun_hour"            label="Sun (hour)"       show-input-field="true" class="ka-slider" />
+                    <engine:VisualElement class="ka-button-row">
+                        <engine:Button name="reset-sun-button"  text="Reset sun" class="ka-button" />
+                        <engine:Button name="floor-button"      text="Floor: —"  class="ka-button" />
+                    </engine:VisualElement>
+                    <engine:Label name="lighting-hint" class="ka-hint" />
+                </engine:VisualElement>
+
+                <!-- 5 · VIEW (entering the room) -->
+                <engine:VisualElement name="view-panel" class="ka-panel">
+                    <engine:Label text="View" class="ka-subheading" />
+                    <engine:Button name="walk-control-button"   text="Walk control"    class="ka-button ka-button--primary" />
+                    <engine:Button name="walk-treatment-button" text="Walk treatment"  class="ka-button" />
+                    <engine:Button name="walk-seam-button"      text="Walk pair (seam)" class="ka-button" />
+                    <engine:Button name="vr-button"             text="Explore in VR"   class="ka-button" />
+                    <!-- Why a control is unavailable is always SHOWN. The IMGUI panel hid or greyed
+                         buttons with no explanation, which is what made them feel broken. -->
+                    <engine:Label name="view-hint" class="ka-hint" />
+                </engine:VisualElement>
+
+                <!-- 6 · DATA -->
+                <engine:VisualElement name="data-panel" class="ka-panel">
+                    <engine:Label text="Data" class="ka-subheading" />
+                    <engine:VisualElement class="ka-button-row">
+                        <engine:Button name="save-button" text="Save" class="ka-button" />
+                        <engine:Button name="load-button" text="Load" class="ka-button" />
+                    </engine:VisualElement>
+                    <engine:Button name="export-button" text="Export research package" class="ka-button" />
+                    <engine:Label name="data-hint" class="ka-hint" />
+                </engine:VisualElement>
+
+                <!-- 7 · STATUS -->
+                <engine:VisualElement name="status-panel" class="ka-panel">
+                    <engine:Label text="Pair check" class="ka-subheading" />
+                    <engine:Label name="verdict" text="—" class="ka-status" />
+                    <!-- Engine errors are surfaced VERBATIM here (locked decision) — never reworded. -->
+                    <engine:Label name="status-text" class="ka-label--dim" />
+                    <engine:VisualElement name="issue-list" class="ka-diff-list" />
+                </engine:VisualElement>
+
+            </engine:ScrollView>
+
+            <!-- Live preview panes; the controller feeds these RenderTextures from PreviewRenderer. -->
+            <engine:VisualElement name="preview-row" class="ka-preview-row">
+                <engine:VisualElement class="ka-preview-col">
+                    <engine:Label text="CONTROL" class="ka-preview-caption" />
+                    <engine:VisualElement name="control-preview" class="ka-preview-pane" />
+                    <engine:Label name="control-caption" class="ka-hint" />
+                </engine:VisualElement>
+                <engine:VisualElement class="ka-preview-col">
+                    <engine:Label text="TREATMENT" class="ka-preview-caption" />
+                    <engine:VisualElement name="treatment-preview" class="ka-preview-pane" />
+                    <engine:Label name="treatment-caption" class="ka-hint" />
+                </engine:VisualElement>
+            </engine:VisualElement>
+
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>

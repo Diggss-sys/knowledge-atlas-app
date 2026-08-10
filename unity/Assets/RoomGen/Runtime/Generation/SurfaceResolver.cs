@@ -66,6 +66,19 @@ namespace RoomGen.Generation
             material.SetFloat("_SrcBlend", 1f);             // One (HDRP premultiplies alpha in-shader)
             material.SetFloat("_DstBlend", 10f);            // OneMinusSrcAlpha
             material.SetFloat("_AlphaDstBlend", 10f);
+
+            // THE bug that made every window a flat blown-white card: with premultiplied blending
+            // (SrcBlend=One, DstBlend=OneMinusSrcAlpha), alpha=1 makes DstBlend = 1-1 = 0, so the
+            // refracted/transmitted background contributes NOTHING to the final pixel — the pane is
+            // structurally opaque no matter what _SurfaceType says. The committed .mat is authored
+            // OPAQUE (alpha=1) and nothing here ever lowered it after flipping to Transparent. What
+            // reached the screen was only the specular/SSR reflection of the sky sitting on a flat
+            // base color — no sun disc, no sky, no depth. A real window needs a LOW alpha so the
+            // background actually shows through.
+            var c = material.HasProperty("_BaseColor") ? material.GetColor("_BaseColor") : material.color;
+            c.a = 0.08f;
+            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", c);
+            if (material.HasProperty("_Color")) material.SetColor("_Color", c);
             material.SetFloat("_ZWrite", 0f);
             material.SetFloat("_TransparentZWrite", 0f);
             material.SetFloat("_ZTestDepthEqualForOpaque", 4f);

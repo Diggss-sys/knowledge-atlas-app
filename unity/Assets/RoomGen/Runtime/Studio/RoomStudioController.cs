@@ -128,7 +128,11 @@ namespace RoomGen.Studio
 
         void LoadBundledPair()
         {
-            var source = Resources.Load<TextAsset>("RoomGen/Examples/ceiling-height-pair");
+            // The GLAZED room is the primary studio room: daylight through windows is the thing the
+            // realism pass is actually judged on, so the studio should open on it rather than on a
+            // view of a blank wall. Falls back to the dining pair, then an empty spec.
+            var source = Resources.Load<TextAsset>("RoomGen/Examples/realism-test-pair")
+                         ?? Resources.Load<TextAsset>("RoomGen/Examples/ceiling-height-pair");
             pair = source != null
                 ? RoomJson.Deserialize<ConditionPairSpec>(source.text)
                 : new ConditionPairSpec();
@@ -155,12 +159,16 @@ namespace RoomGen.Studio
             if (rig == null) return;
             var g = spec.Geometry;
             var halfL = g.LengthM * 0.5f;
-            var frontBow = g.WallBow?.Front ?? 0f;
-            var frontInset = frontBow < 0f ? -frontBow * Mathf.Max(0f, g.BowMaxM) : 0f;
-            var z = halfL - frontInset - 0.45f; // 0.45 m clear of the worst-case front wall face
+            // Stand just inside the BACK wall and look toward the FRONT. The preview used to do the
+            // opposite — stand at the front and face the blank back wall — so the glazing (and every
+            // bit of daylight it admits) sat behind the camera and window light never showed up in
+            // the thumbnails at all. Facing the front wall puts the windows in frame.
+            var backBow = g.WallBow?.Back ?? 0f;
+            var backInset = backBow < 0f ? -backBow * Mathf.Max(0f, g.BowMaxM) : 0f;
+            var z = -(halfL - backInset - 0.45f); // 0.45 m clear of the worst-case back wall face
             var eyeY = Mathf.Min(1.58f, g.CeilingHeightM - 0.25f);
             rig.position = new Vector3(0f, eyeY, z);
-            rig.LookAt(new Vector3(0f, Mathf.Min(1.32f, g.CeilingHeightM * 0.45f), -halfL * 0.25f));
+            rig.LookAt(new Vector3(0f, Mathf.Min(1.32f, g.CeilingHeightM * 0.45f), halfL * 0.25f));
         }
 
         RoomGenerator CreateGenerator(string objectName, int layer)
@@ -589,7 +597,23 @@ namespace RoomGen.Studio
             }
             pair = RoomJson.Deserialize<ConditionPairSpec>(source.text);
             Rebuild();
-            status = "Realism test room loaded — try the Sun slider and walk it. " + status;
+            DriveSeamFromCurrentPair();
+            status = "Realism test room loaded — walk it, or try the Sun slider. " + status;
+        }
+
+        /// <summary>
+        /// Push the CURRENT pair through the seam so the WALK generator is populated too.
+        /// Rebuild() only fills the two preview generators; without this a loaded pair could be
+        /// previewed but never entered — "Walk pair via seam" stays hidden (the button keys off
+        /// canonicalControlJson, which only LoadKaPair used to set) and ToggleSeamWalk would hand
+        /// the walker a null root. Every loader must call this, or it dead-ends the same way.
+        /// </summary>
+        void DriveSeamFromCurrentPair()
+        {
+            canonicalControlJson = RoomJson.Serialize(pair.Control);
+            canonicalTreatmentJson = RoomJson.Serialize(pair.Treatment);
+            activeWalkCondition = "control";
+            seamChannel?.LoadPair(canonicalControlJson, canonicalTreatmentJson, NextRequestId());
         }
 
         void ToggleSeamWalk()

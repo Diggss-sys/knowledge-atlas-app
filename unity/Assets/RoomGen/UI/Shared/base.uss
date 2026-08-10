@@ -266,6 +266,7 @@
 .ka-label--dim {
     color: var(--ka-text-dim);
     font-size: var(--ka-font-sm);
+    white-space: normal;   /* status lines must wrap, not run off the panel edge */
 }
 
 /* ---- status / validation states as hub callout chips (light bg + family border + deep text) ---- */
@@ -311,6 +312,9 @@
 .ka-diff-row {
     font-size: var(--ka-font-sm);
     margin-bottom: var(--ka-space-1);
+    /* Engine errors are surfaced VERBATIM (locked decision), which is pointless if a long message
+       runs off the panel edge. UI Toolkit labels do not wrap by default. */
+    white-space: normal;
 }
 
 /* buttons: forest for workaday actions; burnt orange (hub primary) is reserved for the CTA */
