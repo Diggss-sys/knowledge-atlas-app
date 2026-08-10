@@ -4,9 +4,9 @@
 project from source in Unity (an M1/M2 MacBook handles it fine — the scene is light). ~30 min the
 first time, almost all of it Unity importing.*
 
-> **Which branch?** `main` is current through PR #3 (engine, the operator studio, the participant
-> runner). The Team Run app release and the Mac performance fixes are on **`paco/ui-foundation`**
-> (PR #4, open — review pending) — check that branch out if you want the latest before it merges.
+> **Which branch?** `main`. Everything is merged there — engine, both studio surfaces, the
+> participant runner, the Team Run app release, and the Mac performance work. There is no
+> "check out this branch instead" step any more.
 
 ## Path A — Mac (and any dev machine): run from source
 
@@ -14,7 +14,6 @@ first time, almost all of it Unity importing.*
    ```
    git clone https://github.com/Diggss-sys/knowledge-atlas-app.git
    cd knowledge-atlas-app
-   git checkout paco/ui-foundation
    ```
 2. **Install Unity Hub** from unity.com/download (Apple Silicon version on M-series Macs), sign in,
    pick the free **Personal** license.
@@ -28,10 +27,20 @@ first time, almost all of it Unity importing.*
    "XR settings not ready", run **RoomGen ▸ Bootstrap Project** once — otherwise you don't need to.
 6. **Fetch the real materials** (one time, needs internet): **RoomGen ▸ Fetch CC0 Materials**.
    Without this you get flat placeholder colours — everything still works.
-7. **Run it**: open `Assets/RoomGen/Scenes/RoomStudio.unity` and press **Play**. Load the KA pair,
-   walk it (WASD + mouse, Esc exits, Tab switches condition in the seam walk).
+7. **Run it.** Which scene depends on what you're doing — see [CODE_MAP.md](CODE_MAP.md) §1 and §3:
+   - `Assets/RoomGen/Scenes/RoomStudioUI.unity` — **room authoring and realism** (geometry,
+     lighting, materials). This is the default scene.
+   - `Assets/RoomGen/Scenes/OperatorStudio.unity` — **the study instrument**: author a pair, see the
+     single-variable verdict, publish it for a participant.
+   - `Assets/RoomGen/Scenes/ParticipantRunner.unity` — the participant flow (id → instructions →
+     walk → rate → CSV).
+
+   Press **Play**, load the KA pair, and walk it: WASD + mouse, Esc exits, Tab switches condition in
+   the seam walk. *(`Scenes/RoomStudio.unity` is the legacy IMGUI studio and is being retired.)*
 8. **Sanity check (optional but appreciated)**: Window ▸ General ▸ Test Runner ▸ EditMode ▸ Run All
-   — expect **108/108 green** (plus 3/3 in Play Mode). If not, screenshot the failures into Discord.
+   — expect **124 passing, 1 skipped** (the skip is the floor-material test, which needs
+   *Fetch CC0 Materials* to have run), plus 3/3 in Play Mode. If not, screenshot the failures into
+   Discord.
 
 ## Path B — Windows: the built app
 

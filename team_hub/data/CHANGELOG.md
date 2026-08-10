@@ -48,7 +48,7 @@ rewritten retroactively — append only.*
 - **A1 + A2 shipped and PR #3 opened**: the interactive Operator Studio (live previews, real
   single-variable gate, publish lock, walk button) + the Participant Runner (neutral screens →
   walk each room → rate → validated CSV). M1 tracer closed end-to-end; both scenes verified on a
-  real display; a Fable review found and fixed 5 defects (verdict table in handoffs/A1_A2_REVIEW.md);
+  real display; a Fable review found and fixed 5 defects (verdict table in handoffs/archive/A1_A2_REVIEW.md);
   108 automated checks green. Operator UI restyled to the team-hub design system.
 - **Performance gate defined** (docs/PERFORMANCE.md): 60 fps demo PC / 45–30 M2 Macs / conditions
   within 10% of each other. Operator studio shows a live fps readout; participant sessions silently
@@ -103,4 +103,4 @@ rewritten retroactively — append only.*
 ## 2026-07-06 — recovery + fidelity sprint start
 - Local Unity source had vanished; re-cloned canonical copy, 38/38 green on fresh clone; PR #1
   confirmed merged by Diego.
-- Lighting sprint planned (handoffs/LIGHTING_SPRINT.md) and executed through the fidelity gates.
+- Lighting sprint planned (handoffs/archive/LIGHTING_SPRINT.md) and executed through the fidelity gates.

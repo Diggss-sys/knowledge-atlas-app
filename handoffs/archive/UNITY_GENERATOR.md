@@ -1,12 +1,12 @@
 # HANDOFF — UNITY_GENERATOR (role E1)
 
-*Self-contained. You (+ your AI) need ONLY this file and the contracts it names. Everything is in the repo `https://github.com/Diggss-sys/knowledge-atlas-app`, branch `Diggss-sys-branch` (work on a feature branch, PR back — see [COORDINATION.md](COORDINATION.md)).*
+*Self-contained. You (+ your AI) need ONLY this file and the contracts it names. Everything is in the repo `https://github.com/Diggss-sys/knowledge-atlas-app`, branch `Diggss-sys-branch` (work on a feature branch, PR back — see [COORDINATION.md](../COORDINATION.md)).*
 
 ## Context (3 paragraphs)
 
 This platform generates controlled, single-variable room stimuli for environmental-neuroscience experiments (UCSD COGS 160, Prof. Kirsh): a control room and a treatment room that differ in exactly one declared variable (ceiling height, contour, lighting, …), walked by a participant, with responses logged. Everything flows through one JSON contract, the **RoomSpec** (`spec/room_spec.schema.json`, frozen v1.0) — the schema is the product; Unity is its renderer.
 
-The repo's `unity/` folder contains a **working native Unity 6000.3.16f1 + HDRP generator** (adopted 2026-07-02 from the predecessor repo — [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) DL-8/DL-10): `RoomGen.Generation.RoomGenerator` procedurally builds shell, curved corners (arc-tessellated), openings, furniture placeholders, and a physically-calibrated HDRP light rig (lumen→candela, fixed exposure, matched to a target lux) from its own internal spec types. It self-configures via `RoomGenProjectBootstrap` (menu `RoomGen ▸ Bootstrap Project`) and builds a Windows app via `RoomGen ▸ Build Windows Application`.
+The repo's `unity/` folder contains a **working native Unity 6000.3.16f1 + HDRP generator** (adopted 2026-07-02 from the predecessor repo — [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) DL-8/DL-10): `RoomGen.Generation.RoomGenerator` procedurally builds shell, curved corners (arc-tessellated), openings, furniture placeholders, and a physically-calibrated HDRP light rig (lumen→candela, fixed exposure, matched to a target lux) from its own internal spec types. It self-configures via `RoomGenProjectBootstrap` (menu `RoomGen ▸ Bootstrap Project`) and builds a Windows app via `RoomGen ▸ Build Windows Application`.
 
 **Your workstream is the reconciliation**: make the generator consume the *canonical* KA RoomSpec (not its internal `RoomGen.Contracts.RoomSpec`), add the missing desktop walkthrough, and expose everything behind the engine seam. You are the platform's critical path for milestone M1 (tracer bullet).
 
@@ -21,7 +21,7 @@ The repo's `unity/` folder contains a **working native Unity 6000.3.16f1 + HDRP 
 ## Scope / NOT scope
 
 **Yours:** RoomSpecAdapter (KA JSON → generator build calls) · desktop walk mode · C# pair gate (`PairGate.cs`) · seam implementation (`LocalChannel` + `IRoomRuntime`) · placement validity errors · keeping `RoomGen ▸ Build` green.
-**NOT yours:** the operator UI panels ([UNITY_UI.md](UNITY_UI.md)) · task/trial/logging flow ([EXPERIMENT_RUNTIME.md](EXPERIMENT_RUNTIME.md)) · HDRP material/fidelity iteration and VR ([VR_LIVE_EDIT.md](VR_LIVE_EDIT.md)) · anything Cloudflare.
+**NOT yours:** the operator UI panels ([UNITY_UI.md](UNITY_UI.md)) · task/trial/logging flow ([EXPERIMENT_RUNTIME.md](EXPERIMENT_RUNTIME.md)) · HDRP material/fidelity iteration and VR ([VR_LIVE_EDIT.md](../VR_LIVE_EDIT.md)) · anything Cloudflare.
 
 ## The field mapping (KA RoomSpec → existing generator types)
 
@@ -54,7 +54,7 @@ The generator's internal types live in `unity/Assets/RoomGen/Runtime/Contracts/R
 3. **G2 — RoomSpecAdapter.** Pure C# per the mapping table, in a new `RoomGen.Adapter` namespace, EditMode-testable without a scene. Parse errors and placement-validity failures (`furniture_out_of_bounds`, `furniture_overlap`, `furniture_blocks_door`, `unknown_catalog_id` — rules in PRESETS.md) surface as structured errors. *DoD: EditMode tests load `spec/pairs/ceiling_height_study_01/{control,treatment}.spec.json` (read from the repo — one source of truth) and produce two internal specs differing only in ceiling height.*
 4. **G3 — PairGate.cs.** Port `tools/validate_pair.py` semantics: flatten to dotted paths, `experiment`/`provenance` exempt, coverage rule (`path == var` or nested under it), the seven violation codes, coupled-variable notes. *DoD: an EditMode test loads `spec/fixtures/diff_vectors.json` and reproduces every case's `expected` block exactly (ok, sorted codes, diff paths).* Schema validation inside Unity: validate structurally (required fields, enums, ranges) in the adapter; full JSON-Schema conformance stays the Python/Worker gate's job — document this split in code comments.
 5. **G4 — Seam.** `IRoomRuntime` over the generator + `LocalChannel` per `ENGINE_SEAM.md`: atomic apply (failed apply keeps last good room), `spec_applied`/`pair_loaded` events with `build_ms` + `spec_sha256`, message-envelope parsing accepted/rejected per `seam_messages.json`, JSONL session logging. *DoD: EditMode test drives `apply_spec` → `spec_applied{ok:true}`; the malformed fixtures produce their named error codes.*
-6. **G5 — Tracer-bullet support.** Wire `load_pair` + `switch_condition` (cut + fade) so the runner (E3) and UI (P1) can build on you. *DoD: the [COORDINATION.md](COORDINATION.md) tracer-bullet checklist rows G1–G5 check off.*
+6. **G5 — Tracer-bullet support.** Wire `load_pair` + `switch_condition` (cut + fade) so the runner (E3) and UI (P1) can build on you. *DoD: the [COORDINATION.md](../COORDINATION.md) tracer-bullet checklist rows G1–G5 check off.*
 
 ## Environment gotchas
 

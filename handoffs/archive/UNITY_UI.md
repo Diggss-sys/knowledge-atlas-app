@@ -1,10 +1,10 @@
 # HANDOFF — UNITY_UI (role P1: the operator's instrument panel)
 
-*Self-contained. You (+ your AI) need ONLY this file and the contracts it names. Repo `https://github.com/Diggss-sys/knowledge-atlas-app`, branch `Diggss-sys-branch`; work on a feature branch, PR back ([COORDINATION.md](COORDINATION.md)).*
+*Self-contained. You (+ your AI) need ONLY this file and the contracts it names. Repo `https://github.com/Diggss-sys/knowledge-atlas-app`, branch `Diggss-sys-branch`; work on a feature branch, PR back ([COORDINATION.md](../COORDINATION.md)).*
 
 ## Context (3 paragraphs)
 
-This platform lets a student author a control/treatment room pair that differs in exactly one variable, walk it, run a task, and collect data. The product surface for the *operator* (the student designing the experiment) is YOUR workstream: a **Unity UI Toolkit panel** inside the native HDRP app ([docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) — the operator UI box). Prof. Kirsh's requirement verbatim: a non-engine user must be able to say "make the ceiling high" — the front end is the product.
+This platform lets a student author a control/treatment room pair that differs in exactly one variable, walk it, run a task, and collect data. The product surface for the *operator* (the student designing the experiment) is YOUR workstream: a **Unity UI Toolkit panel** inside the native HDRP app ([docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) — the operator UI box). Prof. Kirsh's requirement verbatim: a non-engine user must be able to say "make the ceiling high" — the front end is the product.
 
 You never touch the generator. You speak to it only through the **engine seam** (`ISpecChannel` — in-process `LocalChannel` in v1): push a full RoomSpec, receive `spec_applied`/`pair_loaded` events. The generator (E1's workstream) guarantees atomic apply — a bad spec never leaves a half-built room — and returns structured errors you render verbatim.
 
