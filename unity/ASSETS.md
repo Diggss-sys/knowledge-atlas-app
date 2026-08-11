@@ -64,6 +64,22 @@ Table fit-scaled to the 2.15×1.05 slot footprint; sideboard to 1.72×0.97×0.50
 scale. Pendant deliberately stays the purpose-built emissive luminaire (L2); plant stays greybox.
 Move the manual download into an AssetFetcher-style script when the lane owner takes over.
 
+## Outdoor HDRI (Poly Haven, CC0, 1K) — reflection probe only
+
+Fetched by `RoomGen ▸ Fetch Outdoor HDRI` (or `AssetFetcher.FetchHdri`, also bundled into `FetchAll`).
+Imported as a Cubemap (equirect auto-conversion) and fed to `QualityRig`'s **additive** custom
+reflection probe — it does NOT replace `PhysicallyBasedSky`, which stays the sole light-physics
+driver so exposure/calibration and parametric time-of-day are untouched. Same soft-failure contract
+as the texture pins: missing network / SHA mismatch leaves it off, room still renders normally.
+
+| Purpose | Poly Haven id | Resolution | SHA-256 (of the .hdr) |
+|---|---|---|---|
+| Exterior reflections (glass, floor) | kloofendal_48d_partly_cloudy | 1K | `5477b7dbb2aea4a6947cb36b96339c119f90bf36a03b039af3254b5e6a22896d` |
+
+Chosen as a general-purpose daytime/partly-cloudy exterior — a sunset/sunrise HDRI would visually
+fight an arbitrary Sun-hour slider value. URL pattern:
+`https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/<id>_1k.hdr`.
+
 ## Still to pin (remaining schema material enums, from docs/ASSET_SOURCING.md)
 
 `paint` (PaintedPlaster016), `brick` (Bricks060), `concrete` (Concrete012), `marble` (Marble001), `glass` (shader-only, no texture). Add here with hashes when their rooms need them.

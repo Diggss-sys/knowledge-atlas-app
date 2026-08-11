@@ -79,6 +79,13 @@ namespace RoomGen.Generation
             c.a = 0.08f;
             if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", c);
             if (material.HasProperty("_Color")) material.SetColor("_Color", c);
+
+            // REVERTED a same-session Smoothness override (was 0.35, meant to weaken the SSR mirror
+            // so transmission would show). Wrong lever: HDRP's _REFRACTION_THIN samples its
+            // color-pyramid mip level FROM roughness, so lowering smoothness blurs the TRANSMITTED
+            // view exactly as much as the reflection — it can't isolate one from the other. Left at
+            // PbrFor's physically-real 0.96 (glass IS a near-mirror); the reflection-vs-transmission
+            // balance has to be solved elsewhere (SSR strength/weight), not by roughening the BSDF.
             material.SetFloat("_ZWrite", 0f);
             material.SetFloat("_TransparentZWrite", 0f);
             material.SetFloat("_ZTestDepthEqualForOpaque", 4f);

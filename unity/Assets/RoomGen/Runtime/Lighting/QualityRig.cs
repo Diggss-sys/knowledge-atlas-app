@@ -33,6 +33,39 @@ namespace RoomGen.Lighting
             var profile = BuildProfile();
             volume.profile = profile;
             _root.AddComponent<QualityRigAssetOwner>().Asset = profile;
+
+            // TEMP DISABLED for diagnosis: the fetch itself ran with zero errors (Console confirmed
+            // "built=9 soft-skipped=0"), but the sky went magenta right after. HDRP shares a GPU
+            // atlas between reflection probes and the sky renderer, and a custom probe wired up at
+            // runtime (not through Unity's normal bake workflow) can corrupt that shared atlas. This
+            // isolates whether the probe is the cause before touching anything else.
+            // InstallOutdoorReflectionProbe();
+        }
+
+        /// <summary>
+        /// Additive-only: gives glass/floor/any reflective surface a real photographed exterior
+        /// (clouds, horizon shape) to reflect, instead of only the procedural sky's smooth gradient.
+        /// Deliberately does NOT touch PhysicallyBasedSky, exposure, or SunSkySystem — those stay the
+        /// sole light-PHYSICS driver, so this cannot reopen the calibration/exposure incoherence from
+        /// earlier rounds. If the HDRI hasn't been fetched yet (RoomGen ▸ Fetch Outdoor HDRI), this
+        /// no-ops silently — a fresh clone renders exactly as before, same soft-failure contract as
+        /// AssetFetcher's textures.
+        /// </summary>
+        static void InstallOutdoorReflectionProbe()
+        {
+            var cubemap = Resources.Load<Cubemap>("RoomGen/HDRI/kloofendal_48d_partly_cloudy");
+            if (cubemap == null) return; // not fetched yet — procedural sky reflections alone, as before
+
+            var probeGo = new GameObject("Outdoor HDRI Reflection Probe");
+            probeGo.transform.SetParent(_root.transform, false);
+            var probe = probeGo.AddComponent<ReflectionProbe>();
+            probe.mode = ReflectionProbeMode.Custom;
+            probe.customBakedTexture = cubemap;
+            probe.boxProjection = false; // a distant sky has no meaningful parallax to project
+            // Sized to safely contain the largest room the validator allows (12x12x6, generously
+            // margined) so this never needs touching as room dimensions change per-spec.
+            probe.size = new Vector3(20f, 10f, 20f);
+            probe.intensity = 1f;
         }
 
         /// <summary>
@@ -69,9 +102,12 @@ namespace RoomGen.Lighting
             ao.quality.Override((int)ScalableSettingLevelParameter.Level.High);
 
             // Subtle bloom on the luminaires; kept low so it reads as real light, not glow.
+            // Scatter dropped 0.6 -> 0.3: at 0.6 a bright window's bloom smeared across the whole
+            // pane into one featureless glow (Diego: "blurry pane"). Tighter scatter keeps bloom
+            // localized around the actual bright source so a gradient/sun position stays visible.
             var bloom = profile.Add<Bloom>(true);
             bloom.intensity.Override(0.15f);
-            bloom.scatter.Override(0.6f);
+            bloom.scatter.Override(0.3f);
 
             // In-room bounce light. supportSSGI is enabled on the asset (L0); the per-camera
             // SSGI frame setting (off by default in HDRP 17.3) is force-enabled by
@@ -150,9 +186,16 @@ namespace RoomGen.Lighting
             env.skyType.Override((int)SkyType.PhysicallyBased);
             var sky = profile.Add<PhysicallyBasedSky>(true);
             sky.type.Override(PhysicallyBasedSkyModel.EarthSimple); // Earth atmosphere, sensible defaults
-            // Interior exposure is FIXED (LightingSystem, per room). If the calibrated recessed spots
-            // still wash out, nudge this sky exposure DOWN (was the gradient's job at 13.5) — physical
-            // luminance means the sky is already bright without a large compensation.
+            // REVERTED a same-session sky.exposure override (was -3.5, meant to be a "sky-only"
+            // dimmer). It is NOT sky-only: HDRP's sky exposure scales the cubemap that feeds the
+            // ambient probe AND the sky reflection probe, so it also dims real skylight/GI.
+            // LightingCalibrator.MatchTargetLux has no idea that happened and keeps reporting Ok=true
+            // while windowed rooms actually sit under target lux at the fixed EV100 — silently
+            // breaking the matched-luminance guarantee the whole single-variable comparison depends
+            // on. It also fights SunTargetLuxFactor (LightingSystem's own "one legal knob" for
+            // daylight scale) instead of moving with it, and at sun-hour extremes stacks with
+            // SunSkySystem's elevation taper to black out the windows entirely. Back to 0 — daylight
+            // scale has exactly one legal knob (SunTargetLuxFactor), not two independent ones.
             sky.exposure.Override(0f);
 
             return profile;

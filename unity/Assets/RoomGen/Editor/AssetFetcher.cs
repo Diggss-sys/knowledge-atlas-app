@@ -23,6 +23,21 @@ namespace RoomGen.Editor
         const string CacheDir = "Assets/RoomGen/.cache";
         const string MatRoot = "Assets/RoomGen/Resources/RoomGen/Materials";
         const string TexRoot = "Assets/RoomGen/Resources/RoomGen/Materials/Textures";
+        // Under Resources/ (not just Assets/) so QualityRig can Resources.Load it at RUNTIME — it
+        // installs via [RuntimeInitializeOnLoadMethod], which has no AssetDatabase access, same
+        // reason SurfaceResolver loads materials this way instead of by AssetDatabase path.
+        const string HdriRoot = "Assets/RoomGen/Resources/RoomGen/HDRI";
+
+        // One pinned OUTDOOR HDRI (Poly Haven, CC0, 1K): daytime, partly cloudy — a general-purpose
+        // exterior that doesn't fight an arbitrary Sun-hour slider value the way a sunset/sunrise
+        // HDRI would. Used ONLY as a reflection-probe source (QualityRig) — additive richness for
+        // what glass/floor reflect, never a replacement for PhysicallyBasedSky, which stays the sole
+        // light-PHYSICS driver so exposure/calibration and parametric time-of-day are untouched.
+        const string HdriId = "kloofendal_48d_partly_cloudy";
+        const string HdriUrl =
+            "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloofendal_48d_partly_cloudy_1k.hdr";
+        // Verified by downloading the file directly and hashing it (not copied from a listing).
+        const string HdriSha256 = "5477b7dbb2aea4a6947cb36b96339c119f90bf36a03b039af3254b5e6a22896d";
 
         struct Pin
         {
@@ -83,9 +98,56 @@ namespace RoomGen.Editor
                 }
             }
 
+            if (FetchHdri()) ok++; else soft++;
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log($"ASSETFETCHER done built={ok} soft-skipped={soft}");
+        }
+
+        /// <summary>
+        /// Fetches the one pinned outdoor HDRI and imports it as a Cubemap (equirect auto-conversion)
+        /// under Resources/, for QualityRig's reflection probe. Same soft-failure contract as
+        /// materials: no network / SHA mismatch leaves whatever was there before untouched, and
+        /// QualityRig already tolerates a missing Cubemap (procedural sky keeps working alone).
+        /// </summary>
+        [MenuItem("RoomGen/Fetch Outdoor HDRI")]
+        public static bool FetchHdri()
+        {
+            Directory.CreateDirectory(AbsPath(CacheDir));
+            if (!AssetDatabase.IsValidFolder(HdriRoot))
+                Directory.CreateDirectory(AbsPath(HdriRoot));
+            AssetDatabase.Refresh();
+
+            var cached = Path.Combine(AbsPath(CacheDir), HdriId + "_1k.hdr");
+            if (!File.Exists(cached) && !Download(HdriUrl, cached))
+            {
+                Debug.LogWarning("AssetFetcher: no cached HDRI and download failed; reflection probe stays off.");
+                return false;
+            }
+
+            var sha = Sha256File(cached);
+            if (!string.Equals(sha, HdriSha256, StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.LogWarning($"AssetFetcher: HDRI SHA mismatch; expected {HdriSha256} got {sha}. Skipping (determinism guard).");
+                return false;
+            }
+
+            var assetRel = HdriRoot + "/" + HdriId + ".hdr";
+            File.Copy(cached, AbsPath(assetRel), true);
+            AssetDatabase.Refresh();
+            AssetDatabase.ImportAsset(assetRel, ImportAssetOptions.ForceUpdate);
+
+            if (AssetImporter.GetAtPath(assetRel) is TextureImporter imp)
+            {
+                imp.textureShape = TextureImporterShape.TextureCube;
+                imp.generateCubemap = TextureImporterGenerateCubemap.AutoCubemap;
+                imp.mipmapEnabled = false; // reflection-probe source, not sampled with mip bias
+                imp.SaveAndReimport();
+            }
+
+            Debug.Log($"ASSETFETCHER built HDRI cubemap {HdriId} at {assetRel}");
+            return true;
         }
 
         static bool BuildMaterial(Pin pin)

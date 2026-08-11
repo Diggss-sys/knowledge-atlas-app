@@ -22,6 +22,13 @@ namespace RoomGen.Editor
         const string SupportSsrPath = "m_RenderPipelineSettings.supportSSR";
         const string SupportSsgiPath = "m_RenderPipelineSettings.supportSSGI";
         const string SupportShadowMaskPath = "m_RenderPipelineSettings.supportShadowMask";
+        // QualityRig already gates every RT effect (AO/GI/SSR) behind SystemInfo.supportsRayTracing
+        // — the HARDWARE capability check — and CameraRealism sets the per-camera RayTracing frame
+        // bit. But HDRP ALSO requires this separate asset-level master switch before any of that can
+        // do anything; without it every RT override is silently inert regardless of GPU capability.
+        // This was the missing piece — ray tracing never visibly activated on any machine, capable
+        // hardware or not, because this one flag was never part of the configured set below.
+        const string SupportRayTracingPath = "m_RenderPipelineSettings.supportRayTracing";
         const string PunctualShadowAtlasPath =
             "m_RenderPipelineSettings.hdShadowInitParams.punctualLightShadowAtlas.shadowAtlasResolution";
 
@@ -38,6 +45,7 @@ namespace RoomGen.Editor
             SetBool(so, SupportSsrPath, true);
             SetBool(so, SupportSsgiPath, true);
             SetBool(so, SupportShadowMaskPath, true);
+            SetBool(so, SupportRayTracingPath, true);
             SetInt(so, PunctualShadowAtlasPath, PunctualShadowAtlasResolution);
             so.ApplyModifiedPropertiesWithoutUndo();
 
