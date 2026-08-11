@@ -20,6 +20,13 @@ namespace RoomGen.UI
     /// </summary>
     public sealed class OperatorPanelViewModel
     {
+        public enum ValidationFreshness
+        {
+            None,
+            Fresh,
+            Stale,
+        }
+
         // ---- plain public value objects (test-assembly readable) ----
 
         public struct FieldSpec
@@ -53,6 +60,7 @@ namespace RoomGen.UI
 
         JObject _model;                 // the live canonical RoomSpec being edited
         JObject _controlModel;          // snapshot frozen by SetAsControl()
+        string _declaredVariable;
         readonly List<FieldSpec> _fields = new List<FieldSpec>();
         readonly Dictionary<string, (double Min, double Max)> _ranges = new Dictionary<string, (double, double)>();
         readonly List<string> _manipulable = new List<string>();
@@ -67,6 +75,7 @@ namespace RoomGen.UI
         public IReadOnlyList<ErrorRow> Errors { get; private set; } = new List<ErrorRow>();
         public ValidationState Validation { get; private set; } =
             new ValidationState { Ok = false, ViolationCodes = new List<string>(), DiffPaths = new List<string>(), ActiveCondition = null };
+        public ValidationFreshness ValidationStatus { get; private set; } = ValidationFreshness.None;
 
         /// <summary>The fields backing sliders/controls: preset ranges + manipulable flag.</summary>
         public IReadOnlyList<FieldSpec> Fields => _fields;
@@ -75,10 +84,19 @@ namespace RoomGen.UI
         public IReadOnlyList<string> ManipulableVariables => _manipulable;
 
         /// <summary>Which manipulable variable the operator has declared for the pair (drives the picker).</summary>
-        public string DeclaredVariable { get; set; }
+        public string DeclaredVariable
+        {
+            get => _declaredVariable;
+            set
+            {
+                if (string.Equals(_declaredVariable, value, StringComparison.Ordinal)) return;
+                _declaredVariable = value;
+                MarkValidationStale();
+            }
+        }
 
         /// <summary>DL-6: a confounded pair can be edited freely but never saved as a study.</summary>
-        public bool PublishEnabled => Validation.Ok;
+        public bool PublishEnabled => ValidationStatus == ValidationFreshness.Fresh && Validation.Ok;
 
         public bool HasControl => _controlModel != null;
 
@@ -102,6 +120,9 @@ namespace RoomGen.UI
             var preset = ResponseJson.Parse(presetJson);
 
             _model = (JObject)preset["defaults"].DeepClone();
+            _controlModel = null;
+            Validation = EmptyValidation();
+            ValidationStatus = ValidationFreshness.None;
 
             _ranges.Clear();
             _manipulable.Clear();
@@ -152,6 +173,7 @@ namespace RoomGen.UI
 
             _dirty = true;
             _lastEditAt = _now();
+            MarkValidationStale();
         }
 
         /// <summary>Read the current (clamped) value of a range field, for the binder to reflect back.</summary>
@@ -175,12 +197,17 @@ namespace RoomGen.UI
         // ---- pair workflow ----
 
         /// <summary>Freeze the current model as the control; editing continues on the treatment.</summary>
-        public void SetAsControl() => _controlModel = (JObject)_model.DeepClone();
+        public void SetAsControl()
+        {
+            _controlModel = (JObject)_model.DeepClone();
+            MarkValidationStale();
+        }
 
         /// <summary>Send the frozen control + the current (treatment) model through the gate.</summary>
         public void SubmitPair()
         {
             if (_controlModel == null) throw new InvalidOperationException("SetAsControl must be called before SubmitPair.");
+            MarkValidationStale();
             _channel.LoadPair(
                 _controlModel.ToString(Newtonsoft.Json.Formatting.None),
                 _model.ToString(Newtonsoft.Json.Formatting.None),
@@ -221,9 +248,24 @@ namespace RoomGen.UI
                         DiffPaths = ev.PairDiffPaths.ToList(),
                         ActiveCondition = ev.ActiveCondition,
                     };
+                    ValidationStatus = ValidationFreshness.Fresh;
                     break;
             }
         }
+
+        void MarkValidationStale()
+        {
+            if (ValidationStatus != ValidationFreshness.None)
+                ValidationStatus = ValidationFreshness.Stale;
+        }
+
+        static ValidationState EmptyValidation() => new ValidationState
+        {
+            Ok = false,
+            ViolationCodes = new List<string>(),
+            DiffPaths = new List<string>(),
+            ActiveCondition = null,
+        };
 
         // ---- json helpers (kept inside; never in the public surface) ----
 

@@ -131,12 +131,56 @@ namespace RoomGen.Tests
             vm.SetAsControl();
             vm.SubmitPair();
             Assert.IsFalse(vm.PublishEnabled, "a confounded pair can be edited but never published (DL-6)");
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Fresh, vm.ValidationStatus);
             CollectionAssert.Contains(vm.Validation.ViolationCodes.ToList(), "undeclared_change");
 
             // Clean single-variable pair: default mock result is ok -> publish flips on.
             vm.SubmitPair();
             Assert.IsTrue(vm.Validation.Ok);
-            Assert.IsTrue(vm.PublishEnabled, "PublishEnabled tracks Validation.Ok");
+            Assert.IsTrue(vm.PublishEnabled, "PublishEnabled requires a fresh passing verdict");
+        }
+
+        [Test]
+        public void Editing_after_a_passing_validation_makes_the_verdict_stale_until_revalidated()
+        {
+            var (vm, _, _) = NewLoaded();
+            vm.SetAsControl();
+            vm.SetField("shell.ceiling_height_m", 3.2);
+            vm.SubmitPair();
+            Assert.IsTrue(vm.PublishEnabled);
+
+            vm.SetField("shell.ceiling_height_m", 3.1);
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Stale, vm.ValidationStatus);
+            Assert.IsFalse(vm.PublishEnabled, "a passing verdict cannot authorize edited specs");
+
+            vm.SubmitPair();
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Fresh, vm.ValidationStatus);
+            Assert.IsTrue(vm.PublishEnabled, "a new passing gate result restores publishing");
+        }
+
+        [Test]
+        public void Changing_the_declaration_or_refreezing_control_stales_a_fresh_verdict()
+        {
+            var (vm, ch, _) = NewLoaded();
+            vm.SetAsControl();
+            vm.SetField("shell.ceiling_height_m", 3.2);
+            vm.SubmitPair();
+            Assert.IsTrue(vm.PublishEnabled);
+
+            vm.DeclaredVariable = "lighting.warmth";
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Stale, vm.ValidationStatus);
+            Assert.IsFalse(vm.PublishEnabled);
+
+            ch.EnqueuePairFailure("p", new[] { "undeclared_change", "declared_unchanged" },
+                new[] { "shell.ceiling_height_m" });
+            vm.SubmitPair();
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Fresh, vm.ValidationStatus,
+                "even a failing result is fresh for the current pair");
+            Assert.IsFalse(vm.PublishEnabled, "the new declaration does not cover the ceiling diff");
+
+            vm.SetAsControl();
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Stale, vm.ValidationStatus);
+            Assert.IsFalse(vm.PublishEnabled);
         }
 
         [Test]

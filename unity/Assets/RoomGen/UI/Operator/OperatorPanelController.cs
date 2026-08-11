@@ -114,7 +114,13 @@ namespace RoomGen.UI
 
             var validationStatus = root.Q<Label>("validation-status");
             var diffList = root.Q<VisualElement>("diff-list");
-            if (validationStatus != null && vm.Validation.ActiveCondition != null)
+            if (validationStatus != null && vm.ValidationStatus == OperatorPanelViewModel.ValidationFreshness.Stale)
+            {
+                validationStatus.text = "edited since validation — re-validate";
+                validationStatus.EnableInClassList("ka-status--ok", false);
+                validationStatus.EnableInClassList("ka-status--error", true);
+            }
+            else if (validationStatus != null && vm.Validation.ActiveCondition != null)
             {
                 validationStatus.text = vm.Validation.Ok
                     ? "differs only in: " + string.Join(", ", vm.Validation.DiffPaths)

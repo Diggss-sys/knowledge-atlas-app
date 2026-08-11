@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using RoomGen.Adapter;
 using RoomGen.Contracts;
 
 namespace RoomGen.Runner
@@ -131,7 +132,7 @@ namespace RoomGen.Runner
         }
 
         static RoomSpec DeserializeSpec(JToken token) =>
-            token == null ? null : RoomJson.Deserialize<RoomSpec>(token.ToString());
+            token == null ? null : RoomSpecAdapter.Adapt(token.ToString()).Spec;
 
         // participant ids reach a CSV cell: keep them to a safe token so a stray comma/newline can't
         // corrupt a row. Empty entry becomes a stable placeholder rather than an invalid empty id.

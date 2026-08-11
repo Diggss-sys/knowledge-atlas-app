@@ -28,7 +28,7 @@ namespace RoomGen.UI
     /// </summary>
     public sealed class StudioSpecChannel : ISpecChannel
     {
-        const string PairId = "operator_studio_pair";
+        public const string PairId = "operator_studio_pair";
         const string FallbackVariable = "shell.ceiling_height_m";
 
         readonly ISpecChannel _inner;
@@ -58,8 +58,8 @@ namespace RoomGen.UI
         public void LoadPair(string controlJson, string treatmentJson, string requestId)
         {
             var declared = string.IsNullOrEmpty(_declaredVariable()) ? FallbackVariable : _declaredVariable();
-            var control = WithExperiment(Complete(_baseTemplate, controlJson), "control", declared);
-            var treatment = WithExperiment(Complete(_baseTemplate, treatmentJson), "treatment", declared);
+            var control = CompleteAndStamp(_baseTemplate, controlJson, "control", declared);
+            var treatment = CompleteAndStamp(_baseTemplate, treatmentJson, "treatment", declared);
             _inner.LoadPair(control, treatment, requestId);
         }
 
@@ -98,6 +98,15 @@ namespace RoomGen.UI
                 MergeNullValueHandling = MergeNullValueHandling.Ignore,
             });
             return merged.ToString(Formatting.None);
+        }
+
+        /// <summary>Produce the exact canonical pair member used by both the runtime gate and study
+        /// publishing: complete the editor's partial model, then stamp its experiment metadata.</summary>
+        public static string CompleteAndStamp(
+            JObject baseTemplate, string specJson, string condition, string declaredVariable)
+        {
+            var declared = string.IsNullOrEmpty(declaredVariable) ? FallbackVariable : declaredVariable;
+            return WithExperiment(Complete(baseTemplate, specJson), condition, declared);
         }
 
         // Stamp the gate's required experiment block. condition distinguishes the two specs; the

@@ -1,5 +1,6 @@
 using System.Linq;
 using NUnit.Framework;
+using RoomGen.Gate;
 using RoomGen.Runner;
 using RoomGen.UI;
 using UnityEngine;
@@ -29,14 +30,6 @@ namespace RoomGen.Tests
                 Modality = "desktop_3d",
                 ControlSpecJson = Control,
                 TreatmentSpecJson = Treatment,
-                Validation = new StudyPublisher.ValidationStamp
-                {
-                    Ok = true,
-                    DiffPaths = new[] { "shell.ceiling_height_m" },
-                    Notes = new string[0],
-                    Validator = "PairGate.cs@1.0",
-                    ValidatedAtIso = "2026-07-07T12:00:00Z",
-                },
                 Task = new StudyPublisher.TaskConfig
                 {
                     Type = "rating",
@@ -71,13 +64,64 @@ namespace RoomGen.Tests
         public void A_confounded_pair_can_never_be_published()
         {
             var input = ValidInput();
-            input.Validation.Ok = false; // the diff panel is red
+            input.TreatmentSpecJson = input.TreatmentSpecJson.Replace(
+                "\"material\": \"plaster\"", "\"material\": \"wood\"");
 
             var result = StudyPublisher.CreateDefault().Publish(input);
 
             Assert.IsFalse(result.Ok, "DL-6: a confounded pair must be refused");
             Assert.IsNull(result.StudyJson, "no document may be emitted for a confounded pair");
-            Assert.IsTrue(result.Errors.Any(e => e.Contains("DL-6")), "the refusal must cite the locked decision");
+            Assert.IsTrue(result.Errors.Any(e => e.Contains("undeclared_change")),
+                "the publisher must report the fresh sink-level gate verdict");
+        }
+
+        [Test]
+        public void Embedded_specs_are_canonical_and_reproduce_the_publisher_validation_stamp()
+        {
+            var result = StudyPublisher.CreateDefault().Publish(ValidInput());
+            Assert.IsTrue(result.Ok, string.Join(" | ", result.Errors));
+
+            StringAssert.Contains("\"shell\"", result.EmbeddedControlSpecJson,
+                "canonical shape uses shell, not internal geometry");
+            StringAssert.DoesNotContain("\"geometry\"", result.EmbeddedControlSpecJson);
+
+            var schema = Resources.Load<TextAsset>("RoomGen/room_spec.schema").text;
+            var gate = PairGate.ValidateJson(
+                result.EmbeddedControlSpecJson, result.EmbeddedTreatmentSpecJson, schema);
+            Assert.IsTrue(gate.Ok);
+            CollectionAssert.AreEqual(gate.DiffPaths, result.ValidationDiffPaths);
+            Assert.AreEqual("PairGate.cs@1.0", result.Validator);
+            Assert.AreEqual("2026-07-07T12:00:05Z", result.ValidatedAtIso);
+            StringAssert.Contains("\"validated_at\":\"2026-07-07T12:00:05Z\"", result.StudyJson);
+        }
+
+        [Test]
+        public void Swapped_control_and_treatment_roles_are_refused_even_when_the_pair_gate_passes()
+        {
+            var input = ValidInput();
+            var control = input.ControlSpecJson.Replace(
+                "\"condition\": \"control\"", "\"condition\": \"treatment\"");
+            var treatment = input.TreatmentSpecJson.Replace(
+                "\"condition\": \"treatment\"", "\"condition\": \"control\"");
+            input.ControlSpecJson = control;
+            input.TreatmentSpecJson = treatment;
+
+            var result = StudyPublisher.CreateDefault().Publish(input);
+
+            Assert.IsFalse(result.Ok);
+            Assert.IsTrue(result.Errors.Any(e => e.Contains("study_pair_role_mismatch")));
+        }
+
+        [Test]
+        public void Embedded_pair_id_must_match_the_study_pair_id()
+        {
+            var input = ValidInput();
+            input.PairId = "wrong_pair";
+
+            var result = StudyPublisher.CreateDefault().Publish(input);
+
+            Assert.IsFalse(result.Ok);
+            Assert.IsTrue(result.Errors.Any(e => e.Contains("study_pair_id_mismatch")));
         }
 
         [Test]
