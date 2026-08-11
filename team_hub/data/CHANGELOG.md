@@ -61,7 +61,7 @@ rewritten retroactively — append only.*
   and correctly filed a request instead of inventing content: the sync contract working).
 
 ## 2026-07-09 — the July replan: two tracks
-- Honest reset (handoffs/REPLAN_JULY.md): the 6-lane structure assumed seven engineers; reality is
+- Honest reset (handoffs/archive/REPLAN_JULY.md): the 6-lane structure assumed seven engineers; reality is
   one build lane + a reviewer. Track A (Paco+Claude) finishes the instrument — two build items left
   (A1 interactive operator studio, A2 minimal participant flow). Track B (everyone) runs the
   science: study design, piloting on each other, gate verdicts, demo writing — no Unity required.
