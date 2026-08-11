@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using RoomGen.Contracts;
 using RoomGen.Generation;
 using RoomGen.Metrics;
 using RoomGen.Runner;
@@ -32,6 +33,7 @@ namespace RoomGen.UI
 
         ParticipantSession _session;
         RoomGenerator _roomGen;
+        Func<RoomSpec, RoomBuildResult> _buildRoom;
         DesktopWalkMode _walk;
         Camera _backdrop;
 
@@ -39,6 +41,7 @@ namespace RoomGen.UI
         // never shown to the participant. Warmup 3 drops the one-time room-build hitch on entry.
         readonly PerfAccumulator _trialPerf = new PerfAccumulator(warmupFrames: 3);
         PerfLog _perfLog;
+        SessionEventLog _eventLog;
         PerfSample _lastWalkPerf;
 
         bool _booted;
@@ -46,6 +49,9 @@ namespace RoomGen.UI
         float _ratingShownAt;
 
         public ParticipantSession Session => _session;
+        public string StudyCopyPath { get; private set; }
+        public string EventsPath => _eventLog?.Path;
+        public string PerfPath => _perfLog?.Path;
 
         void Start()
         {
@@ -93,7 +99,8 @@ namespace RoomGen.UI
         }
 
         /// <summary>Wire the screens. <paramref name="nowUtc"/> null ⇒ real UtcNow (injectable for tests).</summary>
-        public bool Boot(VisualElement root, string studyJson, Func<string> nowUtc, string outputDir)
+        public bool Boot(VisualElement root, string studyJson, Func<string> nowUtc, string outputDir,
+            Func<RoomSpec, RoomBuildResult> buildRoom = null)
         {
             if (_booted) return true;
             if (root == null) throw new ArgumentNullException(nameof(root));
@@ -119,12 +126,14 @@ namespace RoomGen.UI
             go.transform.SetParent(transform, false);
             _roomGen = go.AddComponent<RoomGenerator>();
             _roomGen.SetGeneratedLayer(RoomLayer);
+            _buildRoom = buildRoom ?? _roomGen.Build;
             _walk = gameObject.AddComponent<DesktopWalkMode>();
 
             Button("begin-button", () => Begin(_root.Q<TextField>("participant-id")?.value));
             Button("start-button", BeginTrials);
             Button("enter-walk-button", EnterRoom);
             Button("open-results-button", OpenResultsFolder);
+            Button("open-error-results-button", OpenResultsFolder);
 
             ShowOnly("screen-id");
             _booted = true;
@@ -139,8 +148,11 @@ namespace RoomGen.UI
             var sessionId = Guid.NewGuid().ToString();
             var stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
             var safe = SafeFile(id);
-            var csv = Path.Combine(_outputDir, $"response-{safe}-{stamp}.csv");
-            var jsonl = Path.Combine(_outputDir, $"response-{safe}-{stamp}.jsonl");
+            var safeSession = SafeFile(sessionId);
+            var sessionToken = $"{safe}-{safeSession}-{stamp}";
+            var responseStem = "response-" + sessionToken;
+            var csv = Path.Combine(_outputDir, responseStem + ".csv");
+            var jsonl = Path.Combine(_outputDir, responseStem + ".jsonl");
 
             _session = new ParticipantSession(_studyJson, id, StableSeed(id), sessionId, csv, jsonl, _nowUtc);
             if (!_session.CanRun)
@@ -151,7 +163,32 @@ namespace RoomGen.UI
             }
             // Frame-rate sidecar next to the response CSV (joins on session_id + trial_index),
             // stamped with this machine so the cross-machine team run is attributable.
-            _perfLog = new PerfLog(Path.Combine(_outputDir, $"response-{safe}-{stamp}.perf.csv"), MachineInfo.Current());
+            var perfPath = Path.Combine(_outputDir, "perf-" + sessionToken + ".csv");
+            var eventsPath = Path.Combine(_outputDir, "events-" + sessionToken + ".jsonl");
+            _perfLog = new PerfLog(perfPath, MachineInfo.Current());
+            _eventLog = new SessionEventLog(
+                eventsPath,
+                _session.SessionId,
+                _session.ParticipantId,
+                _session.StudyId,
+                _nowUtc ?? (() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture)));
+            try
+            {
+                Directory.CreateDirectory(_outputDir);
+                StudyCopyPath = Path.Combine(_outputDir,
+                    $"study-{SafeFile(_session.StudyId)}-{safeSession}-{stamp}.json");
+                if (File.Exists(StudyCopyPath))
+                    throw new IOException("session study-copy path already exists");
+                File.WriteAllText(StudyCopyPath, _studyJson, new System.Text.UTF8Encoding(false));
+            }
+            catch (Exception e)
+            {
+                _session.Abort("study provenance could not be preserved: " + e.Message);
+                var err = _root.Q<Label>("id-error");
+                if (err != null) err.text = "Cannot start this session: the output folder is unavailable.";
+                Debug.LogError("ParticipantFlow: study-copy write failed: " + e.Message);
+                return false;
+            }
             ShowOnly("screen-instructions");
             return true;
         }
@@ -168,20 +205,59 @@ namespace RoomGen.UI
         /// in Update), which reveals the rating screen.</summary>
         public void EnterRoom()
         {
-            if (_session == null || _session.IsComplete) return;
-            _roomGen.Build(_session.CurrentSpec);
+            if (_session == null || _session.IsAborted || _session.IsComplete) return;
+            var build = _buildRoom(_session.CurrentSpec);
+            if (build?.Ok != true || build.Root == null)
+            {
+                AbortCurrentTrial(build, build?.Ok == true
+                    ? "Room build returned no walkable room."
+                    : "Room build did not satisfy the runtime integrity checks.");
+                return;
+            }
             ShowPanel(false);
             _trialPerf.Reset();   // start measuring this room's frame rate fresh
-            _walk.Toggle(RoomLayer, _roomGen.LastResult?.Root, _session.CurrentSpec);
+            _walk.Toggle(RoomLayer, build.Root, _session.CurrentSpec);
             _walking = _walk.IsRunning;
             if (_walking && _backdrop != null) _backdrop.enabled = false; // walk camera owns the display
-            if (!_walking) { ShowPanel(true); ShowRating(); }   // room failed to build — don't strand the participant
+            if (!_walking) { AbortCurrentTrial(build, "Walk mode failed to start."); return; }
+        }
+
+        void AbortCurrentTrial(RoomBuildResult build, string fallbackDetail)
+        {
+            var detail = build?.Warnings != null && build.Warnings.Count > 0
+                ? string.Join(" | ", build.Warnings)
+                : fallbackDetail;
+            var trialIndex = _session.Index;
+            var condition = _session.CurrentCondition;
+            _session.Abort(detail);
+            ShowAborted(trialIndex, condition, detail);
+        }
+
+        void ShowAborted(int trialIndex, string condition, string detail)
+        {
+            _roomGen.Clear();
+            _lastWalkPerf = default;
+            _walking = false;
+            if (_backdrop != null) _backdrop.enabled = true;
+            ShowPanel(true);
+            ShowOnly("screen-error");
+
+            try
+            {
+                _eventLog?.Write("trial_aborted", trialIndex, condition, detail);
+            }
+            catch (Exception e)
+            {
+                // The participant must still see the fail-closed screen even when the output volume
+                // itself is unavailable. No response or perf row is reachable from this state.
+                Debug.LogError("ParticipantFlow: could not write the abort event sidecar: " + e.Message);
+            }
         }
 
         /// <summary>Show the single rating question for the current trial and start its response timer.</summary>
         public void ShowRating()
         {
-            if (_session == null || _session.IsComplete) return;
+            if (_session == null || _session.IsAborted || _session.IsComplete) return;
             SetText("rating-progress", $"Room {_session.Index + 1} of {_session.TrialCount}");
             SetText("rating-prompt", _session.Prompt);
             SetText("scale-low-label", $"{_session.ScaleMin}  ·  least");
@@ -194,7 +270,7 @@ namespace RoomGen.UI
         /// <summary>Record the human's rating (with response time) and move to the next room, or finish.</summary>
         public void Rate(int value)
         {
-            if (_session == null || _session.IsComplete) return;
+            if (_session == null || _session.IsAborted || _session.IsComplete) return;
             var rtMs = Mathf.Max(0f, (Time.time - _ratingShownAt) * 1000f);
 
             // Capture the trial identity BEFORE submitting (SubmitRating advances the cursor), so the
@@ -202,8 +278,14 @@ namespace RoomGen.UI
             var trialIndex = _session.Index;
             var condition = _session.CurrentCondition;
             _session.SubmitRating(value, rtMs);
-            _perfLog?.Write(_session.SessionId, _session.ParticipantId, _session.StudyId,
-                trialIndex, condition, _lastWalkPerf);
+            if (_session.IsAborted)
+            {
+                ShowAborted(trialIndex, condition, _session.AbortReason);
+                return;
+            }
+            if (_lastWalkPerf.HasData)
+                _perfLog?.Write(_session.SessionId, _session.ParticipantId, _session.StudyId,
+                    trialIndex, condition, _lastWalkPerf);
             _lastWalkPerf = default;
 
             if (_session.IsComplete) ShowDone();
@@ -273,7 +355,7 @@ namespace RoomGen.UI
 
         void ShowOnly(string screenName)
         {
-            foreach (var name in new[] { "screen-id", "screen-instructions", "screen-walk", "screen-rating", "screen-done" })
+            foreach (var name in new[] { "screen-id", "screen-instructions", "screen-walk", "screen-rating", "screen-done", "screen-error" })
             {
                 var s = _root.Q<VisualElement>(name);
                 if (s != null) s.style.display = name == screenName ? DisplayStyle.Flex : DisplayStyle.None;

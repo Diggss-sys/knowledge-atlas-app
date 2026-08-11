@@ -1,5 +1,7 @@
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using RoomGen.Contracts;
 using RoomGen.Runner;
 using UnityEngine;
 
@@ -82,6 +84,42 @@ namespace RoomGen.Tests
 
             Assert.AreEqual(0, writer.WrittenCount, "Refused rows must not reach the CSV.");
             Assert.IsFalse(System.IO.File.Exists(csv), "No file should be created by refused rows.");
+        }
+
+        [Test]
+        public void Canonical_hash_ignores_object_key_order_and_whitespace_but_not_array_order()
+        {
+            const string a = "{\"b\":2,\"a\":{\"y\":[1,2],\"x\":true}}";
+            const string same = "{ \"a\" : { \"x\": true, \"y\": [1, 2] }, \"b\": 2 }";
+            const string differentArray = "{\"a\":{\"x\":true,\"y\":[2,1]},\"b\":2}";
+
+            Assert.AreEqual(CanonicalJson.Sha256(a), CanonicalJson.Sha256(same));
+            Assert.AreNotEqual(CanonicalJson.Sha256(a), CanonicalJson.Sha256(differentArray));
+            Assert.AreEqual(CanonicalJson.Sha256("{\"n\":1}"), CanonicalJson.Sha256("{\"n\":1.0}"),
+                "mathematically integral JSON numbers must have one canonical representation");
+            Assert.AreEqual(64, CanonicalJson.Sha256(a).Length);
+        }
+
+        [Test]
+        public void Session_events_are_written_only_to_their_own_jsonl_sidecar()
+        {
+            var path = Path.Combine(Application.temporaryCachePath, "session-events.jsonl");
+            if (File.Exists(path)) File.Delete(path);
+            var log = new SessionEventLog(path, "session-01", "P07", "ceiling-study",
+                () => "2026-08-10T20:00:00Z");
+
+            log.Write("trial_aborted", 2, "treatment", "Missing furniture asset: unknown_chair");
+
+            Assert.AreEqual(1, log.WrittenCount);
+            var row = File.ReadAllText(path);
+            StringAssert.Contains("\"ts\":\"2026-08-10T20:00:00Z\"", row);
+            StringAssert.Contains("\"kind\":\"trial_aborted\"", row);
+            StringAssert.Contains("\"session_id\":\"session-01\"", row);
+            StringAssert.Contains("\"participant_id\":\"P07\"", row);
+            StringAssert.Contains("\"study_id\":\"ceiling-study\"", row);
+            StringAssert.Contains("\"trial_index\":2", row);
+            StringAssert.Contains("\"condition\":\"treatment\"", row);
+            StringAssert.Contains("unknown_chair", row);
         }
     }
 }

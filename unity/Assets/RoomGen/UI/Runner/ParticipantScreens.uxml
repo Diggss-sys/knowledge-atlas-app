@@ -56,8 +56,15 @@
             <engine:Label text="Session complete" class="runner-title" />
             <engine:Label text="Thank you. Your responses have been saved." class="runner-body" />
             <engine:Button name="open-results-button" text="Open results folder" class="runner-button" />
-            <engine:Label text="Send us the three files in that folder (they start with &quot;response-&quot;)." class="runner-body" />
+            <engine:Label text="Give the researcher the response CSV and JSONL, study JSON, and performance CSV if one was recorded." class="runner-body" />
             <engine:Label name="done-path" text="" class="runner-hint" />
+        </engine:VisualElement>
+
+        <!-- Build-integrity failure: neutral wording, no rating path, no condition details. -->
+        <engine:VisualElement name="screen-error" class="runner-card">
+            <engine:Label text="This session cannot continue" class="runner-title" />
+            <engine:Label text="Please tell the researcher and leave the files in the results folder for review." class="runner-body" />
+            <engine:Button name="open-error-results-button" text="Open results folder" class="runner-button" />
         </engine:VisualElement>
 
     </engine:VisualElement>

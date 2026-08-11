@@ -50,6 +50,8 @@ namespace RoomGen.Tests
             // Now run that exact document through the participant session.
             var csv = Path.Combine(Application.temporaryCachePath, "publish-consume.csv");
             var jsonl = Path.Combine(Application.temporaryCachePath, "publish-consume.jsonl");
+            if (File.Exists(csv)) File.Delete(csv);
+            if (File.Exists(jsonl)) File.Delete(jsonl);
             var session = new ParticipantSession(result.StudyJson, "P01", seed: 7,
                 sessionId: "sess-pc", csvPath: csv, jsonlPath: jsonl, nowUtc: () => "2026-07-10T12:00:00Z");
 
