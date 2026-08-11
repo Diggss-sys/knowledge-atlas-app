@@ -17,13 +17,14 @@ AUTHOR (sliders/AI) → RoomSpec JSON → VALIDATE (single-var gate) → GENERAT
 ## Read order
 
 1. **This file.**
-2. **[docs/CODE_MAP.md](docs/CODE_MAP.md)** — what boots when you press Play, which of the three UI
-   surfaces is current, what is being retired, and the rules that stop a fourth one appearing.
+2. **[docs/CODE_MAP.md](docs/CODE_MAP.md)** — what boots when you press Play, which UI surface owns
+   which job, what is being retired, and the rules that stop another one appearing.
    **Read this before adding any UI or entry point.**
 3. [PLAN.md](PLAN.md) — one-page picture + pipeline diagram.
-3. [handoffs/REPLAN_JULY.md](handoffs/REPLAN_JULY.md) — **the current execution plan** (2026-07-09).
-4. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — architecture of record (v3, HDRP-native) + decision log DL-1..15.
-5. Your lane's doc (below), then code.
+4. [docs/WORKING_AGREEMENT.md](docs/WORKING_AGREEMENT.md) — who owns which decisions, and the rules
+   that land work. **Read this before planning anything other people will build against.**
+5. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — architecture of record (v3, HDRP-native) + decision log DL-1..15.
+6. Your lane's doc (below), then code.
 
 ## Where things live
 
@@ -46,16 +47,19 @@ AUTHOR (sliders/AI) → RoomSpec JSON → VALIDATE (single-var gate) → GENERAT
 ## Doc status — trust this table over folder position
 
 **LIVE (act on these):**
-`PLAN.md` · `docs/ARCHITECTURE.md` · `handoffs/REPLAN_JULY.md` · `handoffs/COORDINATION.md` ·
-`unity/docs/REALISM_PASS_PLAN.md` · `docs/GETTING_STARTED.md` · `docs/PERFORMANCE.md` ·
-`docs/TEAM_RUN.md` · `unity/ASSETS.md` · `docs/ROOMSPEC_V1_1.md` (proposal, not yet locked)
+`PLAN.md` · `docs/CODE_MAP.md` · `docs/WORKING_AGREEMENT.md` · `docs/ARCHITECTURE.md` ·
+`handoffs/COORDINATION.md` · `handoffs/UI_LANE_HANDOFF.md` · `unity/docs/REALISM_PASS_PLAN.md` ·
+`docs/GETTING_STARTED.md` · `docs/PERFORMANCE.md` · `docs/TEAM_RUN.md` · `unity/ASSETS.md` ·
+`docs/ROOMSPEC_V1_1.md` (proposal, not yet locked)
 
 **HISTORY (context only — do not execute from these):**
-- `HANDOFF.md` (root) — 2026-06-10 restart doc; superseded, banners inside say so.
+- `handoffs/archive/` — delivered workstreams and superseded plans, including `REPLAN_JULY.md`
+  (the July lane collapse; its decision-ownership half now lives in `docs/WORKING_AGREEMENT.md`)
+  and the six original role handoffs (`UNITY_GENERATOR`, `UNITY_UI`, `EXPERIMENT_RUNTIME`, …),
+  which remain useful as specs of each subsystem. See `handoffs/README.md` for live vs archived.
+- `docs/history/HANDOFF.md` — 2026-06-10 restart doc; superseded, banner inside says so.
 - `docs/PHASE2_PLAN.md` — WebGL/URP architecture v2; superseded by ARCHITECTURE.md v3.
-- `docs/TEAM_PLAN.md` + the six role handoffs (`UNITY_GENERATOR`, `UNITY_UI`, `EXPERIMENT_RUNTIME`,
-  `VR_LIVE_EDIT`, `CLOUDFLARE_DATA`) — the 6-lane structure collapsed into REPLAN_JULY's two tracks;
-  still useful as specs of each subsystem.
+- `docs/TEAM_PLAN.md` — the 7-person/6-lane staffing model; superseded by `docs/WORKING_AGREEMENT.md`.
 - Research docs (`RENDERING_RESEARCH`, `ROOM_GENERATION_RESEARCH`, `CLOUD_RENDERING_RESEARCH`,
   `TECH_FEASIBILITY`, `VR_LIVE_EDITING`, `ASSET_SOURCING`, `STORAGE`, `LEGACY_PROJECT`,
   `CURVED_WALLS_SUBPLAN`) — cited groundwork; conclusions absorbed into ARCHITECTURE.md.

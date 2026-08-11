@@ -1,5 +1,12 @@
 # REPLAN — July 2026: from six lanes to one instrument and a study
 
+> **ARCHIVED 2026-08-10 — superseded, kept for provenance.** This was the execution plan for July;
+> the lane collapse it describes did happen, and it is why the repo looks the way it does. It is not
+> current instruction: its dates, task assignments, and open questions have all been overtaken.
+> Decision ownership and the rules that land work now live in
+> [docs/WORKING_AGREEMENT.md](../../docs/WORKING_AGREEMENT.md); what boots and which UI surface owns
+> which job is [docs/CODE_MAP.md](../../docs/CODE_MAP.md).
+
 *Fable, 2026-07-09, at Paco's request. The end goal is unchanged (Kirsh demo ≈ Aug 1: a student
 authors a one-variable room pair, walks it, runs a participant, gets clean data). What changes is
 the shape of the work. This invokes TEAM_PLAN.md's own collapse mechanism — it is the plan working,
