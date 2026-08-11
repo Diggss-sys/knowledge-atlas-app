@@ -1,5 +1,6 @@
 using System.IO;
 using NUnit.Framework;
+using RoomGen.Contracts;
 using RoomGen.Runner;
 using UnityEngine;
 
@@ -20,6 +21,8 @@ namespace RoomGen.Tests
         {
             var csv = Path.Combine(Application.temporaryCachePath, "participant-run.csv");
             var jsonl = Path.Combine(Application.temporaryCachePath, "participant-run.jsonl");
+            if (File.Exists(csv)) File.Delete(csv);
+            if (File.Exists(jsonl)) File.Delete(jsonl);
 
             var session = new ParticipantSession(SampleStudy, "P 07!", seed: 160,
                 sessionId: "11111111-1111-4111-8111-111111111111",
@@ -57,6 +60,57 @@ namespace RoomGen.Tests
             var text = File.ReadAllText(csv);
             StringAssert.Contains("shell.ceiling_height_m", text, "manipulated variable stamped into rows");
             StringAssert.Contains("P07", text, "sanitized participant id present ('P 07!' -> 'P07')");
+
+            var controlSha = CanonicalJson.Sha256Property(SampleStudy, "control_spec");
+            var treatmentSha = CanonicalJson.Sha256Property(SampleStudy, "treatment_spec");
+            var responseLines = File.ReadAllLines(jsonl);
+            Assert.AreEqual(4, responseLines.Length);
+            foreach (var line in responseLines)
+            {
+                var expected = line.Contains("\"condition\":\"treatment\"") ? treatmentSha : controlSha;
+                StringAssert.Contains("\"spec_sha256\":\"" + expected + "\"", line,
+                    "each row must identify the exact embedded canonical room shown in that trial");
+            }
+        }
+
+        [Test]
+        public void An_aborted_session_refuses_all_future_response_rows()
+        {
+            var csv = Path.Combine(Application.temporaryCachePath, "participant-aborted.csv");
+            var jsonl = csv + ".jsonl";
+            if (File.Exists(csv)) File.Delete(csv);
+            if (File.Exists(jsonl)) File.Delete(jsonl);
+            var session = new ParticipantSession(SampleStudy, "P01", 1, "session-abort",
+                csv, jsonl, () => "2026-07-20T18:42:11Z");
+
+            Assert.IsTrue(session.CanRun, session.Reason);
+            session.Abort("missing furniture asset");
+            var errors = session.SubmitRating(4, 1000);
+
+            Assert.IsTrue(session.IsAborted);
+            Assert.AreEqual("missing furniture asset", session.AbortReason);
+            Assert.IsFalse(session.AllValid, "an aborted session cannot report a successful completion state");
+            Assert.AreEqual(0, errors.Count, "rating is an intentional no-op after abort");
+            Assert.AreEqual(0, session.Written);
+            Assert.IsFalse(File.Exists(csv));
+            Assert.IsFalse(File.Exists(jsonl));
+        }
+
+        [Test]
+        public void Existing_session_output_is_refused_instead_of_overwritten()
+        {
+            var csv = Path.Combine(Application.temporaryCachePath, "participant-existing.csv");
+            var jsonl = csv + ".jsonl";
+            File.WriteAllText(csv, "prior participant data");
+
+            var session = new ParticipantSession(SampleStudy, "P01", 1, "same-session",
+                csv, jsonl, () => "2026-07-20T18:42:11Z");
+
+            Assert.IsFalse(session.CanRun);
+            StringAssert.Contains("refusing to overwrite", session.Reason);
+            Assert.AreEqual("prior participant data", File.ReadAllText(csv));
+            Assert.IsFalse(File.Exists(jsonl));
+            File.Delete(csv);
         }
 
         [Test]

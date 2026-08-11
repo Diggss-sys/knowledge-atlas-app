@@ -34,6 +34,8 @@ namespace RoomGen.Runner
         public int TrialCount => _plans?.Count ?? 0;
         public int Index { get; private set; }
         public bool IsComplete => _plans != null && Index >= _plans.Count;
+        public bool IsAborted { get; private set; }
+        public string AbortReason { get; private set; } = "";
         public int Written => _writer?.WrittenCount ?? 0;
         public bool AllValid { get; private set; } = true;
         public string CsvPath { get; }
@@ -48,6 +50,8 @@ namespace RoomGen.Runner
         /// <summary>The condition being presented (control/treatment) — used to pick the room to build.
         /// NEVER shown to the participant: a visible condition label would be a demand cue.</summary>
         public string CurrentCondition => IsComplete ? null : _plans[Index].Condition;
+        public string CurrentSpecSha256 => IsComplete ? null :
+            (_plans[Index].Condition == "treatment" ? _treatmentSpecSha256 : _controlSpecSha256);
 
         /// <summary>The internal RoomSpec for the current trial's room (for the walk). Null when complete.</summary>
         public RoomSpec CurrentSpec => IsComplete ? null : (_plans[Index].Condition == "treatment" ? _treatment : _control);
@@ -60,6 +64,7 @@ namespace RoomGen.Runner
         readonly List<string> _manipulated = new List<string>();
         readonly List<string> _adaptationWarnings = new List<string>();
         readonly RoomSpec _control, _treatment;
+        readonly string _controlSpecSha256, _treatmentSpecSha256;
 
         /// <param name="sessionId">Pass a fixed id in tests; empty ⇒ a fresh GUID (one session = one id).</param>
         /// <param name="nowUtc">Row timestamp source; null ⇒ real UtcNow. Injectable for deterministic tests.</param>
@@ -95,6 +100,10 @@ namespace RoomGen.Runner
 
             try
             {
+                _controlSpecSha256 = CanonicalJson.Sha256(
+                    study["control_spec"].ToString(Newtonsoft.Json.Formatting.None));
+                _treatmentSpecSha256 = CanonicalJson.Sha256(
+                    study["treatment_spec"].ToString(Newtonsoft.Json.Formatting.None));
                 _control = DeserializeSpec(study["control_spec"], "control", _adaptationWarnings);
                 _treatment = DeserializeSpec(study["treatment_spec"], "treatment", _adaptationWarnings);
             }
@@ -112,8 +121,11 @@ namespace RoomGen.Runner
 
             _plans = TrialSequencer.BuildRating(trials, strategy, seed);
 
-            if (File.Exists(csvPath)) File.Delete(csvPath);
-            if (File.Exists(jsonlPath)) File.Delete(jsonlPath);
+            if (File.Exists(csvPath) || File.Exists(jsonlPath))
+            {
+                Reason = "session output path already exists; refusing to overwrite prior participant data";
+                return;
+            }
             _writer = new ResponseWriter(csvPath, jsonlPath, ResponseWriter.LoadSchema());
             CanRun = true;
         }
@@ -125,7 +137,7 @@ namespace RoomGen.Runner
         /// </summary>
         public IReadOnlyList<string> SubmitRating(int value, double? rtMs = null)
         {
-            if (!CanRun || IsComplete) return Array.Empty<string>();
+            if (!CanRun || IsAborted || IsComplete) return Array.Empty<string>();
             var plan = _plans[Index];
             var row = new ResponseRow
             {
@@ -143,11 +155,21 @@ namespace RoomGen.Runner
                 RtMs = rtMs,
                 TimestampUtc = _nowUtc(),
                 PresentationOrderSeed = _seed,
+                SpecSha256 = plan.Condition == "treatment" ? _treatmentSpecSha256 : _controlSpecSha256,
             };
             var errors = _writer.Write(row);
             if (errors.Count > 0) AllValid = false;
             Index++;
             return errors;
+        }
+
+        /// <summary>Fail the session closed after a room-build integrity failure.</summary>
+        public void Abort(string reason)
+        {
+            if (!CanRun || IsComplete || IsAborted) return;
+            IsAborted = true;
+            AbortReason = string.IsNullOrWhiteSpace(reason) ? "session aborted" : reason;
+            AllValid = false;
         }
 
         static RoomSpec DeserializeSpec(JToken token, string label, List<string> warnings)

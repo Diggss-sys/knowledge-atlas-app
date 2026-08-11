@@ -280,7 +280,8 @@ namespace RoomGen.UI
                 return;
             }
 
-            File.WriteAllText(StudyHandoff.PublishedStudyPath, result.StudyJson);
+            var archivePath = StudyHandoff.Publish(result.StudyJson, "operator_authored_study");
+            Debug.Log("OperatorStudio: immutable study archive " + archivePath);
             Debug.Log("OperatorStudio: study published → " + StudyHandoff.PublishedStudyPath);
             if (publishButton != null) publishButton.text = "Published ✓ — participant app will run this study";
         }
