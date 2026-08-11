@@ -86,12 +86,40 @@ Then delete `Runtime/Studio/RoomStudioController` + `RoomStudioBootstrap` + `Sce
 
 Nothing is deleted before its replacement is proven — but **do not add a fourth surface.**
 
+### Amendment 2026-08-10 — step 3 is deferred; two surfaces, declared scopes
+
+Steps 1, 2 and 4 stand. **Step 3 (folding `UI/Operator` into `UI/Studio`) is deferred until after
+the study has run.** Not cancelled — scheduled.
+
+Why: `UI/Operator` is the head of the publish → participant → CSV chain. That chain is the only path
+in this repo that has produced research data, it is released on Windows and macOS, and the
+participant app built on it is what the team tests with. Re-plumbing it onto `UI/Studio` before the
+study is real risk against a fixed deadline for nothing a participant would perceive. The
+duplication §3 identifies is real and the cost of carrying it is understood; we are choosing to
+carry it for one release cycle.
+
+Until step 3 happens, the two surfaces have **written, non-overlapping scopes**:
+
+| Surface | Owns | Does not own |
+|---|---|---|
+| `UI/Studio` | Room authoring and realism: geometry, lighting, materials, furniture, the walk/VR entries | Publishing a study, the participant flow, canonical-spec gating |
+| `UI/Operator` | The study instrument: pair gate → `StudyPublisher` → participant runner → CSV, `PerfHud` | Realism/authoring controls |
+
+If a change needs both columns, that is the signal step 3 has become due — raise it, don't quietly
+build the missing half into the other panel. **Neither surface grows a copy of the other's job.**
+
+Two things `UI/Operator` should adopt from `UI/Studio` without waiting for step 3, because they are
+hygiene rather than architecture: sliders reading their ranges from `RoomSpecValidator`, and
+disabled controls stating the reason they are disabled.
+
 ---
 
 ## 4. Rules that stop this recurring
 
-1. **No new UI surface.** Extend `UI/Studio`. If a parallel build seems necessary, it must come with
-   the commit that deletes what it replaces.
+1. **No new UI surface.** There are exactly two, with the scopes declared in §3: extend `UI/Studio`
+   for authoring/realism, `UI/Operator` for the study instrument. A third is not allowed, and
+   neither of the two may grow a copy of the other's job. If a parallel build seems necessary, it
+   must come with the commit that deletes what it replaces.
 2. **New entry point ⇒ update §1 of this file in the same commit.** The bootstrap tables above are
    the only reliable answer to "why am I seeing the wrong panel".
 3. **UI reads limits from the validator.** Never copy a range into a panel.

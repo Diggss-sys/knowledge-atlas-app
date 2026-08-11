@@ -1,13 +1,13 @@
 # Overnight build — engine lanes (2026-07-06/07)
 
-*One autonomous session (Fable planned, Opus executed) working through the engine lanes, followed on 2026-07-07 by real Poly Haven furniture models and an adversarial **Fable review** ([FABLE_REVIEW.md](FABLE_REVIEW.md) — 7 defects found + fixed, verdict: M2-gate-ready). Branch `paco/lighting-l0-l4`, **unmerged / uncommitted** (all on disk). **69/69 EditMode tests green** (from 38); `RoomStudio.exe` rebuild verified via the game DLL. Evidence renders in [`docs/fidelity/`](../docs/fidelity/).*
+*One autonomous session (Fable planned, Opus executed) working through the engine lanes, followed on 2026-07-07 by real Poly Haven furniture models and an adversarial **Fable review** ([FABLE_REVIEW.md](FABLE_REVIEW.md) — 7 defects found + fixed, verdict: M2-gate-ready). Branch `paco/lighting-l0-l4`, **unmerged / uncommitted** (all on disk). **69/69 EditMode tests green** (from 38); `RoomStudio.exe` rebuild verified via the game DLL. Evidence renders in [`docs/fidelity/`](../../docs/fidelity/).*
 
 ## What landed
 
 ### E2 — fidelity (the M2 gate)
 The "Lighting Sprint" L0–L4 plus follow-ups — full log in [FIDELITY_GATE.md](FIDELITY_GATE.md) and [LIGHTING_SPRINT.md](LIGHTING_SPRINT.md).
 - **L0** HDRP quality pass (ACES + SSAO + bloom via `QualityRig`; asset support flags + 4096 shadow atlas in bootstrap code).
-- **L1** Real ambientCG PBR materials — `AssetFetcher` (SHA-locked in [`unity/ASSETS.md`](../unity/ASSETS.md)), HDRP mask packing, triplanar world mapping.
+- **L1** Real ambientCG PBR materials — `AssetFetcher` (SHA-locked in [`unity/ASSETS.md`](../../unity/ASSETS.md)), HDRP mask packing, triplanar world mapping.
 - **L2** Pendant is a real luminaire (emissive + point light, flux-conserved) + directional sun.
 - **L3** Calibrator honesty — models the pendant; measured harness proves the 2.4 m vs 3.2 m pair reads within **4.7 %** at eye height.
 - **Furniture materials** — table/chairs/handles now textured (walnut/fabric/metal).

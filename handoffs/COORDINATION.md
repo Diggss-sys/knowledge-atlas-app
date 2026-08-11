@@ -75,7 +75,7 @@ Run top to bottom on ONE machine (the strong PC), from a fresh clone:
 | P2 contracts (Diego) | ▶ | | | | | |
 | P3 cloudflare | ▶ | | | | (owner) | |
 
-> **2026-07-06 — Paco's lane absorbed the E2 fidelity half (team was behind).** L0–L4 lighting sprint delivered the M2 fidelity gate: HDRP quality pass, real ambientCG PBR materials (triplanar, SHA-locked), pendant luminaire + sun, and a **verified matched-luminance result (2.4 m vs 3.2 m ceilings read within 4.7% at eye height)**. 38→49 EditMode tests green. Verdict request + renders in [FIDELITY_GATE.md](FIDELITY_GATE.md). Branch `paco/lighting-l0-l4` (unmerged). VR half (V0–V1) still open for E2. Open follow-ups: furniture models + SSGI bounce before M3.
+> **2026-07-06 — Paco's lane absorbed the E2 fidelity half (team was behind).** L0–L4 lighting sprint delivered the M2 fidelity gate: HDRP quality pass, real ambientCG PBR materials (triplanar, SHA-locked), pendant luminaire + sun, and a **verified matched-luminance result (2.4 m vs 3.2 m ceilings read within 4.7% at eye height)**. 38→49 EditMode tests green. Verdict request + renders in [FIDELITY_GATE.md](archive/FIDELITY_GATE.md). Branch `paco/lighting-l0-l4` (unmerged). VR half (V0–V1) still open for E2. Open follow-ups: furniture models + SSGI bounce before M3.
 
 ## Escalation + unblocking
 
