@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -8,8 +10,11 @@ using Newtonsoft.Json.Linq;
 namespace RoomGen.Contracts
 {
     /// <summary>
-    /// Content-addressing helper for contract JSON. Object keys are sorted recursively, arrays retain
-    /// their authored order, and insignificant whitespace is removed before hashing.
+    /// Content-addressing helper for contract JSON. Object keys are sorted recursively using ordinal
+    /// order, arrays retain authored order, insignificant whitespace is removed, and integral floating
+    /// tokens that fit Int64 normalize to integers (so 1 and 1.0 address the same payload). Remaining
+    /// numbers use Newtonsoft's invariant JSON representation. This is the repository's canonicalization
+    /// contract; external verifiers must reproduce these rules before comparing SHA-256 values.
     /// </summary>
     public static class CanonicalJson
     {
@@ -56,6 +61,14 @@ namespace RoomGen.Contracts
 
             if (token is JArray array)
                 return new JArray(array.Select(SortToken));
+
+            if (token is JValue value && token.Type == JTokenType.Float)
+            {
+                var number = Convert.ToDouble(value.Value, CultureInfo.InvariantCulture);
+                if (!double.IsNaN(number) && !double.IsInfinity(number) &&
+                    number == Math.Truncate(number) && number >= long.MinValue && number <= long.MaxValue)
+                    return new JValue((long)number);
+            }
 
             return token.DeepClone();
         }

@@ -50,6 +50,8 @@ namespace RoomGen.Tests
             Assert.IsTrue(session.IsComplete, "the session did not complete");
             Assert.AreEqual(4, session.Written, "every trial must produce a written row");
             Assert.IsTrue(session.AllValid, "every row must validate against response_log.schema");
+            Assert.IsFalse(File.Exists(session.IncompleteCsvPath), "completed CSV must leave the incomplete namespace");
+            Assert.IsFalse(File.Exists(session.IncompleteJsonlPath), "completed JSONL must leave the incomplete namespace");
             Assert.AreEqual(2.4f, controlHeight.Value, 0.0001f, "canonical control must adapt to its authored ceiling");
             Assert.AreEqual(3.2f, treatmentHeight.Value, 0.0001f, "canonical treatment must adapt to its authored ceiling");
             Assert.AreNotEqual(controlHeight.Value, treatmentHeight.Value,
@@ -63,7 +65,7 @@ namespace RoomGen.Tests
 
             var controlSha = CanonicalJson.Sha256Property(SampleStudy, "control_spec");
             var treatmentSha = CanonicalJson.Sha256Property(SampleStudy, "treatment_spec");
-            var responseLines = File.ReadAllLines(jsonl);
+            var responseLines = File.ReadAllLines(session.JsonlPath);
             Assert.AreEqual(4, responseLines.Length);
             foreach (var line in responseLines)
             {
@@ -97,6 +99,44 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void A_partially_written_aborted_session_never_enters_the_completed_response_corpus()
+        {
+            var csv = Path.Combine(Application.temporaryCachePath, "response-partial-abort.csv");
+            var jsonl = Path.Combine(Application.temporaryCachePath, "response-partial-abort.jsonl");
+            var incompleteCsv = Path.Combine(Path.GetDirectoryName(csv), "incomplete-" + Path.GetFileName(csv));
+            var incompleteJsonl = Path.Combine(Path.GetDirectoryName(jsonl), "incomplete-" + Path.GetFileName(jsonl));
+            foreach (var path in new[] { csv, jsonl, incompleteCsv, incompleteJsonl })
+                if (File.Exists(path)) File.Delete(path);
+
+            try
+            {
+                var session = new ParticipantSession(SampleStudy, "P01", 1, "partial-abort",
+                    csv, jsonl, () => "2026-07-20T18:42:11Z");
+
+                Assert.IsTrue(session.CanRun, session.Reason);
+                Assert.IsEmpty(session.SubmitRating(4, 1000));
+                Assert.AreEqual(1, session.Written);
+                Assert.IsTrue(File.Exists(session.IncompleteCsvPath));
+                Assert.IsTrue(File.Exists(session.IncompleteJsonlPath));
+                Assert.IsFalse(File.Exists(session.CsvPath),
+                    "partial rows must not use the response-* completed-session filename");
+                Assert.IsFalse(File.Exists(session.JsonlPath));
+
+                session.Abort("second room failed to build");
+
+                Assert.IsTrue(session.IsAborted);
+                Assert.IsFalse(File.Exists(session.CsvPath));
+                Assert.IsFalse(File.Exists(session.JsonlPath));
+                StringAssert.StartsWith("incomplete-", Path.GetFileName(session.IncompleteCsvPath));
+            }
+            finally
+            {
+                foreach (var path in new[] { csv, jsonl, incompleteCsv, incompleteJsonl })
+                    if (File.Exists(path)) File.Delete(path);
+            }
+        }
+
+        [Test]
         public void Existing_session_output_is_refused_instead_of_overwritten()
         {
             var csv = Path.Combine(Application.temporaryCachePath, "participant-existing.csv");
@@ -122,8 +162,25 @@ namespace RoomGen.Tests
 
             Assert.IsFalse(session.CanRun, "a draft study must be refused");
             StringAssert.Contains("published", session.Reason);
+            Assert.IsTrue(session.IsComplete, "a refused session has no plans and must be safe to inspect");
+            Assert.IsNull(session.CurrentCondition);
+            Assert.IsNull(session.CurrentSpec);
+            Assert.IsNull(session.CurrentSpecSha256);
             Assert.AreEqual(0, session.SubmitRating(4).Count, "submit is a no-op when the study refused");
             Assert.AreEqual(0, session.Written);
+        }
+
+        [Test]
+        public void A_missing_control_spec_reports_the_precise_canonical_shape_error()
+        {
+            var missingControl = SampleStudy.Replace("\"control_spec\"", "\"missing_control_spec\"");
+            var csv = Path.Combine(Application.temporaryCachePath, "participant-missing-control.csv");
+
+            var session = new ParticipantSession(missingControl, "P01", 1, "s", csv, csv + ".jsonl");
+
+            Assert.IsFalse(session.CanRun);
+            StringAssert.Contains("control_spec must be canonical", session.Reason);
+            StringAssert.DoesNotContain("Object reference", session.Reason);
         }
 
         [Test]

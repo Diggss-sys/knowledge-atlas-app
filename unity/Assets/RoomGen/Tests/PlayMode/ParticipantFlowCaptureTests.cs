@@ -73,6 +73,8 @@ namespace RoomGen.Tests.PlayMode
             StringAssert.Contains(flow.Session.SessionId, Path.GetFileName(flow.Session.CsvPath),
                 "session identity prevents same-participant, same-second output collisions");
             StringAssert.Contains(flow.Session.SessionId, Path.GetFileName(flow.StudyCopyPath));
+            StringAssert.StartsWith("perf-", Path.GetFileName(flow.PerfPath));
+            StringAssert.StartsWith("events-", Path.GetFileName(flow.EventsPath));
             flow.BeginTrials();
             flow.ShowRating();
 
@@ -104,11 +106,13 @@ namespace RoomGen.Tests.PlayMode
             Assert.AreEqual(4, flow.Session.Written, "four rows written via the UI path");
             Assert.IsTrue(flow.Session.AllValid, "every UI-written row must validate");
             Assert.IsTrue(File.Exists(flow.Session.CsvPath), "a CSV must exist on disk");
+            Assert.IsFalse(File.Exists(flow.Session.IncompleteCsvPath));
+            Assert.IsFalse(File.Exists(flow.Session.IncompleteJsonlPath));
 
             var savedStudy = File.ReadAllText(flow.StudyCopyPath);
             var controlSha = CanonicalJson.Sha256Property(savedStudy, "control_spec");
             var treatmentSha = CanonicalJson.Sha256Property(savedStudy, "treatment_spec");
-            var responseLines = File.ReadAllLines(flow.Session.CsvPath.Replace(".csv", ".jsonl"));
+            var responseLines = File.ReadAllLines(flow.Session.JsonlPath);
             Assert.AreEqual(flow.Session.Written, responseLines.Length);
             foreach (var line in responseLines)
             {
@@ -119,8 +123,7 @@ namespace RoomGen.Tests.PlayMode
 
             // This capture skips the walks. Zero-frame rows would look measured when they are not, so
             // the honest output is no perf file at all.
-            var perfPath = flow.Session.CsvPath.Replace(".csv", ".perf.csv");
-            Assert.IsFalse(File.Exists(perfPath), "no measured walk frames means no perf rows or file");
+            Assert.IsFalse(File.Exists(flow.PerfPath), "no measured walk frames means no perf rows or file");
             Assert.IsFalse(File.Exists(flow.EventsPath), "a successful session has no non-response failure events");
 
             Object.Destroy(tex);
@@ -173,17 +176,25 @@ namespace RoomGen.Tests.PlayMode
             StringAssert.Contains("forced_test_asset", flow.Session.AbortReason);
             Assert.AreEqual(0, flow.Session.Written);
             Assert.IsFalse(File.Exists(flow.Session.CsvPath), "aborted trial must not create a response CSV");
-            Assert.IsFalse(File.Exists(flow.Session.CsvPath.Replace(".csv", ".jsonl")),
+            Assert.IsFalse(File.Exists(flow.Session.JsonlPath),
                 "aborted trial must not enter the response JSONL mirror");
-            Assert.IsFalse(File.Exists(flow.Session.CsvPath.Replace(".csv", ".perf.csv")),
+            Assert.IsFalse(File.Exists(flow.PerfPath),
                 "aborted trial must not create a phantom perf row");
             Assert.IsTrue(File.Exists(flow.EventsPath), "the abort belongs in the events sidecar");
             Assert.AreEqual(1, File.ReadAllLines(flow.EventsPath).Length);
-            StringAssert.Contains("trial_aborted", File.ReadAllText(flow.EventsPath));
+            var abortEvent = File.ReadAllText(flow.EventsPath);
+            StringAssert.Contains("trial_aborted", abortEvent);
+            StringAssert.Contains("\"session_id\":\"" + flow.Session.SessionId + "\"", abortEvent);
+            StringAssert.Contains("\"participant_id\":\"FAIL01\"", abortEvent);
+            StringAssert.Contains("\"study_id\":\"" + flow.Session.StudyId + "\"", abortEvent);
+            StringAssert.Contains("\"condition\":\"" + flow.Session.CurrentCondition + "\"", abortEvent,
+                "abort evidence must preserve condition so differential attrition can be measured");
             Assert.AreEqual(DisplayStyle.Flex, root.Q<VisualElement>("screen-error").resolvedStyle.display);
             Assert.AreEqual(DisplayStyle.None, root.Q<VisualElement>("screen-rating").resolvedStyle.display,
                 "no rating path may be visible after a failed build");
             Assert.IsNull(root.Q<Button>("rate-1"), "rating buttons are never created for the failed trial");
+            Assert.IsNotNull(root.Q<Button>("open-error-results-button"),
+                "the tester must be able to retrieve the abort evidence from the neutral failure screen");
 
             Object.Destroy(flowGo);
             Object.Destroy(docGo);
@@ -226,8 +237,8 @@ namespace RoomGen.Tests.PlayMode
             StringAssert.Contains("no walkable room", flow.Session.AbortReason);
             Assert.AreEqual(0, flow.Session.Written);
             Assert.IsFalse(File.Exists(flow.Session.CsvPath));
-            Assert.IsFalse(File.Exists(flow.Session.CsvPath.Replace(".csv", ".jsonl")));
-            Assert.IsFalse(File.Exists(flow.Session.CsvPath.Replace(".csv", ".perf.csv")));
+            Assert.IsFalse(File.Exists(flow.Session.JsonlPath));
+            Assert.IsFalse(File.Exists(flow.PerfPath));
             Assert.IsTrue(File.Exists(flow.EventsPath));
             Assert.AreEqual(DisplayStyle.Flex, root.Q<VisualElement>("screen-error").resolvedStyle.display);
             Assert.AreEqual(DisplayStyle.None, root.Q<VisualElement>("screen-rating").resolvedStyle.display);

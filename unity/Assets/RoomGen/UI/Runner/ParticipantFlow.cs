@@ -51,6 +51,7 @@ namespace RoomGen.UI
         public ParticipantSession Session => _session;
         public string StudyCopyPath { get; private set; }
         public string EventsPath => _eventLog?.Path;
+        public string PerfPath => _perfLog?.Path;
 
         void Start()
         {
@@ -132,6 +133,7 @@ namespace RoomGen.UI
             Button("start-button", BeginTrials);
             Button("enter-walk-button", EnterRoom);
             Button("open-results-button", OpenResultsFolder);
+            Button("open-error-results-button", OpenResultsFolder);
 
             ShowOnly("screen-id");
             _booted = true;
@@ -147,7 +149,8 @@ namespace RoomGen.UI
             var stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
             var safe = SafeFile(id);
             var safeSession = SafeFile(sessionId);
-            var responseStem = $"response-{safe}-{safeSession}-{stamp}";
+            var sessionToken = $"{safe}-{safeSession}-{stamp}";
+            var responseStem = "response-" + sessionToken;
             var csv = Path.Combine(_outputDir, responseStem + ".csv");
             var jsonl = Path.Combine(_outputDir, responseStem + ".jsonl");
 
@@ -160,11 +163,14 @@ namespace RoomGen.UI
             }
             // Frame-rate sidecar next to the response CSV (joins on session_id + trial_index),
             // stamped with this machine so the cross-machine team run is attributable.
-            var perfPath = Path.Combine(_outputDir, responseStem + ".perf.csv");
-            var eventsPath = Path.Combine(_outputDir, responseStem + ".events.jsonl");
+            var perfPath = Path.Combine(_outputDir, "perf-" + sessionToken + ".csv");
+            var eventsPath = Path.Combine(_outputDir, "events-" + sessionToken + ".jsonl");
             _perfLog = new PerfLog(perfPath, MachineInfo.Current());
             _eventLog = new SessionEventLog(
                 eventsPath,
+                _session.SessionId,
+                _session.ParticipantId,
+                _session.StudyId,
                 _nowUtc ?? (() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture)));
             try
             {
@@ -222,7 +228,13 @@ namespace RoomGen.UI
                 ? string.Join(" | ", build.Warnings)
                 : fallbackDetail;
             var trialIndex = _session.Index;
+            var condition = _session.CurrentCondition;
             _session.Abort(detail);
+            ShowAborted(trialIndex, condition, detail);
+        }
+
+        void ShowAborted(int trialIndex, string condition, string detail)
+        {
             _roomGen.Clear();
             _lastWalkPerf = default;
             _walking = false;
@@ -232,7 +244,7 @@ namespace RoomGen.UI
 
             try
             {
-                _eventLog?.Write("trial_aborted", trialIndex, detail);
+                _eventLog?.Write("trial_aborted", trialIndex, condition, detail);
             }
             catch (Exception e)
             {
@@ -266,6 +278,11 @@ namespace RoomGen.UI
             var trialIndex = _session.Index;
             var condition = _session.CurrentCondition;
             _session.SubmitRating(value, rtMs);
+            if (_session.IsAborted)
+            {
+                ShowAborted(trialIndex, condition, _session.AbortReason);
+                return;
+            }
             if (_lastWalkPerf.HasData)
                 _perfLog?.Write(_session.SessionId, _session.ParticipantId, _session.StudyId,
                     trialIndex, condition, _lastWalkPerf);

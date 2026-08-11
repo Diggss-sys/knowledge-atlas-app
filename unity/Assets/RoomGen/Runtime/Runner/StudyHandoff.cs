@@ -18,10 +18,17 @@ namespace RoomGen.Runner
     {
         static readonly UTF8Encoding Utf8NoBom = new UTF8Encoding(false);
 
-        public static string PublishedStudyPath =>
-            Path.Combine(Application.persistentDataPath, "published-study.json");
+        public static string PublishedStudyPath => PublishedStudyPathForRoot(Application.persistentDataPath);
 
-        public static bool HasPublishedStudy => File.Exists(PublishedStudyPath);
+        public static string PublishedStudyPathForRoot(string root)
+        {
+            var resolvedRoot = string.IsNullOrWhiteSpace(root) ? Application.persistentDataPath : root;
+            return Path.Combine(resolvedRoot, "published-study.json");
+        }
+
+        public static bool HasPublishedStudy => HasPublishedStudyAt(Application.persistentDataPath);
+
+        public static bool HasPublishedStudyAt(string root) => File.Exists(PublishedStudyPathForRoot(root));
 
         /// <summary>
         /// Update the live handoff slot and preserve an immutable, content-addressed copy. Passing a
@@ -33,31 +40,36 @@ namespace RoomGen.Runner
             if (string.IsNullOrWhiteSpace(studyJson))
                 throw new System.ArgumentException("Study JSON is required.", nameof(studyJson));
 
-            var root = outputRoot ?? Application.persistentDataPath;
-            var hash = CanonicalJson.Sha256(studyJson);
+            var root = string.IsNullOrWhiteSpace(outputRoot) ? Application.persistentDataPath : outputRoot;
+            var canonical = CanonicalJson.Normalize(studyJson);
+            var hash = CanonicalJson.Sha256(canonical);
             Directory.CreateDirectory(root);
             var archiveDir = Path.Combine(root, "published");
             Directory.CreateDirectory(archiveDir);
-            var archivePath = Path.Combine(archiveDir,
-                SafeFile(studyId) + "-" + hash.Substring(0, 12) + ".json");
+            // Use the complete SHA-256. The archive filename addresses the exact canonical bytes it
+            // contains, so distinct formatting of the same JSON resolves to one immutable payload.
+            var archivePath = Path.Combine(archiveDir, SafeFile(studyId) + "-" + hash + ".json");
             var archiveIsExact = false;
             if (File.Exists(archivePath))
             {
                 try
                 {
                     var existing = File.ReadAllText(archivePath);
-                    archiveIsExact = existing == studyJson && CanonicalJson.Sha256(existing) == hash;
+                    archiveIsExact = existing == canonical && CanonicalJson.Sha256(existing) == hash;
                 }
                 catch
                 {
                     archiveIsExact = false;
                 }
             }
-            if (!archiveIsExact) WriteAtomic(archivePath, studyJson);
-            if (File.ReadAllText(archivePath) != studyJson)
+            if (!archiveIsExact) WriteAtomic(archivePath, canonical);
+            var archived = File.ReadAllText(archivePath);
+            if (archived != canonical || CanonicalJson.Sha256(archived) != hash)
                 throw new InvalidDataException("Study archive verification failed: " + archivePath);
 
-            WriteAtomic(Path.Combine(root, "published-study.json"), studyJson);
+            // The live slot preserves the exact published document; the archive above is the stable,
+            // canonical payload used for content addressing.
+            WriteAtomic(PublishedStudyPathForRoot(root), studyJson);
             return archivePath;
         }
 

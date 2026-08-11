@@ -14,18 +14,25 @@ namespace RoomGen.Runner
     {
         static readonly UTF8Encoding Utf8NoBom = new UTF8Encoding(false);
         readonly string _path;
+        readonly string _sessionId;
+        readonly string _participantId;
+        readonly string _studyId;
         readonly Func<string> _nowUtc;
 
         public string Path => _path;
         public int WrittenCount { get; private set; }
 
-        public SessionEventLog(string path, Func<string> nowUtc)
+        public SessionEventLog(string path, string sessionId, string participantId, string studyId,
+            Func<string> nowUtc)
         {
             _path = path;
+            _sessionId = sessionId ?? "";
+            _participantId = participantId ?? "";
+            _studyId = studyId ?? "";
             _nowUtc = nowUtc ?? throw new ArgumentNullException(nameof(nowUtc));
         }
 
-        public void Write(string kind, int? trialIndex = null, string detail = null)
+        public void Write(string kind, int? trialIndex = null, string condition = null, string detail = null)
         {
             if (string.IsNullOrWhiteSpace(kind))
                 throw new ArgumentException("Event kind is required.", nameof(kind));
@@ -34,8 +41,12 @@ namespace RoomGen.Runner
             {
                 ["ts"] = _nowUtc(),
                 ["kind"] = kind,
+                ["session_id"] = _sessionId,
+                ["participant_id"] = _participantId,
+                ["study_id"] = _studyId,
             };
             if (trialIndex.HasValue) row["trial_index"] = trialIndex.Value;
+            if (!string.IsNullOrEmpty(condition)) row["condition"] = condition;
             if (!string.IsNullOrEmpty(detail)) row["detail"] = detail;
 
             var directory = System.IO.Path.GetDirectoryName(_path);

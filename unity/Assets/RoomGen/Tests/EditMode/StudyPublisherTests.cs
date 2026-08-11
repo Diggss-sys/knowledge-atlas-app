@@ -188,19 +188,32 @@ namespace RoomGen.Tests
                 Assert.IsTrue(first.Ok, string.Join(" | ", first.Errors));
 
                 var archive1 = StudyHandoff.Publish(first.StudyJson, "ceiling_pilot_01", root);
-                Assert.AreEqual(first.StudyJson, File.ReadAllText(Path.Combine(root, "published-study.json")));
-                StringAssert.Contains(CanonicalJson.Sha256(first.StudyJson).Substring(0, 12), archive1);
+                Assert.AreEqual(first.StudyJson, File.ReadAllText(StudyHandoff.PublishedStudyPathForRoot(root)));
+                Assert.IsTrue(StudyHandoff.HasPublishedStudyAt(root),
+                    "custom-root publishing and discovery must share one live-slot path");
+                StringAssert.Contains(CanonicalJson.Sha256(first.StudyJson), archive1,
+                    "the archive address uses the complete canonical SHA-256");
+                Assert.AreEqual(CanonicalJson.Normalize(first.StudyJson), File.ReadAllText(archive1),
+                    "the payload bytes must be the same canonical bytes named by the address");
                 Assert.AreEqual(1, Directory.GetFiles(Path.Combine(root, "published"), "*.json").Length);
 
-                var duplicatePath = StudyHandoff.Publish(first.StudyJson, "ceiling_pilot_01", root);
-                Assert.AreEqual(archive1, duplicatePath, "identical bytes must resolve to the same archive");
+                var equivalentFormatting = first.StudyJson.Replace("{", "{ ").Replace("}", " }");
+                Assert.AreNotEqual(first.StudyJson, equivalentFormatting);
+                Assert.AreEqual(CanonicalJson.Sha256(first.StudyJson), CanonicalJson.Sha256(equivalentFormatting));
+                var duplicatePath = StudyHandoff.Publish(equivalentFormatting, "ceiling_pilot_01", root);
+                Assert.AreEqual(archive1, duplicatePath,
+                    "canonically equivalent JSON must resolve to the same immutable archive");
                 Assert.AreEqual(1, Directory.GetFiles(Path.Combine(root, "published"), "*.json").Length,
                     "an identical re-publish must not create a duplicate");
+                Assert.AreEqual(CanonicalJson.Normalize(first.StudyJson), File.ReadAllText(archive1),
+                    "equivalent source formatting must not clobber the addressed archive payload");
+                Assert.AreEqual(equivalentFormatting, File.ReadAllText(StudyHandoff.PublishedStudyPathForRoot(root)),
+                    "the live slot preserves the exact latest accepted document");
 
                 File.WriteAllText(archive1, "{\"partial\":true}");
                 var repairedPath = StudyHandoff.Publish(first.StudyJson, "ceiling_pilot_01", root);
                 Assert.AreEqual(archive1, repairedPath);
-                Assert.AreEqual(first.StudyJson, File.ReadAllText(archive1),
+                Assert.AreEqual(CanonicalJson.Normalize(first.StudyJson), File.ReadAllText(archive1),
                     "a corrupt or interrupted archive is repaired before the live slot is accepted");
                 Assert.IsEmpty(Directory.GetFiles(Path.Combine(root, "published"), "*.tmp"),
                     "atomic archive writes must not leave temporary files");
@@ -214,7 +227,7 @@ namespace RoomGen.Tests
                 Assert.AreNotEqual(archive1, archive2);
                 Assert.AreEqual(2, Directory.GetFiles(Path.Combine(root, "published"), "*.json").Length,
                     "a later distinct publish must preserve the earlier study");
-                Assert.AreEqual(changed.StudyJson, File.ReadAllText(Path.Combine(root, "published-study.json")),
+                Assert.AreEqual(changed.StudyJson, File.ReadAllText(StudyHandoff.PublishedStudyPathForRoot(root)),
                     "the live slot always points at the newest accepted study");
             }
             finally

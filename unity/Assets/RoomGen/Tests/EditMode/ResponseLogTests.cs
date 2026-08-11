@@ -95,6 +95,8 @@ namespace RoomGen.Tests
 
             Assert.AreEqual(CanonicalJson.Sha256(a), CanonicalJson.Sha256(same));
             Assert.AreNotEqual(CanonicalJson.Sha256(a), CanonicalJson.Sha256(differentArray));
+            Assert.AreEqual(CanonicalJson.Sha256("{\"n\":1}"), CanonicalJson.Sha256("{\"n\":1.0}"),
+                "mathematically integral JSON numbers must have one canonical representation");
             Assert.AreEqual(64, CanonicalJson.Sha256(a).Length);
         }
 
@@ -103,15 +105,20 @@ namespace RoomGen.Tests
         {
             var path = Path.Combine(Application.temporaryCachePath, "session-events.jsonl");
             if (File.Exists(path)) File.Delete(path);
-            var log = new SessionEventLog(path, () => "2026-08-10T20:00:00Z");
+            var log = new SessionEventLog(path, "session-01", "P07", "ceiling-study",
+                () => "2026-08-10T20:00:00Z");
 
-            log.Write("trial_aborted", 2, "Missing furniture asset: unknown_chair");
+            log.Write("trial_aborted", 2, "treatment", "Missing furniture asset: unknown_chair");
 
             Assert.AreEqual(1, log.WrittenCount);
             var row = File.ReadAllText(path);
             StringAssert.Contains("\"ts\":\"2026-08-10T20:00:00Z\"", row);
             StringAssert.Contains("\"kind\":\"trial_aborted\"", row);
+            StringAssert.Contains("\"session_id\":\"session-01\"", row);
+            StringAssert.Contains("\"participant_id\":\"P07\"", row);
+            StringAssert.Contains("\"study_id\":\"ceiling-study\"", row);
             StringAssert.Contains("\"trial_index\":2", row);
+            StringAssert.Contains("\"condition\":\"treatment\"", row);
             StringAssert.Contains("unknown_chair", row);
         }
     }

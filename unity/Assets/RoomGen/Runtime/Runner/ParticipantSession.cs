@@ -33,12 +33,15 @@ namespace RoomGen.Runner
 
         public int TrialCount => _plans?.Count ?? 0;
         public int Index { get; private set; }
-        public bool IsComplete => _plans != null && Index >= _plans.Count;
+        public bool IsComplete => _plans == null || Index >= _plans.Count;
         public bool IsAborted { get; private set; }
         public string AbortReason { get; private set; } = "";
         public int Written => _writer?.WrittenCount ?? 0;
         public bool AllValid { get; private set; } = true;
         public string CsvPath { get; }
+        public string JsonlPath { get; }
+        public string IncompleteCsvPath { get; }
+        public string IncompleteJsonlPath { get; }
         public IReadOnlyList<string> AdaptationWarnings => _adaptationWarnings;
 
         // Identity of this session — exposed so the perf sidecar log can key its rows to the same
@@ -72,6 +75,9 @@ namespace RoomGen.Runner
             string csvPath, string jsonlPath, Func<string> nowUtc = null)
         {
             CsvPath = csvPath;
+            JsonlPath = jsonlPath;
+            IncompleteCsvPath = IncompletePath(csvPath);
+            IncompleteJsonlPath = IncompletePath(jsonlPath);
             _nowUtc = nowUtc ?? (() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture));
             _participantId = Sanitize(participantId);
             _sessionId = string.IsNullOrEmpty(sessionId) ? Guid.NewGuid().ToString() : sessionId;
@@ -100,12 +106,12 @@ namespace RoomGen.Runner
 
             try
             {
+                _control = DeserializeSpec(study["control_spec"], "control", _adaptationWarnings);
+                _treatment = DeserializeSpec(study["treatment_spec"], "treatment", _adaptationWarnings);
                 _controlSpecSha256 = CanonicalJson.Sha256(
                     study["control_spec"].ToString(Newtonsoft.Json.Formatting.None));
                 _treatmentSpecSha256 = CanonicalJson.Sha256(
                     study["treatment_spec"].ToString(Newtonsoft.Json.Formatting.None));
-                _control = DeserializeSpec(study["control_spec"], "control", _adaptationWarnings);
-                _treatment = DeserializeSpec(study["treatment_spec"], "treatment", _adaptationWarnings);
             }
             catch (Exception e)
             {
@@ -121,12 +127,15 @@ namespace RoomGen.Runner
 
             _plans = TrialSequencer.BuildRating(trials, strategy, seed);
 
-            if (File.Exists(csvPath) || File.Exists(jsonlPath))
+            if (File.Exists(csvPath) || File.Exists(jsonlPath) ||
+                File.Exists(IncompleteCsvPath) || File.Exists(IncompleteJsonlPath))
             {
                 Reason = "session output path already exists; refusing to overwrite prior participant data";
                 return;
             }
-            _writer = new ResponseWriter(csvPath, jsonlPath, ResponseWriter.LoadSchema());
+            // Rows remain visibly incomplete until the whole session succeeds. Only completed sessions
+            // are promoted to the response-* corpus that researchers pool for analysis.
+            _writer = new ResponseWriter(IncompleteCsvPath, IncompleteJsonlPath, ResponseWriter.LoadSchema());
             CanRun = true;
         }
 
@@ -157,9 +166,30 @@ namespace RoomGen.Runner
                 PresentationOrderSeed = _seed,
                 SpecSha256 = plan.Condition == "treatment" ? _treatmentSpecSha256 : _controlSpecSha256,
             };
-            var errors = _writer.Write(row);
-            if (errors.Count > 0) AllValid = false;
+            var errors = new List<string>(_writer.Write(row));
+            if (errors.Count > 0)
+            {
+                AllValid = false;
+                IsAborted = true;
+                AbortReason = "response row refused: " + string.Join(" | ", errors);
+                return errors;
+            }
             Index++;
+
+            if (IsComplete)
+            {
+                try
+                {
+                    PromoteCompletedOutputs();
+                }
+                catch (Exception e)
+                {
+                    AllValid = false;
+                    IsAborted = true;
+                    AbortReason = "completed response files could not be finalized: " + e.Message;
+                    errors.Add(AbortReason);
+                }
+            }
             return errors;
         }
 
@@ -170,6 +200,34 @@ namespace RoomGen.Runner
             IsAborted = true;
             AbortReason = string.IsNullOrWhiteSpace(reason) ? "session aborted" : reason;
             AllValid = false;
+        }
+
+        void PromoteCompletedOutputs()
+        {
+            if (!File.Exists(IncompleteCsvPath) || !File.Exists(IncompleteJsonlPath))
+                throw new IOException("one or more incomplete response files are missing");
+            if (File.Exists(CsvPath) || File.Exists(JsonlPath))
+                throw new IOException("a completed response path appeared during the session; refusing to overwrite it");
+
+            File.Move(IncompleteCsvPath, CsvPath);
+            try
+            {
+                File.Move(IncompleteJsonlPath, JsonlPath);
+            }
+            catch
+            {
+                // Best-effort rollback keeps a failed promotion out of the completed response corpus.
+                if (File.Exists(CsvPath) && !File.Exists(IncompleteCsvPath))
+                    File.Move(CsvPath, IncompleteCsvPath);
+                throw;
+            }
+        }
+
+        static string IncompletePath(string finalPath)
+        {
+            var directory = Path.GetDirectoryName(finalPath);
+            var filename = "incomplete-" + Path.GetFileName(finalPath);
+            return string.IsNullOrEmpty(directory) ? filename : Path.Combine(directory, filename);
         }
 
         static RoomSpec DeserializeSpec(JToken token, string label, List<string> warnings)
