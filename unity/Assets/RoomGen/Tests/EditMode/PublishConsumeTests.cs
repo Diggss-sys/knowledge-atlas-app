@@ -15,8 +15,13 @@ namespace RoomGen.Tests
     /// </summary>
     public class PublishConsumeTests
     {
-        static string ControlSpec => Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control").text;
-        static string TreatmentSpec => Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment").text;
+        // The frozen contract fixtures intentionally include tint_hex, which the current adapter
+        // cannot render. A newly authored operator study strips that unsupported decoration before
+        // publish, so this author-to-run test mirrors the real completion pipeline.
+        static string ControlSpec => Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control").text
+            .Replace(", \"tint_hex\": \"#ece7dc\"", "");
+        static string TreatmentSpec => Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment").text
+            .Replace(", \"tint_hex\": \"#ece7dc\"", "");
 
         [Test]
         public void A_published_study_is_consumable_by_the_participant_runner()

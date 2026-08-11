@@ -90,13 +90,14 @@ namespace RoomGen.UI
         /// </summary>
         public static string Complete(JObject baseTemplate, string specJson)
         {
-            if (string.IsNullOrEmpty(specJson)) return baseTemplate.ToString(Formatting.None);
             var merged = (JObject)baseTemplate.DeepClone();
-            merged.Merge(JObject.Parse(specJson), new JsonMergeSettings
-            {
-                MergeArrayHandling = MergeArrayHandling.Replace,
-                MergeNullValueHandling = MergeNullValueHandling.Ignore,
-            });
+            if (!string.IsNullOrEmpty(specJson))
+                merged.Merge(JObject.Parse(specJson), new JsonMergeSettings
+                {
+                    MergeArrayHandling = MergeArrayHandling.Replace,
+                    MergeNullValueHandling = MergeNullValueHandling.Ignore,
+                });
+            RemoveUnsupportedSurfaceTints(merged);
             return merged.ToString(Formatting.None);
         }
 
@@ -107,6 +108,18 @@ namespace RoomGen.UI
         {
             var declared = string.IsNullOrEmpty(declaredVariable) ? FallbackVariable : declaredVariable;
             return WithExperiment(Complete(baseTemplate, specJson), condition, declared);
+        }
+
+        // The canonical contract permits tint_hex, but RoomSpecAdapter currently drops it. Operator
+        // Studio does not expose tint authoring, so carrying the example template's tint into a study
+        // would create a known lossy adaptation warning in the participant runner. Remove that
+        // unsupported template decoration before validation, preview, and publish all see the spec.
+        static void RemoveUnsupportedSurfaceTints(JObject spec)
+        {
+            if (!(spec["surfaces"] is JObject surfaces)) return;
+            foreach (var name in new[] { "wall", "floor", "ceiling" })
+                if (surfaces[name] is JObject surface)
+                    surface.Remove("tint_hex");
         }
 
         // Stamp the gate's required experiment block. condition distinguishes the two specs; the

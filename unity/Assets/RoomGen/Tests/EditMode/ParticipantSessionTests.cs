@@ -29,8 +29,14 @@ namespace RoomGen.Tests
             Assert.AreEqual(4, session.TrialCount, "the study declares 4 trials");
 
             var guard = 0;
+            float? controlHeight = null, treatmentHeight = null;
             while (!session.IsComplete && guard++ < 32)
             {
+                if (session.CurrentCondition == "treatment")
+                    treatmentHeight = session.CurrentSpec.Geometry.CeilingHeightM;
+                else
+                    controlHeight = session.CurrentSpec.Geometry.CeilingHeightM;
+
                 // The "human": treatment (taller ceiling) rated higher than control — plausible ratings,
                 // always in range so the writer accepts them.
                 var value = session.CurrentCondition == "treatment" ? session.ScaleMax : session.ScaleMin + 1;
@@ -41,6 +47,10 @@ namespace RoomGen.Tests
             Assert.IsTrue(session.IsComplete, "the session did not complete");
             Assert.AreEqual(4, session.Written, "every trial must produce a written row");
             Assert.IsTrue(session.AllValid, "every row must validate against response_log.schema");
+            Assert.AreEqual(2.4f, controlHeight.Value, 0.0001f, "canonical control must adapt to its authored ceiling");
+            Assert.AreEqual(3.2f, treatmentHeight.Value, 0.0001f, "canonical treatment must adapt to its authored ceiling");
+            Assert.AreNotEqual(controlHeight.Value, treatmentHeight.Value,
+                "the participant must actually see different rooms for the declared variable");
 
             var lines = File.ReadAllLines(csv);
             Assert.AreEqual(5, lines.Length, "header + 4 rows");
@@ -60,6 +70,35 @@ namespace RoomGen.Tests
             StringAssert.Contains("published", session.Reason);
             Assert.AreEqual(0, session.SubmitRating(4).Count, "submit is a no-op when the study refused");
             Assert.AreEqual(0, session.Written);
+        }
+
+        [Test]
+        public void An_internal_form_study_is_refused_instead_of_silently_defaulting_geometry()
+        {
+            var internalShape = SampleStudy.Replace("\"shell\":", "\"geometry\":");
+            var csv = Path.Combine(Application.temporaryCachePath, "participant-internal-refuse.csv");
+
+            var session = new ParticipantSession(internalShape, "P01", 1, "s", csv, csv + ".jsonl");
+
+            Assert.IsFalse(session.CanRun);
+            StringAssert.Contains("must be canonical", session.Reason);
+            StringAssert.Contains("internal geometry/room_id form is not accepted", session.Reason);
+        }
+
+        [Test]
+        public void Lossy_adapter_warnings_refuse_the_session_and_are_exposed()
+        {
+            var tinted = SampleStudy.Replace(
+                "\"wall\": { \"material\": \"plaster\" }",
+                "\"wall\": { \"material\": \"plaster\", \"tint_hex\": \"#ece7dc\" }");
+            var csv = Path.Combine(Application.temporaryCachePath, "participant-warning-refuse.csv");
+
+            var session = new ParticipantSession(tinted, "P01", 1, "s", csv, csv + ".jsonl");
+
+            Assert.IsFalse(session.CanRun);
+            Assert.IsNotEmpty(session.AdaptationWarnings);
+            StringAssert.Contains("tint_hex", session.Reason);
+            StringAssert.Contains("lossy", session.Reason);
         }
     }
 }

@@ -90,7 +90,7 @@ namespace RoomGen.Tests
                 result.EmbeddedControlSpecJson, result.EmbeddedTreatmentSpecJson, schema);
             Assert.IsTrue(gate.Ok);
             CollectionAssert.AreEqual(gate.DiffPaths, result.ValidationDiffPaths);
-            Assert.AreEqual("PairGate.cs@1.0", result.Validator);
+            Assert.AreEqual(StudyPublisher.ValidatorIdentity, result.Validator);
             Assert.AreEqual("2026-07-07T12:00:05Z", result.ValidatedAtIso);
             StringAssert.Contains("\"validated_at\":\"2026-07-07T12:00:05Z\"", result.StudyJson);
         }

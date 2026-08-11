@@ -14,6 +14,8 @@ namespace RoomGen.UI
     /// </summary>
     public sealed class StudyPublisher
     {
+        public const string ValidatorIdentity = "PairGate.cs@1.0";
+
         public struct TaskConfig
         {
             public string Type;   // "rating" | "choice"
@@ -136,7 +138,7 @@ namespace RoomGen.UI
                 EmbeddedTreatmentSpecJson = doc["treatment_spec"].ToString(Newtonsoft.Json.Formatting.None),
                 ValidationDiffPaths = new List<string>(gate.DiffPaths),
                 ValidationNotes = new List<string>(gate.Notes),
-                Validator = "PairGate.cs@1.0",
+                Validator = ValidatorIdentity,
                 ValidatedAtIso = input.CreatedAtIso,
             };
         }
@@ -147,7 +149,7 @@ namespace RoomGen.UI
             {
                 ["ok"] = gate.Ok,
                 ["validated_at"] = input.CreatedAtIso,
-                ["validator"] = "PairGate.cs@1.0",
+                ["validator"] = ValidatorIdentity,
             };
 
             if (gate.DiffPaths.Count > 0)

@@ -151,6 +151,7 @@ namespace RoomGen.Tests
 
             vm.SetField("shell.ceiling_height_m", 3.1);
             Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Stale, vm.ValidationStatus);
+            Assert.IsFalse(vm.Validation.Ok, "stale state must not retain a pass for future consumers");
             Assert.IsFalse(vm.PublishEnabled, "a passing verdict cannot authorize edited specs");
 
             vm.SubmitPair();

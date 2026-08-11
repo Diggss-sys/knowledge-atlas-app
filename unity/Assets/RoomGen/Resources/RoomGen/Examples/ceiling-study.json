@@ -6,387 +6,106 @@
   "pair_id": "ceiling_height_study_01",
   "control_spec": {
     "spec_version": "1.0",
-    "room_id": "dining-room-v1",
+    "room_type": "dining_room",
     "seed": 160,
-    "geometry": {
+    "shell": {
       "width_m": 5.4,
       "length_m": 6.2,
       "ceiling_height_m": 2.4,
-      "wall_thickness_m": 0.15,
-      "corner_radius_m": 0.0
+      "contour": "angular"
     },
     "surfaces": {
-      "floor_material_id": "builtin.oak",
-      "wall_material_id": "builtin.warm-white",
-      "ceiling_material_id": "builtin.ceiling-white",
-      "texture_scale_m": 1.0
+      "wall": { "material": "plaster" },
+      "floor": { "material": "wood" },
+      "ceiling": { "material": "plaster", "visible": true }
     },
-    "openings": [
-      {
-        "opening_id": "entry-door",
-        "kind": "door",
-        "wall": "front",
-        "center_m": 1.75,
-        "width_m": 1.0,
-        "bottom_m": 0.0,
-        "top_m": 2.05
-      },
-      {
-        "opening_id": "window-left-a",
-        "kind": "window",
-        "wall": "left",
-        "center_m": -1.15,
-        "width_m": 1.1,
-        "bottom_m": 0.9,
-        "top_m": 2.05
-      },
-      {
-        "opening_id": "window-left-b",
-        "kind": "window",
-        "wall": "left",
-        "center_m": 1.15,
-        "width_m": 1.1,
-        "bottom_m": 0.9,
-        "top_m": 2.05
-      }
-    ],
+    "openings": {
+      "door": { "wall": "front", "position": 0.824074, "width_m": 1.0 },
+      "windows": [
+        { "wall": "left", "position": 0.314516, "width_m": 1.1, "sill_m": 0.9, "head_m": 2.05 },
+        { "wall": "left", "position": 0.685484, "width_m": 1.1, "sill_m": 0.9, "head_m": 2.05 }
+      ]
+    },
     "lighting": {
-      "preset_id": "builtin.recessed-neutral",
-      "target_lux": 300.0,
-      "tolerance_lux": 35.0,
-      "color_temperature_k": 3500.0,
-      "base_luminous_flux_lm": 3200.0,
-      "fixed_exposure_ev100": 8.0
+      "preset": "neutral_daylight",
+      "warmth": 0.789474,
+      "intensity": 0.6
     },
     "furniture": [
-      {
-        "asset_id": "builtin.dining-table",
-        "slot_id": "table-center",
-        "position_m": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 2.15,
-          "y": 1.05
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-north-left",
-        "position_m": {
-          "x": -0.65,
-          "y": 0.0,
-          "z": 1.15
-        },
-        "rotation_y_deg": 180.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-north-right",
-        "position_m": {
-          "x": 0.65,
-          "y": 0.0,
-          "z": 1.15
-        },
-        "rotation_y_deg": 180.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-south-left",
-        "position_m": {
-          "x": -0.65,
-          "y": 0.0,
-          "z": -1.15
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-south-right",
-        "position_m": {
-          "x": 0.65,
-          "y": 0.0,
-          "z": -1.15
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-west",
-        "position_m": {
-          "x": -1.55,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation_y_deg": 90.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-east",
-        "position_m": {
-          "x": 1.55,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation_y_deg": -90.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.sideboard",
-        "slot_id": "sideboard-back",
-        "position_m": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": -2.72
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 1.65,
-          "y": 0.45
-        }
-      },
-      {
-        "asset_id": "builtin.plant",
-        "slot_id": "plant-back-right",
-        "position_m": {
-          "x": 2.1,
-          "y": 0.0,
-          "z": -2.45
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 0.6,
-          "y": 0.6
-        }
-      }
+      { "catalog_id": "dining_table_6", "placement": { "slot": "table_center" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_1" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_2" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_3" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_4" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_5" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_6" } },
+      { "catalog_id": "sideboard", "placement": { "slot": "long_wall_back" } },
+      { "catalog_id": "pendant_light", "placement": { "slot": "above_table" } }
     ],
+    "experiment": {
+      "condition": "control",
+      "manipulated_variables": ["shell.ceiling_height_m"],
+      "pair_id": "ceiling_height_study_01"
+    },
     "provenance": {
-      "preset_id": "dining-room-v1",
-      "generator_version": "1.0.0",
-      "source": "room-studio"
+      "generated_by": "preset",
+      "execution_path": "live",
+      "notes": "Bundled canonical fallback study."
     }
   },
   "treatment_spec": {
     "spec_version": "1.0",
-    "room_id": "dining-room-v1",
+    "room_type": "dining_room",
     "seed": 160,
-    "geometry": {
+    "shell": {
       "width_m": 5.4,
       "length_m": 6.2,
       "ceiling_height_m": 3.2,
-      "wall_thickness_m": 0.15,
-      "corner_radius_m": 0.0
+      "contour": "angular"
     },
     "surfaces": {
-      "floor_material_id": "builtin.oak",
-      "wall_material_id": "builtin.warm-white",
-      "ceiling_material_id": "builtin.ceiling-white",
-      "texture_scale_m": 1.0
+      "wall": { "material": "plaster" },
+      "floor": { "material": "wood" },
+      "ceiling": { "material": "plaster", "visible": true }
     },
-    "openings": [
-      {
-        "opening_id": "entry-door",
-        "kind": "door",
-        "wall": "front",
-        "center_m": 1.75,
-        "width_m": 1.0,
-        "bottom_m": 0.0,
-        "top_m": 2.05
-      },
-      {
-        "opening_id": "window-left-a",
-        "kind": "window",
-        "wall": "left",
-        "center_m": -1.15,
-        "width_m": 1.1,
-        "bottom_m": 0.9,
-        "top_m": 2.05
-      },
-      {
-        "opening_id": "window-left-b",
-        "kind": "window",
-        "wall": "left",
-        "center_m": 1.15,
-        "width_m": 1.1,
-        "bottom_m": 0.9,
-        "top_m": 2.05
-      }
-    ],
+    "openings": {
+      "door": { "wall": "front", "position": 0.824074, "width_m": 1.0 },
+      "windows": [
+        { "wall": "left", "position": 0.314516, "width_m": 1.1, "sill_m": 0.9, "head_m": 2.05 },
+        { "wall": "left", "position": 0.685484, "width_m": 1.1, "sill_m": 0.9, "head_m": 2.05 }
+      ]
+    },
     "lighting": {
-      "preset_id": "builtin.recessed-neutral",
-      "target_lux": 300.0,
-      "tolerance_lux": 35.0,
-      "color_temperature_k": 3500.0,
-      "base_luminous_flux_lm": 3200.0,
-      "fixed_exposure_ev100": 8.0
+      "preset": "neutral_daylight",
+      "warmth": 0.789474,
+      "intensity": 0.6
     },
     "furniture": [
-      {
-        "asset_id": "builtin.dining-table",
-        "slot_id": "table-center",
-        "position_m": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 2.15,
-          "y": 1.05
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-north-left",
-        "position_m": {
-          "x": -0.65,
-          "y": 0.0,
-          "z": 1.15
-        },
-        "rotation_y_deg": 180.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-north-right",
-        "position_m": {
-          "x": 0.65,
-          "y": 0.0,
-          "z": 1.15
-        },
-        "rotation_y_deg": 180.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-south-left",
-        "position_m": {
-          "x": -0.65,
-          "y": 0.0,
-          "z": -1.15
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-south-right",
-        "position_m": {
-          "x": 0.65,
-          "y": 0.0,
-          "z": -1.15
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-west",
-        "position_m": {
-          "x": -1.55,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation_y_deg": 90.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.dining-chair",
-        "slot_id": "chair-east",
-        "position_m": {
-          "x": 1.55,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation_y_deg": -90.0,
-        "footprint_m": {
-          "x": 0.55,
-          "y": 0.55
-        }
-      },
-      {
-        "asset_id": "builtin.sideboard",
-        "slot_id": "sideboard-back",
-        "position_m": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": -2.72
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 1.65,
-          "y": 0.45
-        }
-      },
-      {
-        "asset_id": "builtin.plant",
-        "slot_id": "plant-back-right",
-        "position_m": {
-          "x": 2.1,
-          "y": 0.0,
-          "z": -2.45
-        },
-        "rotation_y_deg": 0.0,
-        "footprint_m": {
-          "x": 0.6,
-          "y": 0.6
-        }
-      }
+      { "catalog_id": "dining_table_6", "placement": { "slot": "table_center" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_1" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_2" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_3" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_4" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_5" } },
+      { "catalog_id": "dining_chair", "placement": { "slot": "chair_6" } },
+      { "catalog_id": "sideboard", "placement": { "slot": "long_wall_back" } },
+      { "catalog_id": "pendant_light", "placement": { "slot": "above_table" } }
     ],
+    "experiment": {
+      "condition": "treatment",
+      "manipulated_variables": ["shell.ceiling_height_m"],
+      "pair_id": "ceiling_height_study_01"
+    },
     "provenance": {
-      "preset_id": "dining-room-v1",
-      "generator_version": "1.0.0",
-      "source": "room-studio"
+      "generated_by": "preset",
+      "execution_path": "live",
+      "notes": "Bundled canonical fallback study."
     }
   },
   "validation": {
     "ok": true,
     "diff": {
-      "shell.ceiling_height_m": [
-        2.4,
-        3.2
-      ]
+      "shell.ceiling_height_m": [2.4, 3.2]
     },
     "validated_at": "2026-07-15T12:00:00Z",
     "validator": "validate_pair.py"

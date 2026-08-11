@@ -256,7 +256,10 @@ namespace RoomGen.UI
         void MarkValidationStale()
         {
             if (ValidationStatus != ValidationFreshness.None)
+            {
                 ValidationStatus = ValidationFreshness.Stale;
+                Validation = EmptyValidation();
+            }
         }
 
         static ValidationState EmptyValidation() => new ValidationState
