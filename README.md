@@ -54,7 +54,7 @@ A different Unity version will silently upgrade the project — 6000.3.16f1 exac
 
 ## Where things are
 
-**Read first:** [PLAN.md](PLAN.md) (one-page plan) → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+**Read first:** [PLAN.md](PLAN.md) (one-page plan) → [docs/WORKING_AGREEMENT.md](docs/WORKING_AGREEMENT.md) (who decides what) → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 (architecture of record, decision log) → [docs/CODE_MAP.md](docs/CODE_MAP.md) (**what boots, what
 owns what, which surfaces are retiring** — read this before touching any UI).
 
