@@ -28,7 +28,7 @@ namespace RoomGen.UI
     /// </summary>
     public sealed class StudioSpecChannel : ISpecChannel
     {
-        const string PairId = "operator_studio_pair";
+        public const string PairId = "operator_studio_pair";
         const string FallbackVariable = "shell.ceiling_height_m";
 
         readonly ISpecChannel _inner;
@@ -58,8 +58,8 @@ namespace RoomGen.UI
         public void LoadPair(string controlJson, string treatmentJson, string requestId)
         {
             var declared = string.IsNullOrEmpty(_declaredVariable()) ? FallbackVariable : _declaredVariable();
-            var control = WithExperiment(Complete(_baseTemplate, controlJson), "control", declared);
-            var treatment = WithExperiment(Complete(_baseTemplate, treatmentJson), "treatment", declared);
+            var control = CompleteAndStamp(_baseTemplate, controlJson, "control", declared);
+            var treatment = CompleteAndStamp(_baseTemplate, treatmentJson, "treatment", declared);
             _inner.LoadPair(control, treatment, requestId);
         }
 
@@ -90,14 +90,36 @@ namespace RoomGen.UI
         /// </summary>
         public static string Complete(JObject baseTemplate, string specJson)
         {
-            if (string.IsNullOrEmpty(specJson)) return baseTemplate.ToString(Formatting.None);
             var merged = (JObject)baseTemplate.DeepClone();
-            merged.Merge(JObject.Parse(specJson), new JsonMergeSettings
-            {
-                MergeArrayHandling = MergeArrayHandling.Replace,
-                MergeNullValueHandling = MergeNullValueHandling.Ignore,
-            });
+            if (!string.IsNullOrEmpty(specJson))
+                merged.Merge(JObject.Parse(specJson), new JsonMergeSettings
+                {
+                    MergeArrayHandling = MergeArrayHandling.Replace,
+                    MergeNullValueHandling = MergeNullValueHandling.Ignore,
+                });
+            RemoveUnsupportedSurfaceTints(merged);
             return merged.ToString(Formatting.None);
+        }
+
+        /// <summary>Produce the exact canonical pair member used by both the runtime gate and study
+        /// publishing: complete the editor's partial model, then stamp its experiment metadata.</summary>
+        public static string CompleteAndStamp(
+            JObject baseTemplate, string specJson, string condition, string declaredVariable)
+        {
+            var declared = string.IsNullOrEmpty(declaredVariable) ? FallbackVariable : declaredVariable;
+            return WithExperiment(Complete(baseTemplate, specJson), condition, declared);
+        }
+
+        // The canonical contract permits tint_hex, but RoomSpecAdapter currently drops it. Operator
+        // Studio does not expose tint authoring, so carrying the example template's tint into a study
+        // would create a known lossy adaptation warning in the participant runner. Remove that
+        // unsupported template decoration before validation, preview, and publish all see the spec.
+        static void RemoveUnsupportedSurfaceTints(JObject spec)
+        {
+            if (!(spec["surfaces"] is JObject surfaces)) return;
+            foreach (var name in new[] { "wall", "floor", "ceiling" })
+                if (surfaces[name] is JObject surface)
+                    surface.Remove("tint_hex");
         }
 
         // Stamp the gate's required experiment block. condition distinguishes the two specs; the

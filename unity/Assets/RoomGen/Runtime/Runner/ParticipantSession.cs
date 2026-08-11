@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using RoomGen.Adapter;
 using RoomGen.Contracts;
+using RoomGen.Gate;
+using UnityEngine;
 
 namespace RoomGen.Runner
 {
@@ -33,6 +37,7 @@ namespace RoomGen.Runner
         public int Written => _writer?.WrittenCount ?? 0;
         public bool AllValid { get; private set; } = true;
         public string CsvPath { get; }
+        public IReadOnlyList<string> AdaptationWarnings => _adaptationWarnings;
 
         // Identity of this session — exposed so the perf sidecar log can key its rows to the same
         // session/participant/study as the response CSV (see PerfLog).
@@ -53,6 +58,7 @@ namespace RoomGen.Runner
         readonly string _studyId, _pairId, _modality, _sessionId, _participantId;
         readonly int _seed;
         readonly List<string> _manipulated = new List<string>();
+        readonly List<string> _adaptationWarnings = new List<string>();
         readonly RoomSpec _control, _treatment;
 
         /// <param name="sessionId">Pass a fixed id in tests; empty ⇒ a fresh GUID (one session = one id).</param>
@@ -87,8 +93,22 @@ namespace RoomGen.Runner
             if (study["validation"]?["diff"] is JObject diff)
                 foreach (var prop in diff.Properties()) _manipulated.Add(prop.Name);
 
-            _control = DeserializeSpec(study["control_spec"]);
-            _treatment = DeserializeSpec(study["treatment_spec"]);
+            try
+            {
+                _control = DeserializeSpec(study["control_spec"], "control", _adaptationWarnings);
+                _treatment = DeserializeSpec(study["treatment_spec"], "treatment", _adaptationWarnings);
+            }
+            catch (Exception e)
+            {
+                Reason = "study room specification refused: " + e.Message;
+                return;
+            }
+
+            if (_adaptationWarnings.Count > 0)
+            {
+                Reason = "study room adaptation is lossy: " + string.Join(" | ", _adaptationWarnings);
+                return;
+            }
 
             _plans = TrialSequencer.BuildRating(trials, strategy, seed);
 
@@ -130,8 +150,27 @@ namespace RoomGen.Runner
             return errors;
         }
 
-        static RoomSpec DeserializeSpec(JToken token) =>
-            token == null ? null : RoomJson.Deserialize<RoomSpec>(token.ToString());
+        static RoomSpec DeserializeSpec(JToken token, string label, List<string> warnings)
+        {
+            if (!(token is JObject canonical) || !(canonical["shell"] is JObject))
+                throw new InvalidDataException(
+                    $"{label}_spec must be canonical (room_type/shell/surfaces/lighting); internal geometry/room_id form is not accepted");
+
+            var schemaAsset = Resources.Load<TextAsset>("RoomGen/room_spec.schema");
+            if (schemaAsset == null)
+                throw new InvalidDataException("room_spec schema resource is unavailable");
+
+            var schema = ResponseJson.Parse(schemaAsset.text);
+            var schemaErrors = JsonSchemaLite.Validate(canonical, schema);
+            if (schemaErrors.Count > 0)
+                throw new InvalidDataException($"{label}_spec is not schema-valid: " +
+                    string.Join(" | ", schemaErrors.Select(e => $"{e.Path}: {e.Message}")));
+
+            var adapted = RoomSpecAdapter.Adapt(canonical.ToString(Newtonsoft.Json.Formatting.None));
+            foreach (var warning in adapted.Warnings)
+                warnings.Add($"{label}_spec: {warning}");
+            return adapted.Spec;
+        }
 
         // participant ids reach a CSV cell: keep them to a safe token so a stray comma/newline can't
         // corrupt a row. Empty entry becomes a stable placeholder rather than an invalid empty id.

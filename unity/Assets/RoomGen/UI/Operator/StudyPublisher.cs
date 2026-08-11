@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using RoomGen.Gate;
@@ -7,30 +8,13 @@ using UnityEngine;
 namespace RoomGen.UI
 {
     /// <summary>
-    /// U3's brain (no form yet): turns a validated control/treatment pair + a task into a study JSON
-    /// document that is schema-valid against study.schema.json, self-contained (full spec snapshots
-    /// embedded), and stamped with the single-variable validation result. Publishing is REFUSED — the
-    /// document is never emitted — when the pair validation is not ok (locked decision DL-6, "a
-    /// confounded pair can be edited freely but never saved as a study"), and when the task config is
-    /// degenerate (a rating scale with min >= max, an empty prompt, choice trials &lt; 1).
-    ///
-    /// All inputs/outputs are plain types so the EditMode test drives it without naming Newtonsoft;
-    /// created_at is injected by the caller (no DateTime.Now inside — determinism + testability), the
-    /// same rule the response-log builder follows. The produced document is finally self-checked with
-    /// StudyGate.CanRun, so what Publish returns is exactly what the runner would accept.
+    /// Turns a canonical control/treatment pair and task into a self-contained study document.
+    /// The publisher is the final integrity sink: it revalidates the exact embedded specs and derives
+    /// the validation stamp itself, so stale or caller-forged UI state can never publish a confound.
     /// </summary>
     public sealed class StudyPublisher
     {
-        // ---- plain input value objects ----
-
-        public struct ValidationStamp
-        {
-            public bool Ok;
-            public IReadOnlyList<string> DiffPaths;
-            public IReadOnlyList<string> Notes;
-            public string Validator;      // e.g. "PairGate.cs@1.0"
-            public string ValidatedAtIso; // ISO date-time, caller-supplied
-        }
+        public const string ValidatorIdentity = "PairGate.cs@1.0";
 
         public struct TaskConfig
         {
@@ -46,25 +30,37 @@ namespace RoomGen.UI
             public string StudyId;
             public string PairId;
             public string Title;
-            public string Hypothesis; // optional
-            public string Modality;   // "desktop_3d" | "pcvr" | "standalone_vr"
+            public string Hypothesis;
+            public string Modality;
             public string ControlSpecJson;
             public string TreatmentSpecJson;
-            public ValidationStamp Validation;
             public TaskConfig Task;
-            public string CreatedAtIso; // injected
+            public string CreatedAtIso;
         }
 
         public struct Result
         {
             public bool Ok;
-            public string StudyJson;                 // null when refused
-            public IReadOnlyList<string> Errors;     // why it was refused (empty on success)
+            public string StudyJson;
+            public IReadOnlyList<string> Errors;
+            public string EmbeddedControlSpecJson;
+            public string EmbeddedTreatmentSpecJson;
+            public IReadOnlyList<string> ValidationDiffPaths;
+            public IReadOnlyList<string> ValidationNotes;
+            public string Validator;
+            public string ValidatedAtIso;
         }
 
-        readonly JObject _schema;
+        readonly JObject _studySchema;
+        readonly JObject _roomSchema;
 
-        public StudyPublisher(JObject schema) { _schema = schema; }
+        public StudyPublisher(JObject studySchema) : this(studySchema, LoadRoomSchema()) { }
+
+        public StudyPublisher(JObject studySchema, JObject roomSchema)
+        {
+            _studySchema = studySchema;
+            _roomSchema = roomSchema;
+        }
 
         public static JObject LoadSchema()
         {
@@ -72,30 +68,57 @@ namespace RoomGen.UI
             return text != null ? ResponseJson.Parse(text.text) : null;
         }
 
-        public static StudyPublisher CreateDefault() => new StudyPublisher(LoadSchema());
+        public static JObject LoadRoomSchema()
+        {
+            var text = Resources.Load<TextAsset>("RoomGen/room_spec.schema");
+            return text != null ? ResponseJson.Parse(text.text) : null;
+        }
 
-        /// <summary>Build + validate the study. Never emits a document when refused.</summary>
+        public static StudyPublisher CreateDefault() => new StudyPublisher(LoadSchema(), LoadRoomSchema());
+
+        /// <summary>Build and validate the study. No document is emitted when any gate refuses it.</summary>
         public Result Publish(StudyInput input)
         {
             var errors = new List<string>();
+            PairGate.Result gate = null;
 
-            // DL-6: a confounded (or unvalidated) pair can be edited but never saved as a study.
-            if (!input.Validation.Ok)
-                errors.Add("validation.ok is false — a confounded/unvalidated pair cannot be published (DL-6)");
+            if (_roomSchema == null)
+            {
+                errors.Add("room_spec schema is unavailable");
+            }
+            else
+            {
+                try
+                {
+                    var control = ResponseJson.Parse(input.ControlSpecJson);
+                    var treatment = ResponseJson.Parse(input.TreatmentSpecJson);
+                    gate = PairGate.Validate(control, treatment, _roomSchema);
 
-            // Semantic task checks the schema cannot express (refuse, never repair).
+                    if (!gate.Ok)
+                        foreach (var violation in gate.Violations)
+                            errors.Add($"{violation.Code} @ {violation.Path}: {violation.Message}");
+
+                    ValidatePairMemberMetadata(control, "control", input.PairId, errors);
+                    ValidatePairMemberMetadata(treatment, "treatment", input.PairId, errors);
+                }
+                catch (Exception e)
+                {
+                    errors.Add("pair validation could not parse the embedded specs: " + e.Message);
+                }
+            }
+
             errors.AddRange(TaskSemanticErrors(input.Task));
-
             if (errors.Count > 0)
                 return new Result { Ok = false, StudyJson = null, Errors = errors };
 
-            var doc = BuildDocument(input);
+            var doc = BuildDocument(input, gate);
 
-            // Schema gate (JsonSchemaLite, the same subset the pair gate uses).
-            foreach (var e in JsonSchemaLite.Validate(doc, _schema))
-                errors.Add($"{e.Path}: {e.Message}");
+            if (_studySchema == null)
+                errors.Add("study schema is unavailable");
+            else
+                foreach (var e in JsonSchemaLite.Validate(doc, _studySchema))
+                    errors.Add($"{e.Path}: {e.Message}");
 
-            // Final self-check: exactly what the runner's honesty gate would accept.
             var json = doc.ToString(Newtonsoft.Json.Formatting.None);
             if (!StudyGate.CanRun(json, out var reason))
                 errors.Add($"StudyGate refused the produced document: {reason}");
@@ -106,25 +129,39 @@ namespace RoomGen.UI
                 return new Result { Ok = false, StudyJson = null, Errors = errors };
             }
 
-            return new Result { Ok = true, StudyJson = json, Errors = errors };
+            return new Result
+            {
+                Ok = true,
+                StudyJson = json,
+                Errors = errors,
+                EmbeddedControlSpecJson = doc["control_spec"].ToString(Newtonsoft.Json.Formatting.None),
+                EmbeddedTreatmentSpecJson = doc["treatment_spec"].ToString(Newtonsoft.Json.Formatting.None),
+                ValidationDiffPaths = new List<string>(gate.DiffPaths),
+                ValidationNotes = new List<string>(gate.Notes),
+                Validator = ValidatorIdentity,
+                ValidatedAtIso = input.CreatedAtIso,
+            };
         }
 
-        JObject BuildDocument(StudyInput input)
+        static JObject BuildDocument(StudyInput input, PairGate.Result gate)
         {
             var validation = new JObject
             {
-                ["ok"] = input.Validation.Ok,
-                ["validated_at"] = input.Validation.ValidatedAtIso,
-                ["validator"] = input.Validation.Validator,
+                ["ok"] = gate.Ok,
+                ["validated_at"] = input.CreatedAtIso,
+                ["validator"] = ValidatorIdentity,
             };
-            if (input.Validation.DiffPaths != null && input.Validation.DiffPaths.Count > 0)
+
+            if (gate.DiffPaths.Count > 0)
             {
                 var diff = new JObject();
-                foreach (var p in input.Validation.DiffPaths) diff[p] = new JArray(); // path recorded; values are in the specs
+                foreach (var path in gate.DiffPaths)
+                    diff[path] = new JArray();
                 validation["diff"] = diff;
             }
-            if (input.Validation.Notes != null && input.Validation.Notes.Count > 0)
-                validation["notes"] = new JArray(input.Validation.Notes);
+
+            if (gate.Notes.Count > 0)
+                validation["notes"] = new JArray(gate.Notes);
 
             var doc = new JObject
             {
@@ -142,6 +179,19 @@ namespace RoomGen.UI
             };
             if (!string.IsNullOrEmpty(input.Hypothesis)) doc["hypothesis"] = input.Hypothesis;
             return doc;
+        }
+
+        static void ValidatePairMemberMetadata(
+            JObject spec, string expectedCondition, string expectedPairId, List<string> errors)
+        {
+            var experiment = spec["experiment"] as JObject;
+            var condition = (string)experiment?["condition"];
+            var pairId = (string)experiment?["pair_id"];
+
+            if (!string.Equals(condition, expectedCondition, StringComparison.Ordinal))
+                errors.Add($"study_pair_role_mismatch: {expectedCondition}_spec declares condition '{condition}'");
+            if (!string.Equals(pairId, expectedPairId, StringComparison.Ordinal))
+                errors.Add($"study_pair_id_mismatch: {expectedCondition}_spec pair_id '{pairId}' does not match study pair_id '{expectedPairId}'");
         }
 
         static JObject BuildTask(TaskConfig task)
@@ -177,10 +227,9 @@ namespace RoomGen.UI
                 else if (task.ScaleMax.Value <= task.ScaleMin.Value)
                     yield return $"rating scale is degenerate: scale_max {task.ScaleMax} <= scale_min {task.ScaleMin}";
             }
-            else // choice
+            else if (!task.Trials.HasValue || task.Trials.Value < 1)
             {
-                if (!task.Trials.HasValue || task.Trials.Value < 1)
-                    yield return $"choice task requires trials >= 1 (got {(task.Trials.HasValue ? task.Trials.Value.ToString() : "none")})";
+                yield return $"choice task requires trials >= 1 (got {(task.Trials.HasValue ? task.Trials.Value.ToString() : "none")})";
             }
         }
     }

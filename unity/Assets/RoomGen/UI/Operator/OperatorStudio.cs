@@ -250,21 +250,18 @@ namespace RoomGen.UI
             if (_controlSpec == null || _treatmentSpec == null) return;
 
             var nowIso = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss'Z'", CultureInfo.InvariantCulture);
+            var controlCanonical = StudioSpecChannel.CompleteAndStamp(
+                _baseTemplate, _vm.ControlSpecJson, "control", _vm.DeclaredVariable);
+            var treatmentCanonical = StudioSpecChannel.CompleteAndStamp(
+                _baseTemplate, _vm.CurrentSpecJson, "treatment", _vm.DeclaredVariable);
             var result = StudyPublisher.CreateDefault().Publish(new StudyPublisher.StudyInput
             {
                 StudyId = "operator_authored_study",
-                PairId = "operator_studio_pair",
+                PairId = StudioSpecChannel.PairId,
                 Title = "Operator-authored study",
                 Modality = "desktop_3d",
-                ControlSpecJson = RoomJson.Serialize(_controlSpec),
-                TreatmentSpecJson = RoomJson.Serialize(_treatmentSpec),
-                Validation = new StudyPublisher.ValidationStamp
-                {
-                    Ok = _vm.Validation.Ok,
-                    DiffPaths = _vm.Validation.DiffPaths,
-                    Validator = "PairGate.cs@1.0",
-                    ValidatedAtIso = nowIso,
-                },
+                ControlSpecJson = controlCanonical,
+                TreatmentSpecJson = treatmentCanonical,
                 Task = new StudyPublisher.TaskConfig
                 {
                     Type = "rating",

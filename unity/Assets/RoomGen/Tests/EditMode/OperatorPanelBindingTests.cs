@@ -152,6 +152,12 @@ namespace RoomGen.Tests
             OperatorPanelController.Refresh(root, vm);
 
             Assert.IsTrue(publish.enabledSelf, "publish enables once validation.ok");
+
+            vm.SetField("shell.ceiling_height_m", 3.2);
+            OperatorPanelController.Refresh(root, vm);
+
+            Assert.IsFalse(publish.enabledSelf, "editing invalidates the old verdict");
+            StringAssert.Contains("edited since validation", root.Q<Label>("validation-status").text);
         }
     }
 }

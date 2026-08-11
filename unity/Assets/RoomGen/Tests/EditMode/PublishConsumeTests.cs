@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using RoomGen.Runner;
@@ -16,8 +15,13 @@ namespace RoomGen.Tests
     /// </summary>
     public class PublishConsumeTests
     {
-        const string ControlSpec = "{\"spec_version\":\"1.0\",\"room_id\":\"dining-room-v1\",\"geometry\":{\"ceiling_height_m\":2.4}}";
-        const string TreatmentSpec = "{\"spec_version\":\"1.0\",\"room_id\":\"dining-room-v1\",\"geometry\":{\"ceiling_height_m\":3.2}}";
+        // The frozen contract fixtures intentionally include tint_hex, which the current adapter
+        // cannot render. A newly authored operator study strips that unsupported decoration before
+        // publish, so this author-to-run test mirrors the real completion pipeline.
+        static string ControlSpec => Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control").text
+            .Replace(", \"tint_hex\": \"#ece7dc\"", "");
+        static string TreatmentSpec => Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment").text
+            .Replace(", \"tint_hex\": \"#ece7dc\"", "");
 
         [Test]
         public void A_published_study_is_consumable_by_the_participant_runner()
@@ -25,18 +29,11 @@ namespace RoomGen.Tests
             var result = StudyPublisher.CreateDefault().Publish(new StudyPublisher.StudyInput
             {
                 StudyId = "operator_authored_study",
-                PairId = "operator_studio_pair",
+                PairId = "ceiling_height_study_01",
                 Title = "Operator-authored study",
                 Modality = "desktop_3d",
                 ControlSpecJson = ControlSpec,
                 TreatmentSpecJson = TreatmentSpec,
-                Validation = new StudyPublisher.ValidationStamp
-                {
-                    Ok = true,
-                    DiffPaths = new List<string> { "shell.ceiling_height_m" },
-                    Validator = "PairGate.cs@1.0",
-                    ValidatedAtIso = "2026-07-10T12:00:00Z",
-                },
                 Task = new StudyPublisher.TaskConfig
                 {
                     Type = "rating",
@@ -61,6 +58,9 @@ namespace RoomGen.Tests
             var guard = 0;
             while (!session.IsComplete && guard++ < 16)
             {
+                var expectedHeight = session.CurrentCondition == "treatment" ? 2.6f : 3.2f;
+                Assert.AreEqual(expectedHeight, session.CurrentSpec.Geometry.CeilingHeightM, 0.0001f,
+                    "canonical study specs must pass through RoomSpecAdapter before the walk");
                 var errors = session.SubmitRating(session.CurrentCondition == "treatment" ? 6 : 3);
                 Assert.AreEqual(0, errors.Count, "the writer refused a row: " + string.Join(" | ", errors));
             }
