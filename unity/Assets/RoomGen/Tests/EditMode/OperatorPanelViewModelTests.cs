@@ -127,12 +127,19 @@ namespace RoomGen.Tests
             Assert.IsFalse(vm.PublishEnabled, "no validation yet -> publish disabled");
 
             // Confounded pair first: publish stays disabled, confound codes surface.
-            ch.EnqueuePairFailure("p", new[] { "undeclared_change" }, new[] { "shell.ceiling_height_m", "surfaces.wall.material" });
+            ch.EnqueuePairFailure("p", new[] { "undeclared_change" },
+                new[] { "shell.ceiling_height_m", "surfaces.wall.material" },
+                new[] { new SeamError("undeclared_change", "surfaces.wall.material", "wall material differs") },
+                new[] { "coupled: shell.ceiling_height_m also changes room volume" });
             vm.SetAsControl();
             vm.SubmitPair();
             Assert.IsFalse(vm.PublishEnabled, "a confounded pair can be edited but never published (DL-6)");
             Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Fresh, vm.ValidationStatus);
             CollectionAssert.Contains(vm.Validation.ViolationCodes.ToList(), "undeclared_change");
+            Assert.AreEqual("surfaces.wall.material", vm.Validation.Violations[0].Path);
+            Assert.AreEqual("wall material differs", vm.Validation.Violations[0].Message,
+                "the UI model must retain the gate message verbatim");
+            Assert.AreEqual(1, vm.Validation.Notes.Count);
 
             // Clean single-variable pair: default mock result is ok -> publish flips on.
             vm.SubmitPair();
@@ -152,6 +159,8 @@ namespace RoomGen.Tests
             vm.SetField("shell.ceiling_height_m", 3.1);
             Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Stale, vm.ValidationStatus);
             Assert.IsFalse(vm.Validation.Ok, "stale state must not retain a pass for future consumers");
+            Assert.IsEmpty(vm.Validation.Violations, "stale state must not retain old violation details");
+            Assert.IsEmpty(vm.Validation.Notes, "stale state must not retain old notes");
             Assert.IsFalse(vm.PublishEnabled, "a passing verdict cannot authorize edited specs");
 
             vm.SubmitPair();

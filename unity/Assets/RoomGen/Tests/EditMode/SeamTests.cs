@@ -104,6 +104,9 @@ namespace RoomGen.Tests
             Assert.IsTrue(ev.Ok, "the canonical ceiling pair is a valid single-variable pair; gate codes: "
                 + string.Join(", ", ev.PairViolationCodes));
             Assert.AreEqual(new[] { "shell.ceiling_height_m" }, ev.PairDiffPaths.ToArray());
+            Assert.IsEmpty(ev.PairViolations);
+            Assert.AreEqual(1, ev.PairNotes.Count, "coupled-variable guidance must survive the seam");
+            StringAssert.Contains("shell.ceiling_height_m", ev.PairNotes[0]);
             Assert.AreEqual("control", ev.ActiveCondition);
         }
 
@@ -121,6 +124,15 @@ namespace RoomGen.Tests
             Assert.AreEqual(SeamCodes.PairLoaded, ev.Kind);
             Assert.IsFalse(ev.Ok, "a pair that differs in more than the declared variable must be refused");
             Assert.Contains("undeclared_change", ev.PairViolationCodes);
+            var violation = ev.PairViolations.Single(v =>
+                v.Code == "undeclared_change" && v.Path == "surfaces.wall.material");
+            Assert.AreEqual("surfaces.wall.material", violation.Path);
+            StringAssert.Contains("pair is confounded", violation.Message);
+            Assert.AreEqual(1, ev.PairNotes.Count, "notes must not disappear when validation fails");
+
+            var json = ev.ToJson();
+            StringAssert.Contains("\"violations\":[{\"code\":\"undeclared_change\"", json);
+            StringAssert.Contains("\"notes\":[\"coupled: shell.ceiling_height_m", json);
         }
 
         [Test]

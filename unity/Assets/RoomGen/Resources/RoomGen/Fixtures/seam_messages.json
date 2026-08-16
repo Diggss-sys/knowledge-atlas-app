@@ -60,6 +60,31 @@
           "build_ms": 3
         }
       }
+    },
+    {
+      "name": "event_pair_loaded_full_validation",
+      "message": {
+        "seam_version": 1,
+        "kind": "pair_loaded",
+        "request_id": "r-0010",
+        "payload": {
+          "ok": false,
+          "validation": {
+            "ok": false,
+            "violations": [
+              {
+                "code": "undeclared_change",
+                "path": "surfaces.wall.material",
+                "message": "differs (plaster vs brick) but is not in manipulated_variables — the pair is confounded"
+              }
+            ],
+            "violation_codes": ["undeclared_change"],
+            "diff_paths": ["shell.ceiling_height_m", "surfaces.wall.material"],
+            "notes": ["coupled: shell.ceiling_height_m also changes room volume and the window-to-wall ratio"]
+          },
+          "active_condition": "control"
+        }
+      }
     }
   ],
   "invalid": [

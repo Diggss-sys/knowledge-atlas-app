@@ -102,6 +102,27 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void Scripted_pair_failure_surfaces_full_violations_and_notes()
+        {
+            var ch = new MockSpecChannel();
+            var events = Capture(ch);
+            var violations = new[]
+            {
+                new SeamError("undeclared_change", "surfaces.wall.material", "wall material differs"),
+            };
+            var notes = new[] { "coupled: shell.ceiling_height_m also changes room volume" };
+
+            ch.EnqueuePairFailure("r-c", new[] { "undeclared_change" },
+                new[] { "shell.ceiling_height_m", "surfaces.wall.material" }, violations, notes);
+            ch.LoadPair("{}", "{}", "r-c");
+
+            Assert.AreEqual(1, events[0].PairViolations.Count);
+            Assert.AreEqual("surfaces.wall.material", events[0].PairViolations[0].Path);
+            Assert.AreEqual("wall material differs", events[0].PairViolations[0].Message);
+            CollectionAssert.AreEqual(notes, events[0].PairNotes);
+        }
+
+        [Test]
         public void Set_camera_mode_is_accepted_with_no_event_switch_and_screenshot_emit_one_each()
         {
             var ch = new MockSpecChannel();

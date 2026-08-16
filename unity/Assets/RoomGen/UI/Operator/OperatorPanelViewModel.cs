@@ -51,6 +51,8 @@ namespace RoomGen.UI
             public bool Ok;
             public IReadOnlyList<string> ViolationCodes;
             public IReadOnlyList<string> DiffPaths;
+            public IReadOnlyList<ErrorRow> Violations;
+            public IReadOnlyList<string> Notes;
             public string ActiveCondition;
         }
 
@@ -74,7 +76,15 @@ namespace RoomGen.UI
         public string Status { get; private set; } = "";
         public IReadOnlyList<ErrorRow> Errors { get; private set; } = new List<ErrorRow>();
         public ValidationState Validation { get; private set; } =
-            new ValidationState { Ok = false, ViolationCodes = new List<string>(), DiffPaths = new List<string>(), ActiveCondition = null };
+            new ValidationState
+            {
+                Ok = false,
+                ViolationCodes = new List<string>(),
+                DiffPaths = new List<string>(),
+                Violations = new List<ErrorRow>(),
+                Notes = new List<string>(),
+                ActiveCondition = null,
+            };
         public ValidationFreshness ValidationStatus { get; private set; } = ValidationFreshness.None;
 
         /// <summary>The fields backing sliders/controls: preset ranges + manipulable flag.</summary>
@@ -246,6 +256,9 @@ namespace RoomGen.UI
                         Ok = ev.PairOk,
                         ViolationCodes = ev.PairViolationCodes.ToList(),
                         DiffPaths = ev.PairDiffPaths.ToList(),
+                        Violations = ev.PairViolations.Select(e => new ErrorRow
+                            { Code = e.Code, Path = e.Path, Message = e.Message }).ToList(),
+                        Notes = ev.PairNotes.ToList(),
                         ActiveCondition = ev.ActiveCondition,
                     };
                     ValidationStatus = ValidationFreshness.Fresh;
@@ -267,6 +280,8 @@ namespace RoomGen.UI
             Ok = false,
             ViolationCodes = new List<string>(),
             DiffPaths = new List<string>(),
+            Violations = new List<ErrorRow>(),
+            Notes = new List<string>(),
             ActiveCondition = null,
         };
 

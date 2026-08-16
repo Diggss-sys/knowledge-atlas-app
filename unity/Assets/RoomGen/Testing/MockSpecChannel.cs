@@ -70,6 +70,15 @@ namespace RoomGen.Testing
             _scriptedPair.Enqueue(SeamEvent.PairResult(requestId, false, violationCodes, diffPaths, activeCondition));
         }
 
+        /// <summary>Convenience: script the complete failed validation result promised by seam v1.</summary>
+        public void EnqueuePairFailure(string requestId, IEnumerable<string> violationCodes,
+            IEnumerable<string> diffPaths, IEnumerable<SeamError> violations,
+            IEnumerable<string> notes, string activeCondition = "control")
+        {
+            _scriptedPair.Enqueue(SeamEvent.PairResult(requestId, false, violationCodes, diffPaths,
+                activeCondition, violations, notes));
+        }
+
         // ---- ISpecChannel ----
 
         public void Apply(string specJson, string requestId)

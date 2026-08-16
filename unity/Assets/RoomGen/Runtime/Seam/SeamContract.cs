@@ -85,6 +85,8 @@ namespace KnowledgeAtlas.Seam
         public bool PairOk;
         public readonly List<string> PairDiffPaths = new List<string>();
         public readonly List<string> PairViolationCodes = new List<string>();
+        public readonly List<SeamError> PairViolations = new List<SeamError>();
+        public readonly List<string> PairNotes = new List<string>();
         public string ActiveCondition;
 
         // condition_switched
@@ -128,9 +130,19 @@ namespace KnowledgeAtlas.Seam
 
         public static SeamEvent PairResult(string requestId, bool ok, IEnumerable<string> codes, IEnumerable<string> diffPaths, string activeCondition)
         {
+            return PairResult(requestId, ok, codes, diffPaths, activeCondition,
+                Enumerable.Empty<SeamError>(), Enumerable.Empty<string>());
+        }
+
+        public static SeamEvent PairResult(string requestId, bool ok, IEnumerable<string> codes,
+            IEnumerable<string> diffPaths, string activeCondition, IEnumerable<SeamError> violations,
+            IEnumerable<string> notes)
+        {
             var e = new SeamEvent { Kind = SeamCodes.PairLoaded, RequestId = requestId, Ok = ok, PairOk = ok, ActiveCondition = activeCondition };
             e.PairViolationCodes.AddRange(codes);
             e.PairDiffPaths.AddRange(diffPaths);
+            e.PairViolations.AddRange(violations);
+            e.PairNotes.AddRange(notes);
             return e;
         }
 
@@ -152,8 +164,10 @@ namespace KnowledgeAtlas.Seam
                     payload["validation"] = new JObject
                     {
                         ["ok"] = PairOk,
+                        ["violations"] = new JArray(PairViolations.Select(ErrToJson)),
                         ["violation_codes"] = new JArray(PairViolationCodes),
                         ["diff_paths"] = new JArray(PairDiffPaths),
+                        ["notes"] = new JArray(PairNotes),
                     };
                     payload["active_condition"] = ActiveCondition;
                     break;
