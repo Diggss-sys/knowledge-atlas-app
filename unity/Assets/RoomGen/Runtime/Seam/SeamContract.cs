@@ -130,18 +130,20 @@ namespace KnowledgeAtlas.Seam
 
         public static SeamEvent PairResult(string requestId, bool ok, IEnumerable<string> codes, IEnumerable<string> diffPaths, string activeCondition)
         {
-            return PairResult(requestId, ok, codes, diffPaths, activeCondition,
-                Enumerable.Empty<SeamError>(), Enumerable.Empty<string>());
-        }
-
-        public static SeamEvent PairResult(string requestId, bool ok, IEnumerable<string> codes,
-            IEnumerable<string> diffPaths, string activeCondition, IEnumerable<SeamError> violations,
-            IEnumerable<string> notes)
-        {
             var e = new SeamEvent { Kind = SeamCodes.PairLoaded, RequestId = requestId, Ok = ok, PairOk = ok, ActiveCondition = activeCondition };
             e.PairViolationCodes.AddRange(codes);
             e.PairDiffPaths.AddRange(diffPaths);
+            return e;
+        }
+
+        public static SeamEvent PairResult(string requestId, bool ok, IEnumerable<string> diffPaths,
+            string activeCondition, IEnumerable<SeamError> violations, IEnumerable<string> notes)
+        {
+            var e = new SeamEvent { Kind = SeamCodes.PairLoaded, RequestId = requestId, Ok = ok, PairOk = ok, ActiveCondition = activeCondition };
+            e.PairDiffPaths.AddRange(diffPaths);
             e.PairViolations.AddRange(violations);
+            e.PairViolationCodes.AddRange(e.PairViolations.Select(v => v.Code)
+                .Distinct(StringComparer.Ordinal).OrderBy(code => code, StringComparer.Ordinal));
             e.PairNotes.AddRange(notes);
             return e;
         }

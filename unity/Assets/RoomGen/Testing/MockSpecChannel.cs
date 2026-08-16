@@ -63,19 +63,12 @@ namespace RoomGen.Testing
             _scriptedApply.Enqueue(SeamEvent.SpecAppliedFail(requestId, list, _buildMs));
         }
 
-        /// <summary>Convenience: script a confounded (failed) pair_loaded for the next LoadPair.</summary>
-        public void EnqueuePairFailure(string requestId, IEnumerable<string> violationCodes,
-            IEnumerable<string> diffPaths, string activeCondition = "control")
-        {
-            _scriptedPair.Enqueue(SeamEvent.PairResult(requestId, false, violationCodes, diffPaths, activeCondition));
-        }
-
         /// <summary>Convenience: script the complete failed validation result promised by seam v1.</summary>
-        public void EnqueuePairFailure(string requestId, IEnumerable<string> violationCodes,
-            IEnumerable<string> diffPaths, IEnumerable<SeamError> violations,
-            IEnumerable<string> notes, string activeCondition = "control")
+        public void EnqueuePairFailure(string requestId, IEnumerable<string> diffPaths,
+            IEnumerable<SeamError> violations, IEnumerable<string> notes,
+            string activeCondition = "control")
         {
-            _scriptedPair.Enqueue(SeamEvent.PairResult(requestId, false, violationCodes, diffPaths,
+            _scriptedPair.Enqueue(SeamEvent.PairResult(requestId, false, diffPaths,
                 activeCondition, violations, notes));
         }
 

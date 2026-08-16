@@ -93,7 +93,9 @@ namespace RoomGen.Tests
             var ch = new MockSpecChannel();
             var events = Capture(ch);
 
-            ch.EnqueuePairFailure("r-c", new[] { "undeclared_change" }, new[] { "shell.ceiling_height_m", "surfaces.wall.material" });
+            ch.EnqueuePairFailure("r-c", new[] { "shell.ceiling_height_m", "surfaces.wall.material" },
+                new[] { new SeamError("undeclared_change", "surfaces.wall.material", "wall material differs") },
+                new[] { "coupled: shell.ceiling_height_m also changes room volume" });
             ch.LoadPair("{}", "{}", "r-c");
 
             Assert.IsFalse(events[0].Ok);
@@ -112,8 +114,8 @@ namespace RoomGen.Tests
             };
             var notes = new[] { "coupled: shell.ceiling_height_m also changes room volume" };
 
-            ch.EnqueuePairFailure("r-c", new[] { "undeclared_change" },
-                new[] { "shell.ceiling_height_m", "surfaces.wall.material" }, violations, notes);
+            ch.EnqueuePairFailure("r-c", new[] { "shell.ceiling_height_m", "surfaces.wall.material" },
+                violations, notes);
             ch.LoadPair("{}", "{}", "r-c");
 
             Assert.AreEqual(1, events[0].PairViolations.Count);

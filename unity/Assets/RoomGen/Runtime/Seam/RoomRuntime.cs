@@ -103,7 +103,7 @@ namespace KnowledgeAtlas.Seam
             }
             var violations = gate.Violations
                 .Select(v => new SeamError(v.Code, v.Path, v.Message));
-            return SeamEvent.PairResult(requestId, gate.Ok, gate.ViolationCodes, gate.DiffPaths,
+            return SeamEvent.PairResult(requestId, gate.Ok, gate.DiffPaths,
                 ActiveCondition ?? "control", violations, gate.Notes);
         }
 

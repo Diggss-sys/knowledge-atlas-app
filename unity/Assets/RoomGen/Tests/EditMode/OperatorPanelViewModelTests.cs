@@ -127,8 +127,7 @@ namespace RoomGen.Tests
             Assert.IsFalse(vm.PublishEnabled, "no validation yet -> publish disabled");
 
             // Confounded pair first: publish stays disabled, confound codes surface.
-            ch.EnqueuePairFailure("p", new[] { "undeclared_change" },
-                new[] { "shell.ceiling_height_m", "surfaces.wall.material" },
+            ch.EnqueuePairFailure("p", new[] { "shell.ceiling_height_m", "surfaces.wall.material" },
                 new[] { new SeamError("undeclared_change", "surfaces.wall.material", "wall material differs") },
                 new[] { "coupled: shell.ceiling_height_m also changes room volume" });
             vm.SetAsControl();
@@ -181,8 +180,13 @@ namespace RoomGen.Tests
             Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Stale, vm.ValidationStatus);
             Assert.IsFalse(vm.PublishEnabled);
 
-            ch.EnqueuePairFailure("p", new[] { "undeclared_change", "declared_unchanged" },
-                new[] { "shell.ceiling_height_m" });
+            ch.EnqueuePairFailure("p", new[] { "shell.ceiling_height_m" },
+                new[]
+                {
+                    new SeamError("undeclared_change", "shell.ceiling_height_m", "ceiling differs but was not declared"),
+                    new SeamError("declared_unchanged", "lighting.warmth", "declared but unchanged"),
+                },
+                new[] { "coupled: lighting.warmth perceived brightness shifts with color temperature" });
             vm.SubmitPair();
             Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Fresh, vm.ValidationStatus,
                 "even a failing result is fresh for the current pair");

@@ -75,7 +75,7 @@
               {
                 "code": "undeclared_change",
                 "path": "surfaces.wall.material",
-                "message": "differs (plaster vs brick) but is not in manipulated_variables — the pair is confounded"
+                "message": "differs (\"plaster\" vs \"brick\") but is not in manipulated_variables — the pair is confounded"
               }
             ],
             "violation_codes": ["undeclared_change"],

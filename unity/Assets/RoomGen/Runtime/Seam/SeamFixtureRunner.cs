@@ -61,6 +61,38 @@ namespace KnowledgeAtlas.Seam
             return outcomes;
         }
 
+        /// <summary>
+        /// Compare one event produced by the runtime with its complete valid fixture message. Unlike
+        /// envelope routing (which intentionally accepts event kinds as passthroughs), this pins every
+        /// payload field and value emitted on the wire.
+        /// </summary>
+        public static Outcome MatchValidEventFixture(string seamMessagesJson, string fixtureName,
+            SeamEvent actual)
+        {
+            var doc = JObject.Parse(seamMessagesJson);
+            var entry = ((JArray)doc["valid"]).OfType<JObject>()
+                .SingleOrDefault(c => (string)c["name"] == fixtureName);
+            if (entry == null)
+                return new Outcome
+                {
+                    Name = fixtureName,
+                    Group = "valid",
+                    Match = false,
+                    Detail = "fixture entry not found",
+                };
+
+            var expected = (JObject)entry["message"];
+            var got = JObject.Parse(actual.ToJson());
+            var match = JToken.DeepEquals(expected, got);
+            return new Outcome
+            {
+                Name = fixtureName,
+                Group = "valid",
+                Match = match,
+                Detail = match ? "" : $"expected {expected.ToString(Formatting.None)}, got {got.ToString(Formatting.None)}",
+            };
+        }
+
         // A runtime that accepts everything with benign events — the envelope test exercises routing/
         // rejection, which happens BEFORE the runtime is called, so no real generator is needed.
         sealed class BenignRuntime : IRoomRuntime

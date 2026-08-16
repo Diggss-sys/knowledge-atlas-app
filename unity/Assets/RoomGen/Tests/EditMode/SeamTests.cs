@@ -115,11 +115,15 @@ namespace RoomGen.Tests
         {
             var control = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control").text;
             var treatment = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment").text;
-            // Sneak a second, undeclared manipulation into the treatment: change the wall material.
-            var confounded = treatment.Replace("\"material\": \"plaster\"", "\"material\": \"brick\"");
+            // Sneak a second, undeclared manipulation into the treatment: change only the wall material.
+            const string wallPlaster = "\"wall\":    { \"material\": \"plaster\"";
+            const string wallBrick = "\"wall\":    { \"material\": \"brick\"";
+            var confounded = treatment.Replace(wallPlaster, wallBrick);
             Assert.AreNotEqual(treatment, confounded, "fixture edit failed — wall material was not changed");
+            StringAssert.Contains("\"ceiling\": { \"material\": \"plaster\"", confounded,
+                "the test mutation must not also change the ceiling material");
 
-            var ev = NewRuntime().LoadPair(control, confounded, "r-c");
+            var ev = NewRuntime().LoadPair(control, confounded, "r-0010");
 
             Assert.AreEqual(SeamCodes.PairLoaded, ev.Kind);
             Assert.IsFalse(ev.Ok, "a pair that differs in more than the declared variable must be refused");
@@ -133,6 +137,10 @@ namespace RoomGen.Tests
             var json = ev.ToJson();
             StringAssert.Contains("\"violations\":[{\"code\":\"undeclared_change\"", json);
             StringAssert.Contains("\"notes\":[\"coupled: shell.ceiling_height_m", json);
+
+            var fixtureMatch = SeamFixtureRunner.MatchValidEventFixture(
+                SeamMessages, "event_pair_loaded_full_validation", ev);
+            Assert.IsTrue(fixtureMatch.Match, fixtureMatch.Detail);
         }
 
         [Test]
