@@ -317,6 +317,7 @@ namespace RoomGen.UI
             LoadPresetState(_presetJson);
             _dirty = true;
             _lastEditAt = _now();
+            PreviewPending = true;
         }
 
         /// <summary>

@@ -353,6 +353,8 @@ namespace RoomGen.Tests
             Assert.AreEqual(2.8, vm.GetField("shell.ceiling_height_m"), 1e-9);
             Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.None, vm.ValidationStatus);
             Assert.AreEqual(OperatorPanelViewModel.PairWorkflowState.SingleRoom, vm.WorkflowState);
+            Assert.IsTrue(vm.PreviewPending,
+                "reset changes the model before the preview panes have rebuilt");
 
             vm.Undo();
 
