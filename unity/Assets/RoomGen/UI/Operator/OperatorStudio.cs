@@ -135,7 +135,7 @@ namespace RoomGen.UI
 
             _vm = new OperatorPanelViewModel(channel, now);
             _vm.LoadPreset(preset.text);
-            OperatorPanelController.Bind(_root, _vm);
+            OperatorPanelController.Bind(_root, _vm, RenderPreviews);
 
             _previewControl = new PreviewRenderer("Control", ControlLayer);
             _previewTreatment = new PreviewRenderer("Treatment", TreatmentLayer);
@@ -152,12 +152,6 @@ namespace RoomGen.UI
 
         void WireButtons()
         {
-            var setControl = _root.Q<Button>("set-control-button");
-            if (setControl != null) setControl.clicked += () => { _vm.SetAsControl(); RenderPreviews(); };
-
-            var submit = _root.Q<Button>("submit-pair-button");
-            if (submit != null) submit.clicked += () => { _vm.SubmitPair(); OperatorPanelController.Refresh(_root, _vm); };
-
             var walk = _root.Q<Button>("walk-button");
             if (walk != null) walk.clicked += ToggleWalk;
 

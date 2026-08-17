@@ -55,6 +55,11 @@
                         <engine:Button name="set-control-button" text="Set as control" class="ka-button" />
                         <engine:Button name="submit-pair-button" text="Validate pair" class="ka-button" />
                     </engine:VisualElement>
+                    <engine:VisualElement name="pair-history-actions">
+                        <engine:Button name="undo-button" text="Undo last change" class="ka-button" />
+                        <engine:Button name="unfreeze-button" text="Unfreeze control" class="ka-button" />
+                    </engine:VisualElement>
+                    <engine:Button name="reset-button" text="Reset to preset" class="ka-button" />
                     <engine:Label text="Set as control freezes the current room as the baseline. Validate pair checks the two rooms differ in only the declared variable." class="ka-hint" />
                     <engine:Label text="VALIDATION" class="ka-eyebrow" />
                     <engine:Label name="validation-status" text="No pair validated yet." class="ka-status" />
