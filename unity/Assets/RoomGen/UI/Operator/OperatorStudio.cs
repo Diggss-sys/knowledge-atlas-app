@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using KnowledgeAtlas.Seam;
@@ -100,9 +101,15 @@ namespace RoomGen.UI
             var schema = Resources.Load<TextAsset>("RoomGen/room_spec.schema");
             var template = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control");
             var preset = Resources.Load<TextAsset>("RoomGen/dining_room.preset");
-            if (schema == null || template == null || preset == null)
+            var missing = new List<string>();
+            if (schema == null) missing.Add("RoomGen/room_spec.schema");
+            if (template == null) missing.Add("RoomGen/Examples/ka-ceiling-control");
+            if (preset == null) missing.Add("RoomGen/dining_room.preset");
+            if (missing.Count > 0)
             {
-                Debug.LogError("OperatorStudio: missing schema/template/preset under Resources/RoomGen — cannot boot.");
+                var detail = string.Join(", ", missing);
+                Debug.LogError("OperatorStudio: missing required Resources — cannot boot: " + detail);
+                OperatorPanelController.ShowBootFailure(root, missing);
                 return false;
             }
 
@@ -201,6 +208,7 @@ namespace RoomGen.UI
                 _treatmentSpec = RoomSpecAdapter.Adapt(StudioSpecChannel.Complete(_baseTemplate, treatmentJson)).Spec;
                 _previewControl.Render(_controlSpec);
                 _previewTreatment.Render(_treatmentSpec);
+                _vm.MarkPreviewRebuilt();
             }
             catch (Exception e)
             {

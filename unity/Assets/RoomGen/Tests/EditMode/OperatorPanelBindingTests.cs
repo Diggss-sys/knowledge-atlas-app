@@ -77,6 +77,8 @@ namespace RoomGen.Tests
             Assert.IsNotNull(root.Q<Button>("undo-button"), "undo button");
             Assert.IsNotNull(root.Q<Button>("unfreeze-button"), "unfreeze button");
             Assert.IsNotNull(root.Q<Button>("reset-button"), "reset button");
+            Assert.IsNotNull(root.Q<Label>("control-rebuilding"), "control rebuilding caption");
+            Assert.IsNotNull(root.Q<Label>("treatment-rebuilding"), "treatment rebuilding caption");
         }
 
         [Test]
@@ -141,6 +143,47 @@ namespace RoomGen.Tests
             OperatorPanelController.Refresh(root, vm);
             Assert.AreEqual(2.8f, ceiling.value, 0.0001f,
                 "the slider must follow preset defaults after Reset");
+        }
+
+        [Test]
+        public void Refresh_dims_and_labels_stale_previews_until_the_studio_marks_them_rebuilt()
+        {
+            var ch = new MockSpecChannel();
+            var vm = new OperatorPanelViewModel(ch, () => 0.0, debounceSeconds: 0.0);
+            vm.LoadPreset(Preset);
+            var root = BuildTree();
+            OperatorPanelController.Bind(root, vm);
+
+            vm.SetField("shell.width_m", 6.5);
+            OperatorPanelController.Refresh(root, vm);
+
+            Assert.IsTrue(root.Q<VisualElement>("control-preview").ClassListContains("ka-preview--pending"));
+            Assert.IsTrue(root.Q<VisualElement>("treatment-preview").ClassListContains("ka-preview--pending"));
+            Assert.AreEqual(DisplayStyle.Flex, root.Q<Label>("control-rebuilding").style.display.value);
+            Assert.AreEqual("rebuilding…", root.Q<Label>("control-rebuilding").text);
+
+            vm.MarkPreviewRebuilt();
+            OperatorPanelController.Refresh(root, vm);
+
+            Assert.IsFalse(root.Q<VisualElement>("control-preview").ClassListContains("ka-preview--pending"));
+            Assert.AreEqual(DisplayStyle.None, root.Q<Label>("control-rebuilding").style.display.value);
+        }
+
+        [Test]
+        public void Boot_failure_card_lists_every_missing_resource_name_verbatim()
+        {
+            var root = BuildTree();
+            var missing = new[]
+            {
+                "RoomGen/room_spec.schema",
+                "RoomGen/Examples/ka-ceiling-control",
+            };
+
+            OperatorPanelController.ShowBootFailure(root, missing);
+
+            Assert.IsNotNull(root.Q<VisualElement>("boot-failure-card"));
+            var rows = root.Query<Label>("boot-missing-resource").ToList();
+            CollectionAssert.AreEqual(missing, rows.Select(row => row.text).ToArray());
         }
 
         [Test]

@@ -84,11 +84,15 @@
                 <engine:VisualElement name="preview-row" class="ka-preview-row">
                     <engine:VisualElement name="control-pane" class="ka-preview-pane">
                         <engine:Label name="control-caption" text="Control" class="ka-preview-caption" />
-                        <engine:VisualElement name="control-preview" class="ka-preview" />
+                        <engine:VisualElement name="control-preview" class="ka-preview">
+                            <engine:Label name="control-rebuilding" text="rebuilding…" class="ka-preview-rebuilding" />
+                        </engine:VisualElement>
                     </engine:VisualElement>
                     <engine:VisualElement name="treatment-pane" class="ka-preview-pane">
                         <engine:Label name="treatment-caption" text="Treatment" class="ka-preview-caption" />
-                        <engine:VisualElement name="treatment-preview" class="ka-preview" />
+                        <engine:VisualElement name="treatment-preview" class="ka-preview">
+                            <engine:Label name="treatment-rebuilding" text="rebuilding…" class="ka-preview-rebuilding" />
+                        </engine:VisualElement>
                     </engine:VisualElement>
                 </engine:VisualElement>
             </engine:VisualElement>

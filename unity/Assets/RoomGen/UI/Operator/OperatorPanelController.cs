@@ -286,7 +286,11 @@ namespace RoomGen.UI
                     : vm.Status;
                 applyStatus.EnableInClassList("ka-status--error", vm.Errors.Count > 0);
                 applyStatus.EnableInClassList("ka-status--ok", vm.Errors.Count == 0 && vm.Status == "applied");
+                applyStatus.EnableInClassList("ka-status--warn",
+                    vm.Errors.Count == 0 && (vm.ApplyPending || vm.Status == "edited"));
             }
+
+            SetPreviewPending(root, vm.PreviewPending);
 
             var validationStatus = root.Q<Label>("validation-status");
             var diffList = root.Q<VisualElement>("diff-list");
@@ -339,6 +343,47 @@ namespace RoomGen.UI
             if (c != null && control != null) c.style.backgroundImage = Background.FromRenderTexture(control);
             var t = root.Q<VisualElement>("treatment-preview");
             if (t != null && treatment != null) t.style.backgroundImage = Background.FromRenderTexture(treatment);
+        }
+
+        /// <summary>Show whether the panes still depict an older model. Text accompanies opacity so
+        /// the state is never communicated by appearance alone.</summary>
+        public static void SetPreviewPending(VisualElement root, bool pending)
+        {
+            foreach (var name in new[] { "control-preview", "treatment-preview" })
+            {
+                var preview = root.Q<VisualElement>(name);
+                preview?.EnableInClassList("ka-preview--pending", pending);
+            }
+
+            foreach (var name in new[] { "control-rebuilding", "treatment-rebuilding" })
+            {
+                var caption = root.Q<Label>(name);
+                if (caption != null) caption.style.display = pending ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+
+        /// <summary>Replace the unusable panel with a readable startup failure and exact resource names.</summary>
+        public static void ShowBootFailure(VisualElement root, IReadOnlyList<string> missingResourceNames)
+        {
+            if (root == null) throw new ArgumentNullException(nameof(root));
+            if (missingResourceNames == null) throw new ArgumentNullException(nameof(missingResourceNames));
+
+            var host = root.Q<VisualElement>("operator-root") ?? root;
+            host.Clear();
+            host.AddToClassList("ka-boot-failure-host");
+
+            var card = new VisualElement { name = "boot-failure-card" };
+            card.AddToClassList("ka-panel");
+            card.AddToClassList("ka-boot-failure-card");
+            card.Add(new Label("Operator Studio could not start.") { name = "boot-failure-title" });
+            card.Add(new Label("Missing required resources:") { name = "boot-failure-summary" });
+            foreach (var resourceName in missingResourceNames)
+            {
+                var row = new Label(resourceName) { name = "boot-missing-resource" };
+                row.AddToClassList("ka-boot-missing-resource");
+                card.Add(row);
+            }
+            host.Add(card);
         }
 
         static IEnumerable<string> ErrorLines(OperatorPanelViewModel vm)

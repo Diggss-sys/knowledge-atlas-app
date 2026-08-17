@@ -154,6 +154,55 @@
     -unity-background-scale-mode: scale-and-crop;
 }
 
+.ka-preview--pending {
+    opacity: 0.58;
+}
+
+.ka-preview-rebuilding {
+    display: none;
+    position: absolute;
+    top: var(--ka-space-3);
+    right: var(--ka-space-3);
+    padding: var(--ka-space-1) var(--ka-space-2);
+    color: var(--ka-white);
+    background-color: var(--ka-ink);
+    border-radius: var(--ka-radius-xs);
+    font-size: var(--ka-font-sm);
+    -unity-font-style: bold;
+}
+
+.ka-boot-failure-host {
+    justify-content: center;
+    align-items: center;
+}
+
+.ka-boot-failure-card {
+    width: 560px;
+    border-left-width: 4px;
+    border-left-color: var(--ka-rose);
+}
+
+#boot-failure-title {
+    color: var(--ka-error);
+    font-size: var(--ka-font-xl);
+    -unity-font-style: bold;
+    margin-bottom: var(--ka-space-3);
+}
+
+#boot-failure-summary {
+    color: var(--ka-text);
+    margin-bottom: var(--ka-space-2);
+}
+
+.ka-boot-missing-resource {
+    color: var(--ka-error);
+    background-color: var(--ka-rose-lt);
+    border-radius: var(--ka-radius-xs);
+    margin-top: var(--ka-space-1);
+    padding: var(--ka-space-2);
+    white-space: normal;
+}
+
 /* the pair card carries the science: a hub CALLOUT — left accent bar, radius 0 8px 8px 0 */
 .ka-panel--accent {
     border-left-width: 4px;
