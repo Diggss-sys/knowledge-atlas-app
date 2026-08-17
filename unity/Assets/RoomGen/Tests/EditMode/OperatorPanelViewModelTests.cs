@@ -297,7 +297,7 @@ namespace RoomGen.Tests
             vm.SetField("shell.ceiling_height_m", 3.0);
             clk.T = 1.05;
             vm.SetField("shell.ceiling_height_m", 3.2);
-            clk.T = 1.20;
+            clk.T = 1.25; // deliberately beyond the floating-point debounce boundary
             Assert.IsTrue(vm.Tick());
 
             vm.Undo();
@@ -321,6 +321,40 @@ namespace RoomGen.Tests
 
             Assert.AreEqual(2.8, vm.GetField("shell.ceiling_height_m"), 1e-9,
                 "the post-undo edit must capture the restored state even while an Apply is pending");
+        }
+
+        [Test]
+        public void Setting_a_field_to_its_current_value_is_not_an_edit_or_an_undo_point()
+        {
+            var (vm, _, _) = NewLoaded(debounce: 0.0);
+
+            vm.SetField("shell.ceiling_height_m", 2.8f); // the widget sends a float promoted to double
+
+            Assert.IsFalse(vm.CanUndo);
+            Assert.IsFalse(vm.Tick(), "a no-op widget event must not send an Apply");
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.None, vm.ValidationStatus);
+        }
+
+        [Test]
+        public void Undo_restores_status_and_errors_with_the_model_snapshot()
+        {
+            var (vm, ch, _) = NewLoaded(debounce: 0.0);
+
+            vm.SetField("shell.ceiling_height_m", 3.0);
+            vm.Tick();
+            Assert.AreEqual("applied", vm.Status);
+
+            ch.EnqueueApplyFailure("ignored", ("schema_invalid", "shell.ceiling_height_m", "rejected value"));
+            vm.SetField("shell.ceiling_height_m", 3.2);
+            vm.Tick();
+            Assert.AreEqual("rejected", vm.Status);
+            Assert.IsNotEmpty(vm.Errors);
+
+            vm.Undo();
+
+            Assert.AreEqual(3.0, vm.GetField("shell.ceiling_height_m"), 1e-9);
+            Assert.AreEqual("applied", vm.Status);
+            Assert.IsEmpty(vm.Errors, "the restored successful model must not retain a later apply error");
         }
 
         [Test]

@@ -25,16 +25,19 @@ namespace RoomGen.UI
             fill.style.bottom = 0;
             tracker.Insert(0, fill);
 
-            void Update()
-            {
-                var range = slider.highValue - slider.lowValue;
-                var t = range > 0f ? (slider.value - slider.lowValue) / range : 0f;
-                fill.style.width = Length.Percent(t * 100f);
-            }
+            slider.RegisterValueChangedCallback(_ => Refresh(slider));
+            slider.RegisterCallback<GeometryChangedEvent>(_ => Refresh(slider));
+            Refresh(slider);
+        }
 
-            slider.RegisterValueChangedCallback(_ => Update());
-            slider.RegisterCallback<GeometryChangedEvent>(_ => Update());
-            Update();
+        /// <summary>Repaint an attached fill after a SetValueWithoutNotify model-to-widget sync.</summary>
+        public static void Refresh(Slider slider)
+        {
+            var fill = slider?.Q<VisualElement>(className: ClassName);
+            if (fill == null) return;
+            var range = slider.highValue - slider.lowValue;
+            var t = range > 0f ? (slider.value - slider.lowValue) / range : 0f;
+            fill.style.width = Length.Percent(t * 100f);
         }
     }
 }

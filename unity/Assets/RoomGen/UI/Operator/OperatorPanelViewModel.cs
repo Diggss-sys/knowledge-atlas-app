@@ -70,6 +70,8 @@ namespace RoomGen.UI
             public string ModelJson;
             public string ControlJson;
             public string DeclaredVariable;
+            public string Status;
+            public IReadOnlyList<ErrorRow> Errors;
             public ValidationState Validation;
             public ValidationFreshness Freshness;
             public PairWorkflowState WorkflowState;
@@ -208,13 +210,19 @@ namespace RoomGen.UI
         {
             if (_model == null) throw new InvalidOperationException("LoadPreset must be called first.");
 
+            if (_ranges.TryGetValue(path, out var r))
+                value = Math.Max(r.Min, Math.Min(r.Max, value));
+
+            var current = ReadDotted(_model, path);
+            if (current != null &&
+                (current.Type == JTokenType.Integer || current.Type == JTokenType.Float) &&
+                Math.Abs(current.Value<double>() - value) < 1e-6)
+                return;
+
             // A slider may emit dozens of frames before Tick flushes. Remember the state before the
             // first frame, then commit exactly that one undo point when the debounced Apply lands.
             if (!_pendingEditSnapshot.HasValue)
                 _pendingEditSnapshot = CaptureSnapshot();
-
-            if (_ranges.TryGetValue(path, out var r))
-                value = Math.Max(r.Min, Math.Min(r.Max, value));
 
             SetDotted(_model, path, value);
 
@@ -394,6 +402,8 @@ namespace RoomGen.UI
             ModelJson = _model?.ToString(Newtonsoft.Json.Formatting.None),
             ControlJson = _controlModel?.ToString(Newtonsoft.Json.Formatting.None),
             DeclaredVariable = _declaredVariable,
+            Status = Status,
+            Errors = CloneErrors(Errors),
             Validation = CloneValidation(Validation),
             Freshness = ValidationStatus,
             WorkflowState = WorkflowState,
@@ -418,6 +428,8 @@ namespace RoomGen.UI
             _model = string.IsNullOrEmpty(snapshot.ModelJson) ? null : ResponseJson.Parse(snapshot.ModelJson);
             _controlModel = string.IsNullOrEmpty(snapshot.ControlJson) ? null : ResponseJson.Parse(snapshot.ControlJson);
             _declaredVariable = snapshot.DeclaredVariable;
+            Status = snapshot.Status;
+            Errors = CloneErrors(snapshot.Errors);
             Validation = CloneValidation(snapshot.Validation);
             ValidationStatus = snapshot.Freshness;
             WorkflowState = snapshot.WorkflowState;
@@ -444,6 +456,10 @@ namespace RoomGen.UI
             Notes = state.Notes?.ToList() ?? new List<string>(),
             ActiveCondition = state.ActiveCondition,
         };
+
+        static IReadOnlyList<ErrorRow> CloneErrors(IReadOnlyList<ErrorRow> errors) =>
+            errors?.Select(e => new ErrorRow
+                { Code = e.Code, Path = e.Path, Message = e.Message }).ToList() ?? new List<ErrorRow>();
 
         // ---- json helpers (kept inside; never in the public surface) ----
 

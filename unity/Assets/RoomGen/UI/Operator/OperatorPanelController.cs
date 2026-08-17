@@ -243,6 +243,17 @@ namespace RoomGen.UI
             // control-to-be (both previews mirror it); after, the control is frozen and edits flow to
             // the treatment. The operator kept losing track of this — say it, loudly, at the top.
             var banner = root.Q<Label>("editing-status");
+
+            // Undo/reset mutate the model without emitting slider ChangeEvents. Keep every widget in
+            // lockstep with the restored FieldSpec values without feeding those writes back into the VM.
+            foreach (var field in vm.Fields)
+            {
+                var slider = root.Q<Slider>(field.Path);
+                if (slider == null) continue;
+                slider.SetValueWithoutNotify((float)field.Value);
+                SliderFill.Refresh(slider);
+            }
+
             if (banner != null)
             {
                 switch (vm.WorkflowState)

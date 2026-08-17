@@ -119,6 +119,31 @@ namespace RoomGen.Tests
         }
 
         [Test]
+        public void Refresh_resynchronizes_slider_widgets_after_undo_and_reset()
+        {
+            var ch = new MockSpecChannel();
+            var vm = new OperatorPanelViewModel(ch, () => 0.0, debounceSeconds: 0.0);
+            vm.LoadPreset(Preset);
+            var root = BuildPaneledTree();
+            OperatorPanelController.Bind(root, vm);
+            var ceiling = root.Q<Slider>("shell.ceiling_height_m");
+
+            ceiling.value = 3.2f;
+            Assert.IsTrue(vm.Tick());
+            vm.Undo();
+            OperatorPanelController.Refresh(root, vm);
+            Assert.AreEqual(2.8f, ceiling.value, 0.0001f,
+                "the slider must follow the model restored by Undo");
+
+            ceiling.value = 3.4f;
+            Assert.IsTrue(vm.Tick());
+            vm.ResetToPreset();
+            OperatorPanelController.Refresh(root, vm);
+            Assert.AreEqual(2.8f, ceiling.value, 0.0001f,
+                "the slider must follow preset defaults after Reset");
+        }
+
+        [Test]
         public void Declared_variable_dropdown_offers_only_manipulable_variables_with_a_wired_control()
         {
             var ch = new MockSpecChannel();
