@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using KnowledgeAtlas.Seam;
 using NUnit.Framework;
@@ -20,6 +22,19 @@ namespace RoomGen.Tests
 
         // A driftable clock so debounce is testable without waiting.
         sealed class Clock { public double T; }
+
+        sealed class DeferredChannel : ISpecChannel
+        {
+            public readonly List<string> ApplyRequestIds = new List<string>();
+            public event Action<SeamEvent> OnEvent;
+
+            public void Apply(string specJson, string requestId) => ApplyRequestIds.Add(requestId);
+            public void LoadPair(string controlJson, string treatmentJson, string requestId) { }
+            public void SwitchCondition(string condition, string transition, string requestId) { }
+            public void SetCameraMode(string mode, string requestId) { }
+            public void CaptureScreenshot(string requestId) { }
+            public void Complete(SeamEvent ev) => OnEvent?.Invoke(ev);
+        }
 
         static (OperatorPanelViewModel vm, MockSpecChannel ch, Clock clk) NewLoaded(double debounce = 0.15)
         {
@@ -89,7 +104,7 @@ namespace RoomGen.Tests
         {
             var (vm, ch, clk) = NewLoaded(0.0);
 
-            ch.EnqueueApplyFailure("ignored",
+            ch.EnqueueApplyFailure("apply-1",
                 ("schema_invalid", "shell.ceiling_height_m", "9.9 is above maximum 3.4"));
 
             vm.SetField("shell.ceiling_height_m", 3.4);
@@ -108,7 +123,7 @@ namespace RoomGen.Tests
             var (vm, ch, clk) = NewLoaded(0.0);
 
             // First a failure, then a success — proves errors clear.
-            ch.EnqueueApplyFailure("x", ("schema_invalid", "shell.width_m", "bad"));
+            ch.EnqueueApplyFailure("apply-1", ("schema_invalid", "shell.width_m", "bad"));
             vm.SetField("shell.width_m", 5.0);
             vm.Tick();
             Assert.IsNotEmpty(vm.Errors);
@@ -117,6 +132,68 @@ namespace RoomGen.Tests
             vm.Tick();
             Assert.AreEqual("applied", vm.Status);
             Assert.IsEmpty(vm.Errors);
+        }
+
+        [Test]
+        public void Apply_status_moves_from_edited_to_applying_then_matching_result_only()
+        {
+            var ch = new DeferredChannel();
+            var clk = new Clock { T = 1.0 };
+            var vm = new OperatorPanelViewModel(ch, () => clk.T, debounceSeconds: 0.15);
+            vm.LoadPreset(Preset);
+
+            vm.SetField("shell.ceiling_height_m", 3.1);
+            Assert.AreEqual("edited", vm.Status);
+            Assert.IsFalse(vm.ApplyPending);
+            Assert.IsTrue(vm.PreviewPending);
+
+            clk.T = 1.2;
+            Assert.IsTrue(vm.Tick());
+            Assert.AreEqual("applying…", vm.Status);
+            Assert.IsTrue(vm.ApplyPending);
+            var requestId = ch.ApplyRequestIds.Single();
+
+            ch.Complete(SeamEvent.SpecAppliedOk("older-apply", 2, "old", superseded: true));
+            Assert.AreEqual("applying…", vm.Status, "an older response must not overwrite the current request");
+            Assert.IsTrue(vm.ApplyPending, "an older response must not clear the current request");
+
+            ch.Complete(SeamEvent.SpecAppliedOk(requestId, 3, "current"));
+            Assert.AreEqual("applied", vm.Status);
+            Assert.IsFalse(vm.ApplyPending);
+            Assert.IsTrue(vm.PreviewPending, "engine acceptance does not prove the preview has repainted");
+
+            vm.MarkPreviewRebuilt();
+            Assert.IsFalse(vm.PreviewPending);
+        }
+
+        [Test]
+        public void Newer_apply_ignores_late_result_and_matching_rejection_surfaces_verbatim()
+        {
+            var ch = new DeferredChannel();
+            var clk = new Clock();
+            var vm = new OperatorPanelViewModel(ch, () => clk.T, debounceSeconds: 0.0);
+            vm.LoadPreset(Preset);
+
+            vm.SetField("shell.width_m", 5.0);
+            Assert.IsTrue(vm.Tick());
+            var firstRequest = ch.ApplyRequestIds[0];
+
+            vm.SetField("shell.width_m", 5.2);
+            Assert.AreEqual("edited", vm.Status);
+            Assert.IsFalse(vm.ApplyPending, "editing invalidates the outstanding request for the older model");
+            Assert.IsTrue(vm.Tick());
+            var secondRequest = ch.ApplyRequestIds[1];
+
+            ch.Complete(SeamEvent.SpecAppliedOk(firstRequest, 4, "old", superseded: true));
+            Assert.AreEqual("applying…", vm.Status);
+            Assert.IsTrue(vm.ApplyPending);
+
+            var message = "width cannot be built";
+            ch.Complete(SeamEvent.SpecAppliedFail(secondRequest,
+                new[] { new SeamError("schema_invalid", "shell.width_m", message) }, 5));
+            Assert.AreEqual("rejected", vm.Status);
+            Assert.IsFalse(vm.ApplyPending);
+            Assert.AreEqual(message, vm.Errors.Single().Message);
         }
 
         [Test]
@@ -276,6 +353,8 @@ namespace RoomGen.Tests
             Assert.AreEqual(2.8, vm.GetField("shell.ceiling_height_m"), 1e-9);
             Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.None, vm.ValidationStatus);
             Assert.AreEqual(OperatorPanelViewModel.PairWorkflowState.SingleRoom, vm.WorkflowState);
+            Assert.IsTrue(vm.PreviewPending,
+                "reset changes the model before the preview panes have rebuilt");
 
             vm.Undo();
 
@@ -344,7 +423,7 @@ namespace RoomGen.Tests
             vm.Tick();
             Assert.AreEqual("applied", vm.Status);
 
-            ch.EnqueueApplyFailure("ignored", ("schema_invalid", "shell.ceiling_height_m", "rejected value"));
+            ch.EnqueueApplyFailure("apply-2", ("schema_invalid", "shell.ceiling_height_m", "rejected value"));
             vm.SetField("shell.ceiling_height_m", 3.2);
             vm.Tick();
             Assert.AreEqual("rejected", vm.Status);

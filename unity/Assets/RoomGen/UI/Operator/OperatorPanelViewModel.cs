@@ -94,6 +94,7 @@ namespace RoomGen.UI
         bool _dirty;
         double _lastEditAt;
         int _reqCounter;
+        string _pendingReqId;
 
         // ---- observable state (plain types) ----
 
@@ -135,6 +136,12 @@ namespace RoomGen.UI
 
         public bool HasControl => _controlModel != null;
 
+        /// <summary>True after an Apply is sent and until its matching spec_applied event arrives.</summary>
+        public bool ApplyPending => !string.IsNullOrEmpty(_pendingReqId);
+
+        /// <summary>True while the visible preview panes no longer represent the current model.</summary>
+        public bool PreviewPending { get; private set; }
+
         /// <summary>True when the latest debounced edit or pair-workflow transition can be restored.</summary>
         public bool CanUndo => _pendingEditSnapshot.HasValue || _history.Count > 0;
 
@@ -175,6 +182,8 @@ namespace RoomGen.UI
             Status = "";
             Errors = new List<ErrorRow>();
             _dirty = false;
+            _pendingReqId = null;
+            PreviewPending = false;
 
             _ranges.Clear();
             _manipulable.Clear();
@@ -236,6 +245,10 @@ namespace RoomGen.UI
 
             _dirty = true;
             _lastEditAt = _now();
+            _pendingReqId = null; // any response for the previous model is now stale
+            PreviewPending = true;
+            Status = "edited";
+            Errors = new List<ErrorRow>();
             MarkValidationStale();
         }
 
@@ -259,9 +272,15 @@ namespace RoomGen.UI
             }
 
             _dirty = false;
-            _channel.Apply(_model.ToString(Newtonsoft.Json.Formatting.None), NextReqId("apply"));
+            _pendingReqId = NextReqId("apply");
+            Status = "applying…";
+            Errors = new List<ErrorRow>();
+            _channel.Apply(_model.ToString(Newtonsoft.Json.Formatting.None), _pendingReqId);
             return true;
         }
+
+        /// <summary>Called by the studio only after both preview renderers complete successfully.</summary>
+        public void MarkPreviewRebuilt() => PreviewPending = false;
 
         // ---- pair workflow ----
 
@@ -298,6 +317,7 @@ namespace RoomGen.UI
             LoadPresetState(_presetJson);
             _dirty = true;
             _lastEditAt = _now();
+            PreviewPending = true;
         }
 
         /// <summary>
@@ -349,6 +369,13 @@ namespace RoomGen.UI
             switch (ev.Kind)
             {
                 case SeamCodes.SpecApplied:
+                    // A newer edit/apply supersedes this response. It must not clear the pending state
+                    // or overwrite the status for the current model (last-write-wins at the UI edge).
+                    if (string.IsNullOrEmpty(_pendingReqId) ||
+                        !string.Equals(ev.RequestId, _pendingReqId, StringComparison.Ordinal))
+                        break;
+
+                    _pendingReqId = null;
                     if (ev.Ok)
                     {
                         Status = ev.Superseded ? "applied (superseded)" : "applied";
@@ -433,6 +460,8 @@ namespace RoomGen.UI
             Validation = CloneValidation(snapshot.Validation);
             ValidationStatus = snapshot.Freshness;
             WorkflowState = snapshot.WorkflowState;
+            _pendingReqId = null;
+            PreviewPending = true;
             SyncFieldValues();
         }
 
