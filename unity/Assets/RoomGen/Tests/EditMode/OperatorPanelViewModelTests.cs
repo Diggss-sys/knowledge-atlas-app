@@ -215,5 +215,168 @@ namespace RoomGen.Tests
             StringAssert.Contains("2.8", pairCalls[0].PayloadJson, "control snapshot frozen at 2.8");
             StringAssert.Contains("3.4", pairCalls[1].PayloadJson, "treatment reflects the post-freeze edit");
         }
+
+        [Test]
+        public void Freeze_edit_unfreeze_preserves_the_live_treatment_and_undo_restores_the_frozen_pair()
+        {
+            var (vm, _, _) = NewLoaded();
+
+            vm.SetAsControl();
+            var frozenControl = vm.ControlSpecJson;
+            vm.SetField("shell.ceiling_height_m", 3.4);
+            var treatment = vm.CurrentSpecJson;
+
+            vm.Unfreeze();
+
+            Assert.IsFalse(vm.HasControl, "unfreeze returns to one live room");
+            Assert.AreEqual(OperatorPanelViewModel.PairWorkflowState.ControlUnfrozen, vm.WorkflowState);
+            Assert.AreEqual(treatment, vm.CurrentSpecJson, "unfreeze must not discard treatment edits");
+
+            vm.Undo();
+
+            Assert.IsTrue(vm.HasControl, "undo across unfreeze restores the frozen baseline");
+            Assert.AreEqual(frozenControl, vm.ControlSpecJson);
+            Assert.AreEqual(treatment, vm.CurrentSpecJson);
+            Assert.AreEqual(OperatorPanelViewModel.PairWorkflowState.ControlFrozen, vm.WorkflowState);
+        }
+
+        [Test]
+        public void Undo_across_freeze_restores_the_pre_freeze_single_room_and_reapplies_it()
+        {
+            var (vm, ch, _) = NewLoaded(debounce: 0.0);
+            vm.SetField("shell.ceiling_height_m", 3.1);
+            var preFreeze = vm.CurrentSpecJson;
+
+            vm.SetAsControl();
+            Assert.IsTrue(vm.HasControl);
+
+            vm.Undo();
+
+            Assert.IsFalse(vm.HasControl);
+            Assert.AreEqual(preFreeze, vm.CurrentSpecJson);
+            Assert.AreEqual(OperatorPanelViewModel.PairWorkflowState.SingleRoom, vm.WorkflowState);
+            Assert.IsTrue(vm.Tick(), "undo marks the restored room dirty so the seam follows it");
+            StringAssert.Contains("3.1", ch.Calls.Last(c => c.Kind == SeamCodes.ApplySpec).PayloadJson);
+        }
+
+        [Test]
+        public void Reset_to_preset_defaults_is_destructive_but_undoable()
+        {
+            var (vm, _, _) = NewLoaded();
+            vm.SetAsControl();
+            vm.SetField("shell.ceiling_height_m", 3.4);
+            vm.SubmitPair();
+            Assert.IsTrue(vm.PublishEnabled, "pre-reset pair has a fresh passing verdict");
+            var editedTreatment = vm.CurrentSpecJson;
+            var frozenControl = vm.ControlSpecJson;
+
+            vm.ResetToPreset();
+
+            Assert.IsFalse(vm.HasControl);
+            Assert.AreEqual(2.8, vm.GetField("shell.ceiling_height_m"), 1e-9);
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.None, vm.ValidationStatus);
+            Assert.AreEqual(OperatorPanelViewModel.PairWorkflowState.SingleRoom, vm.WorkflowState);
+
+            vm.Undo();
+
+            Assert.AreEqual(editedTreatment, vm.CurrentSpecJson);
+            Assert.AreEqual(frozenControl, vm.ControlSpecJson);
+            Assert.AreEqual(OperatorPanelViewModel.PairWorkflowState.ControlFrozen, vm.WorkflowState);
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.Fresh, vm.ValidationStatus,
+                "undo restores the validation freshness captured with the exact pair");
+            Assert.IsTrue(vm.Validation.Ok);
+            Assert.IsTrue(vm.PublishEnabled);
+        }
+
+        [Test]
+        public void Rapid_slider_frames_create_one_undo_point_at_the_debounced_tick()
+        {
+            var (vm, _, clk) = NewLoaded(debounce: 0.15);
+
+            clk.T = 1.0;
+            vm.SetField("shell.ceiling_height_m", 3.0);
+            clk.T = 1.05;
+            vm.SetField("shell.ceiling_height_m", 3.2);
+            clk.T = 1.25; // deliberately beyond the floating-point debounce boundary
+            Assert.IsTrue(vm.Tick());
+
+            vm.Undo();
+
+            Assert.AreEqual(2.8, vm.GetField("shell.ceiling_height_m"), 1e-9,
+                "one undo reverses the whole drag stream, not just its last frame");
+            Assert.IsFalse(vm.CanUndo, "the drag emitted exactly one history entry");
+        }
+
+        [Test]
+        public void Editing_again_before_an_undo_reapply_flushes_keeps_a_new_undo_point()
+        {
+            var (vm, _, _) = NewLoaded(debounce: 0.0);
+            vm.SetField("shell.ceiling_height_m", 3.2);
+            vm.Tick();
+
+            vm.Undo(); // restores 2.8 and marks it dirty for reapply
+            vm.SetField("shell.ceiling_height_m", 3.0); // arrives before that reapply Tick
+            vm.Tick();
+            vm.Undo();
+
+            Assert.AreEqual(2.8, vm.GetField("shell.ceiling_height_m"), 1e-9,
+                "the post-undo edit must capture the restored state even while an Apply is pending");
+        }
+
+        [Test]
+        public void Setting_a_field_to_its_current_value_is_not_an_edit_or_an_undo_point()
+        {
+            var (vm, _, _) = NewLoaded(debounce: 0.0);
+
+            vm.SetField("shell.ceiling_height_m", 2.8f); // the widget sends a float promoted to double
+
+            Assert.IsFalse(vm.CanUndo);
+            Assert.IsFalse(vm.Tick(), "a no-op widget event must not send an Apply");
+            Assert.AreEqual(OperatorPanelViewModel.ValidationFreshness.None, vm.ValidationStatus);
+        }
+
+        [Test]
+        public void Undo_restores_status_and_errors_with_the_model_snapshot()
+        {
+            var (vm, ch, _) = NewLoaded(debounce: 0.0);
+
+            vm.SetField("shell.ceiling_height_m", 3.0);
+            vm.Tick();
+            Assert.AreEqual("applied", vm.Status);
+
+            ch.EnqueueApplyFailure("ignored", ("schema_invalid", "shell.ceiling_height_m", "rejected value"));
+            vm.SetField("shell.ceiling_height_m", 3.2);
+            vm.Tick();
+            Assert.AreEqual("rejected", vm.Status);
+            Assert.IsNotEmpty(vm.Errors);
+
+            vm.Undo();
+
+            Assert.AreEqual(3.0, vm.GetField("shell.ceiling_height_m"), 1e-9);
+            Assert.AreEqual("applied", vm.Status);
+            Assert.IsEmpty(vm.Errors, "the restored successful model must not retain a later apply error");
+        }
+
+        [Test]
+        public void Undo_history_is_bounded_to_twenty_entries()
+        {
+            var (vm, _, _) = NewLoaded(debounce: 0.0);
+
+            for (var i = 0; i < 25; i++)
+            {
+                vm.SetField("shell.width_m", 3.5 + i * 0.1);
+                Assert.IsTrue(vm.Tick());
+            }
+
+            var undoCount = 0;
+            while (vm.CanUndo)
+            {
+                vm.Undo();
+                undoCount++;
+                Assert.LessOrEqual(undoCount, 20, "history must never grow beyond its ring bound");
+            }
+
+            Assert.AreEqual(20, undoCount);
+        }
     }
 }

@@ -20,11 +20,20 @@ namespace RoomGen.UI
     /// </summary>
     public sealed class OperatorPanelViewModel
     {
+        const int HistoryCapacity = 20;
+
         public enum ValidationFreshness
         {
             None,
             Fresh,
             Stale,
+        }
+
+        public enum PairWorkflowState
+        {
+            SingleRoom,
+            ControlFrozen,
+            ControlUnfrozen,
         }
 
         // ---- plain public value objects (test-assembly readable) ----
@@ -56,16 +65,31 @@ namespace RoomGen.UI
             public string ActiveCondition;
         }
 
+        struct Snapshot
+        {
+            public string ModelJson;
+            public string ControlJson;
+            public string DeclaredVariable;
+            public string Status;
+            public IReadOnlyList<ErrorRow> Errors;
+            public ValidationState Validation;
+            public ValidationFreshness Freshness;
+            public PairWorkflowState WorkflowState;
+        }
+
         readonly ISpecChannel _channel;
         readonly Func<double> _now;
         readonly double _debounce;
 
         JObject _model;                 // the live canonical RoomSpec being edited
         JObject _controlModel;          // snapshot frozen by SetAsControl()
+        string _presetJson;
         string _declaredVariable;
         readonly List<FieldSpec> _fields = new List<FieldSpec>();
         readonly Dictionary<string, (double Min, double Max)> _ranges = new Dictionary<string, (double, double)>();
         readonly List<string> _manipulable = new List<string>();
+        readonly List<Snapshot> _history = new List<Snapshot>(HistoryCapacity);
+        Snapshot? _pendingEditSnapshot;
 
         bool _dirty;
         double _lastEditAt;
@@ -86,6 +110,7 @@ namespace RoomGen.UI
                 ActiveCondition = null,
             };
         public ValidationFreshness ValidationStatus { get; private set; } = ValidationFreshness.None;
+        public PairWorkflowState WorkflowState { get; private set; } = PairWorkflowState.SingleRoom;
 
         /// <summary>The fields backing sliders/controls: preset ranges + manipulable flag.</summary>
         public IReadOnlyList<FieldSpec> Fields => _fields;
@@ -110,6 +135,9 @@ namespace RoomGen.UI
 
         public bool HasControl => _controlModel != null;
 
+        /// <summary>True when the latest debounced edit or pair-workflow transition can be restored.</summary>
+        public bool CanUndo => _pendingEditSnapshot.HasValue || _history.Count > 0;
+
         public OperatorPanelViewModel(ISpecChannel channel, Func<double> now, double debounceSeconds = 0.15)
         {
             _channel = channel ?? throw new ArgumentNullException(nameof(channel));
@@ -127,12 +155,26 @@ namespace RoomGen.UI
         /// </summary>
         public void LoadPreset(string presetJson)
         {
+            if (string.IsNullOrWhiteSpace(presetJson)) throw new ArgumentException("Preset JSON is required.", nameof(presetJson));
+
+            _presetJson = presetJson;
+            _history.Clear();
+            _pendingEditSnapshot = null;
+            LoadPresetState(presetJson);
+        }
+
+        void LoadPresetState(string presetJson)
+        {
             var preset = ResponseJson.Parse(presetJson);
 
             _model = (JObject)preset["defaults"].DeepClone();
             _controlModel = null;
             Validation = EmptyValidation();
             ValidationStatus = ValidationFreshness.None;
+            WorkflowState = PairWorkflowState.SingleRoom;
+            Status = "";
+            Errors = new List<ErrorRow>();
+            _dirty = false;
 
             _ranges.Clear();
             _manipulable.Clear();
@@ -171,6 +213,17 @@ namespace RoomGen.UI
             if (_ranges.TryGetValue(path, out var r))
                 value = Math.Max(r.Min, Math.Min(r.Max, value));
 
+            var current = ReadDotted(_model, path);
+            if (current != null &&
+                (current.Type == JTokenType.Integer || current.Type == JTokenType.Float) &&
+                Math.Abs(current.Value<double>() - value) < 1e-6)
+                return;
+
+            // A slider may emit dozens of frames before Tick flushes. Remember the state before the
+            // first frame, then commit exactly that one undo point when the debounced Apply lands.
+            if (!_pendingEditSnapshot.HasValue)
+                _pendingEditSnapshot = CaptureSnapshot();
+
             SetDotted(_model, path, value);
 
             for (var i = 0; i < _fields.Count; i++)
@@ -199,6 +252,12 @@ namespace RoomGen.UI
             if (!_dirty || _model == null) return false;
             if (_now() - _lastEditAt < _debounce) return false;
 
+            if (_pendingEditSnapshot.HasValue)
+            {
+                PushSnapshot(_pendingEditSnapshot.Value);
+                _pendingEditSnapshot = null;
+            }
+
             _dirty = false;
             _channel.Apply(_model.ToString(Newtonsoft.Json.Formatting.None), NextReqId("apply"));
             return true;
@@ -209,8 +268,61 @@ namespace RoomGen.UI
         /// <summary>Freeze the current model as the control; editing continues on the treatment.</summary>
         public void SetAsControl()
         {
+            if (_model == null) throw new InvalidOperationException("LoadPreset must be called first.");
+            SnapshotBeforeTransition();
             _controlModel = (JObject)_model.DeepClone();
+            WorkflowState = PairWorkflowState.ControlFrozen;
             MarkValidationStale();
+        }
+
+        /// <summary>
+        /// Return to single-room editing without discarding the live treatment. Only the frozen
+        /// baseline is cleared; the current model remains byte-for-byte unchanged.
+        /// </summary>
+        public void Unfreeze()
+        {
+            if (_controlModel == null) return;
+            SnapshotBeforeTransition();
+            _controlModel = null;
+            WorkflowState = PairWorkflowState.ControlUnfrozen;
+            MarkValidationStale();
+        }
+
+        /// <summary>Restore the loaded preset defaults. The discarded work remains recoverable by Undo.</summary>
+        public void ResetToPreset()
+        {
+            if (_model == null || string.IsNullOrEmpty(_presetJson))
+                throw new InvalidOperationException("LoadPreset must be called first.");
+
+            SnapshotBeforeTransition();
+            LoadPresetState(_presetJson);
+            _dirty = true;
+            _lastEditAt = _now();
+        }
+
+        /// <summary>
+        /// Restore the most recent debounced edit or workflow transition. The next Tick reapplies the
+        /// restored model through the seam so the rendered room follows the state immediately.
+        /// </summary>
+        public void Undo()
+        {
+            Snapshot snapshot;
+            if (_pendingEditSnapshot.HasValue)
+            {
+                snapshot = _pendingEditSnapshot.Value;
+                _pendingEditSnapshot = null;
+            }
+            else
+            {
+                if (_history.Count == 0) return;
+                var last = _history.Count - 1;
+                snapshot = _history[last];
+                _history.RemoveAt(last);
+            }
+
+            RestoreSnapshot(snapshot);
+            _dirty = true;
+            _lastEditAt = _now();
         }
 
         /// <summary>Send the frozen control + the current (treatment) model through the gate.</summary>
@@ -284,6 +396,70 @@ namespace RoomGen.UI
             Notes = new List<string>(),
             ActiveCondition = null,
         };
+
+        Snapshot CaptureSnapshot() => new Snapshot
+        {
+            ModelJson = _model?.ToString(Newtonsoft.Json.Formatting.None),
+            ControlJson = _controlModel?.ToString(Newtonsoft.Json.Formatting.None),
+            DeclaredVariable = _declaredVariable,
+            Status = Status,
+            Errors = CloneErrors(Errors),
+            Validation = CloneValidation(Validation),
+            Freshness = ValidationStatus,
+            WorkflowState = WorkflowState,
+        };
+
+        void SnapshotBeforeTransition()
+        {
+            // If a transition happens inside the debounce window, the transition snapshot already
+            // contains those live edits. Do not later add a second, older per-drag history entry.
+            _pendingEditSnapshot = null;
+            PushSnapshot(CaptureSnapshot());
+        }
+
+        void PushSnapshot(Snapshot snapshot)
+        {
+            if (_history.Count == HistoryCapacity) _history.RemoveAt(0);
+            _history.Add(snapshot);
+        }
+
+        void RestoreSnapshot(Snapshot snapshot)
+        {
+            _model = string.IsNullOrEmpty(snapshot.ModelJson) ? null : ResponseJson.Parse(snapshot.ModelJson);
+            _controlModel = string.IsNullOrEmpty(snapshot.ControlJson) ? null : ResponseJson.Parse(snapshot.ControlJson);
+            _declaredVariable = snapshot.DeclaredVariable;
+            Status = snapshot.Status;
+            Errors = CloneErrors(snapshot.Errors);
+            Validation = CloneValidation(snapshot.Validation);
+            ValidationStatus = snapshot.Freshness;
+            WorkflowState = snapshot.WorkflowState;
+            SyncFieldValues();
+        }
+
+        void SyncFieldValues()
+        {
+            for (var i = 0; i < _fields.Count; i++)
+            {
+                var field = _fields[i];
+                field.Value = ReadDouble(field.Path, field.Min);
+                _fields[i] = field;
+            }
+        }
+
+        static ValidationState CloneValidation(ValidationState state) => new ValidationState
+        {
+            Ok = state.Ok,
+            ViolationCodes = state.ViolationCodes?.ToList() ?? new List<string>(),
+            DiffPaths = state.DiffPaths?.ToList() ?? new List<string>(),
+            Violations = state.Violations?.Select(e => new ErrorRow
+                { Code = e.Code, Path = e.Path, Message = e.Message }).ToList() ?? new List<ErrorRow>(),
+            Notes = state.Notes?.ToList() ?? new List<string>(),
+            ActiveCondition = state.ActiveCondition,
+        };
+
+        static IReadOnlyList<ErrorRow> CloneErrors(IReadOnlyList<ErrorRow> errors) =>
+            errors?.Select(e => new ErrorRow
+                { Code = e.Code, Path = e.Path, Message = e.Message }).ToList() ?? new List<ErrorRow>();
 
         // ---- json helpers (kept inside; never in the public surface) ----
 

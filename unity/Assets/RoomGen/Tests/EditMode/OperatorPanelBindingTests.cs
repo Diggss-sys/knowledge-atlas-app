@@ -74,6 +74,27 @@ namespace RoomGen.Tests
             Assert.IsNotNull(root.Q<DropdownField>("declared-variable"), "declared-variable dropdown");
             Assert.IsNotNull(root.Q<VisualElement>("diff-list"), "diff-panel list container");
             Assert.IsNotNull(root.Q<Button>("publish-button"), "publish button");
+            Assert.IsNotNull(root.Q<Button>("undo-button"), "undo button");
+            Assert.IsNotNull(root.Q<Button>("unfreeze-button"), "unfreeze button");
+            Assert.IsNotNull(root.Q<Button>("reset-button"), "reset button");
+        }
+
+        [Test]
+        public void Armed_confirmation_requires_a_matching_second_click_and_unrelated_interaction_disarms()
+        {
+            var confirmation = new OperatorPanelController.PairActionConfirmation();
+
+            Assert.IsFalse(confirmation.Confirm(OperatorPanelController.ArmedPairAction.Reset),
+                "first click only arms the destructive reset");
+            Assert.AreEqual(OperatorPanelController.ArmedPairAction.Reset, confirmation.ArmedAction);
+
+            confirmation.Disarm(); // the controller calls this for any unrelated pointer/value action
+            Assert.AreEqual(OperatorPanelController.ArmedPairAction.None, confirmation.ArmedAction);
+            Assert.IsFalse(confirmation.Confirm(OperatorPanelController.ArmedPairAction.Reset),
+                "after disarming, reset again requires a fresh first click");
+            Assert.IsTrue(confirmation.Confirm(OperatorPanelController.ArmedPairAction.Reset),
+                "only the matching second click executes");
+            Assert.AreEqual(OperatorPanelController.ArmedPairAction.None, confirmation.ArmedAction);
         }
 
         [Test]
@@ -95,6 +116,31 @@ namespace RoomGen.Tests
             var applies = ch.Calls.Where(c => c.Kind == SeamCodes.ApplySpec).ToList();
             Assert.AreEqual(1, applies.Count, "the slider change reached the channel as one Apply");
             StringAssert.Contains("3.4", applies[0].PayloadJson, "the applied spec carries the edited ceiling");
+        }
+
+        [Test]
+        public void Refresh_resynchronizes_slider_widgets_after_undo_and_reset()
+        {
+            var ch = new MockSpecChannel();
+            var vm = new OperatorPanelViewModel(ch, () => 0.0, debounceSeconds: 0.0);
+            vm.LoadPreset(Preset);
+            var root = BuildPaneledTree();
+            OperatorPanelController.Bind(root, vm);
+            var ceiling = root.Q<Slider>("shell.ceiling_height_m");
+
+            ceiling.value = 3.2f;
+            Assert.IsTrue(vm.Tick());
+            vm.Undo();
+            OperatorPanelController.Refresh(root, vm);
+            Assert.AreEqual(2.8f, ceiling.value, 0.0001f,
+                "the slider must follow the model restored by Undo");
+
+            ceiling.value = 3.4f;
+            Assert.IsTrue(vm.Tick());
+            vm.ResetToPreset();
+            OperatorPanelController.Refresh(root, vm);
+            Assert.AreEqual(2.8f, ceiling.value, 0.0001f,
+                "the slider must follow preset defaults after Reset");
         }
 
         [Test]
