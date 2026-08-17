@@ -101,7 +101,10 @@ namespace KnowledgeAtlas.Seam
                 ActiveCondition = "control";
                 LastGoodSha = Sha256(RoomJson.Serialize(pair.Control));
             }
-            return SeamEvent.PairResult(requestId, gate.Ok, gate.ViolationCodes, gate.DiffPaths, ActiveCondition ?? "control");
+            var violations = gate.Violations
+                .Select(v => new SeamError(v.Code, v.Path, v.Message));
+            return SeamEvent.PairResult(requestId, gate.Ok, gate.DiffPaths,
+                ActiveCondition ?? "control", violations, gate.Notes);
         }
 
         // Nominal transition durations (ms). cut/teleport swap instantly; fade is a timed crossfade —

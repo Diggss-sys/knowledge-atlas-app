@@ -85,6 +85,8 @@ namespace KnowledgeAtlas.Seam
         public bool PairOk;
         public readonly List<string> PairDiffPaths = new List<string>();
         public readonly List<string> PairViolationCodes = new List<string>();
+        public readonly List<SeamError> PairViolations = new List<SeamError>();
+        public readonly List<string> PairNotes = new List<string>();
         public string ActiveCondition;
 
         // condition_switched
@@ -134,6 +136,18 @@ namespace KnowledgeAtlas.Seam
             return e;
         }
 
+        public static SeamEvent PairResult(string requestId, bool ok, IEnumerable<string> diffPaths,
+            string activeCondition, IEnumerable<SeamError> violations, IEnumerable<string> notes)
+        {
+            var e = new SeamEvent { Kind = SeamCodes.PairLoaded, RequestId = requestId, Ok = ok, PairOk = ok, ActiveCondition = activeCondition };
+            e.PairDiffPaths.AddRange(diffPaths);
+            e.PairViolations.AddRange(violations);
+            e.PairViolationCodes.AddRange(e.PairViolations.Select(v => v.Code)
+                .Distinct(StringComparer.Ordinal).OrderBy(code => code, StringComparer.Ordinal));
+            e.PairNotes.AddRange(notes);
+            return e;
+        }
+
         /// <summary>The envelope this event serializes to (provenance log + NetworkChannel payload).</summary>
         public string ToJson()
         {
@@ -152,8 +166,10 @@ namespace KnowledgeAtlas.Seam
                     payload["validation"] = new JObject
                     {
                         ["ok"] = PairOk,
+                        ["violations"] = new JArray(PairViolations.Select(ErrToJson)),
                         ["violation_codes"] = new JArray(PairViolationCodes),
                         ["diff_paths"] = new JArray(PairDiffPaths),
+                        ["notes"] = new JArray(PairNotes),
                     };
                     payload["active_condition"] = ActiveCondition;
                     break;

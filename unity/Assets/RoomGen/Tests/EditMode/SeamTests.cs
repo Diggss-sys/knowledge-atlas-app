@@ -104,6 +104,9 @@ namespace RoomGen.Tests
             Assert.IsTrue(ev.Ok, "the canonical ceiling pair is a valid single-variable pair; gate codes: "
                 + string.Join(", ", ev.PairViolationCodes));
             Assert.AreEqual(new[] { "shell.ceiling_height_m" }, ev.PairDiffPaths.ToArray());
+            Assert.IsEmpty(ev.PairViolations);
+            Assert.AreEqual(1, ev.PairNotes.Count, "coupled-variable guidance must survive the seam");
+            StringAssert.Contains("shell.ceiling_height_m", ev.PairNotes[0]);
             Assert.AreEqual("control", ev.ActiveCondition);
         }
 
@@ -112,15 +115,32 @@ namespace RoomGen.Tests
         {
             var control = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-control").text;
             var treatment = Resources.Load<TextAsset>("RoomGen/Examples/ka-ceiling-treatment").text;
-            // Sneak a second, undeclared manipulation into the treatment: change the wall material.
-            var confounded = treatment.Replace("\"material\": \"plaster\"", "\"material\": \"brick\"");
+            // Sneak a second, undeclared manipulation into the treatment: change only the wall material.
+            const string wallPlaster = "\"wall\":    { \"material\": \"plaster\"";
+            const string wallBrick = "\"wall\":    { \"material\": \"brick\"";
+            var confounded = treatment.Replace(wallPlaster, wallBrick);
             Assert.AreNotEqual(treatment, confounded, "fixture edit failed — wall material was not changed");
+            StringAssert.Contains("\"ceiling\": { \"material\": \"plaster\"", confounded,
+                "the test mutation must not also change the ceiling material");
 
-            var ev = NewRuntime().LoadPair(control, confounded, "r-c");
+            var ev = NewRuntime().LoadPair(control, confounded, "r-0010");
 
             Assert.AreEqual(SeamCodes.PairLoaded, ev.Kind);
             Assert.IsFalse(ev.Ok, "a pair that differs in more than the declared variable must be refused");
             Assert.Contains("undeclared_change", ev.PairViolationCodes);
+            var violation = ev.PairViolations.Single(v =>
+                v.Code == "undeclared_change" && v.Path == "surfaces.wall.material");
+            Assert.AreEqual("surfaces.wall.material", violation.Path);
+            StringAssert.Contains("pair is confounded", violation.Message);
+            Assert.AreEqual(1, ev.PairNotes.Count, "notes must not disappear when validation fails");
+
+            var json = ev.ToJson();
+            StringAssert.Contains("\"violations\":[{\"code\":\"undeclared_change\"", json);
+            StringAssert.Contains("\"notes\":[\"coupled: shell.ceiling_height_m", json);
+
+            var fixtureMatch = SeamFixtureRunner.MatchValidEventFixture(
+                SeamMessages, "event_pair_loaded_full_validation", ev);
+            Assert.IsTrue(fixtureMatch.Match, fixtureMatch.Detail);
         }
 
         [Test]
